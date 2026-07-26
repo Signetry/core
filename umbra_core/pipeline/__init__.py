@@ -11,11 +11,18 @@ from .checks import ChecksReport, CheckResult, run_required_checks
 from .contract import (
     Contract,
     ContractResult,
+    contract_from_dict,
     default_contract,
     evaluate_contract,
     load_contract,
 )
-from .guard import GuardDecision, guard, guard_command, guard_path
+from .guard import GuardDecision, guard, guard_command, guard_mcp, guard_path, guard_skill, guard_tool
+from .plan import (
+    PlanAdherence,
+    PlanCapabilitySet,
+    derive_plan,
+    evaluate_plan_adherence,
+)
 from .passport import (
     InMemoryPassportStore,
     JsonFilePassportStore,
@@ -56,7 +63,7 @@ from .trust_boundary import (
     scan_structural,
     scan_text,
 )
-from .verifier import VerifierReport, verify_change
+from .verifier import VerifierReport, masked_recheck, verify_change
 
 __all__ = [
     "AdmissionReport",
@@ -65,13 +72,22 @@ __all__ = [
     "AUTHORITY_LABEL",
     "Contract",
     "ContractResult",
+    "contract_from_dict",
     "default_contract",
     "evaluate_contract",
     "load_contract",
     "guard",
     "guard_path",
     "guard_command",
+    "guard_tool",
+    "guard_mcp",
+    "guard_skill",
     "GuardDecision",
+    # plan capability binding (CaMeL / DRIFT)
+    "PlanCapabilitySet",
+    "PlanAdherence",
+    "derive_plan",
+    "evaluate_plan_adherence",
     "ChecksReport",
     "CheckResult",
     "run_required_checks",
@@ -83,6 +99,7 @@ __all__ = [
     "sanitize_checkout",
     "VerifierReport",
     "verify_change",
+    "masked_recheck",
     "build_receipt",
     "verify_receipt",
     "verify_signature",

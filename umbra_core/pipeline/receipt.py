@@ -125,6 +125,8 @@ def build_receipt(
     human_decision: str | None = None,
     pr_url: str | None = None,
     outcome: str | None = None,
+    plan_capability_set: dict[str, Any] | None = None,
+    plan_adherence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble and sign a Remediation Receipt.
 
@@ -150,6 +152,8 @@ def build_receipt(
         "check_diagnosis": check_diagnosis,
         "model_identity": model_identity,
         "context_manifest": context_manifest,
+        "plan_capability_set": plan_capability_set,
+        "plan_adherence": plan_adherence,
         "proposed_change": proposed_change,
         "provider_ledger": providers or {},
         "diff_hash": (_sha256(diff) if diff else None) or diff_hash,
