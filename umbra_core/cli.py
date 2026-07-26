@@ -10,6 +10,8 @@ developer's machine, in a git hook, and in CI:
     umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
     umbra comment <report.json>                                # render the canonical PR comment
     umbra admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
+    umbra init                                                 # scaffold .umbra/admission.yaml
+    umbra completion zsh                                        # shell completion script
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -274,6 +276,104 @@ def cmd_guard(args: argparse.Namespace) -> int:
     return 0 if decision.allowed else 1
 
 
+# A commented starter contract written by `umbra init`. Conservative by default:
+# dependency-manifest scope, small diff budget, deploy/CI/secrets off-limits.
+_STARTER_CONTRACT = """# Umbra executable change contract — the machine-enforced boundary for agent work.
+# Docs: https://github.com/bkd-dotcom/umbra-umbrella  ·  edited by humans, versioned in git.
+version: 2
+task_type: dependency-remediation
+
+# Allowlist: when set, a change touching anything outside these globs is a violation.
+allowed_paths:
+  - "package.json"
+  - "package-lock.json"
+  - "requirements.txt"
+  - "src/**"
+
+# Always-forbidden, even if inside allowed_paths (fail-closed, case-insensitive).
+forbidden_paths:
+  - ".github/workflows/**"
+  - "infra/**"
+  - "deploy/**"
+  - "**/*secret*"
+  - "**/.env*"
+
+# Diff budget + the checks a change must pass to earn branch-PR (L2) authority.
+max_files_changed: 5
+required_checks:
+  - "npm test"
+
+# Capability graph (v2, optional). Uncomment to restrict tools / bash / MCP / skills.
+# allowed_tools:  [Read, Edit, Bash]
+# denied_bash:    ["docker\\\\s+run", "kubectl"]
+# allowed_mcp:    ["github:search"]
+# allowed_skills: ["web-search"]
+
+# Change-control provenance (surfaced honestly in the receipt).
+policy_owner: your-team
+policy_version: "1.0"
+"""
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    """Scaffold a starter ``.umbra/admission.yaml`` in a repo so a new user is one
+    command away from a governed change. Never overwrites without ``--force``."""
+    root = Path(args.repo).resolve()
+    if not root.is_dir():
+        print(f"error: {root} is not a directory", file=sys.stderr)
+        return 2
+    dest = root / ".umbra" / "admission.yaml"
+    if dest.exists() and not args.force:
+        print(f"error: {dest} already exists (use --force to overwrite)", file=sys.stderr)
+        return 1
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(_STARTER_CONTRACT)
+    print(f"wrote {dest}")
+    print("Next: edit the scope, then run  umbra admit .  (or add the GitHub Action).")
+    return 0
+
+
+# Static shell-completion scripts. Kept simple + dependency-free (no argcomplete):
+# they complete the subcommand names, which is the high-value case.
+_COMMANDS = "admit verify brake provenance gates comment admit-extension guard init completion"
+_COMPLETIONS = {
+    "bash": f"""# umbra bash completion — add to ~/.bashrc:  eval "$(umbra completion bash)"
+_umbra_complete() {{
+  local cur="${{COMP_WORDS[COMP_CWORD]}}"
+  if [ "$COMP_CWORD" -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "{_COMMANDS}" -- "$cur") )
+  fi
+}}
+complete -o default -F _umbra_complete umbra
+""",
+    "zsh": f"""# umbra zsh completion — add to ~/.zshrc:  eval "$(umbra completion zsh)"
+_umbra() {{
+  local -a cmds
+  cmds=({_COMMANDS})
+  if (( CURRENT == 2 )); then
+    compadd -- $cmds
+  else
+    _files
+  fi
+}}
+compdef _umbra umbra
+""",
+    "fish": f"""# umbra fish completion — save to ~/.config/fish/completions/umbra.fish
+complete -c umbra -n "__fish_use_subcommand" -a "{_COMMANDS}"
+""",
+}
+
+
+def cmd_completion(args: argparse.Namespace) -> int:
+    """Print a shell completion script for bash / zsh / fish."""
+    script = _COMPLETIONS.get(args.shell)
+    if not script:
+        print(f"error: unsupported shell {args.shell!r}", file=sys.stderr)
+        return 2
+    print(script)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="umbra", description="Agent-agnostic change-control plane for coding agents.")
     parser.add_argument("--json", action="store_true", help="Machine-readable JSON output.")
@@ -333,8 +433,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_guard.add_argument("--hook-output", action="store_true", help="Emit Claude Code PreToolUse decision JSON (deny blocks; exit 0).")
     p_guard.set_defaults(func=cmd_guard)
 
-    return parser
+    p_init = sub.add_parser("init", help="Scaffold a starter .umbra/admission.yaml in a repo.")
+    p_init.add_argument("repo", nargs="?", default=".", help="Repo directory to write into (default: current dir).")
+    p_init.add_argument("--force", action="store_true", help="Overwrite an existing .umbra/admission.yaml.")
+    p_init.set_defaults(func=cmd_init)
 
+    p_comp = sub.add_parser("completion", help="Print a shell completion script (bash | zsh | fish).")
+    p_comp.add_argument("shell", choices=["bash", "zsh", "fish"], help="Shell to emit completion for.")
+    p_comp.set_defaults(func=cmd_completion)
+
+    return parser
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()

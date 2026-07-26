@@ -5,6 +5,16 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [Unreleased]
+
+### Added — CLI developer experience
+
+- **`umbra init`** scaffolds a conservative starter `.umbra/admission.yaml` (loads
+  cleanly through the real contract loader; refuses to overwrite without `--force`),
+  so a new user is one command from a governed change.
+- **`umbra completion <bash|zsh|fish>`** prints a shell completion script for the
+  subcommands (dependency-free; `eval "$(umbra completion zsh)"`).
+
 ## [0.3.0] — 2026-07-26
 
 ### Added — Admitted Extension (skill / MCP supply chain) + ASBOM
