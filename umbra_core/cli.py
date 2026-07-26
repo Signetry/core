@@ -9,6 +9,7 @@ developer's machine, in a git hook, and in CI:
     umbra provenance <receipt.json>                            # emit SLSA/in-toto statement
     umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
     umbra comment <report.json>                                # render the canonical PR comment
+    umbra admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -197,6 +198,40 @@ def cmd_comment(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_admit_extension(args: argparse.Namespace) -> int:
+    """Govern an agent extension (a skill dir or an MCP server manifest): fingerprint
+    its bytes, quarantine its documentation/tool descriptions, and admit or deny.
+
+    Exit non-zero on deny, so it can gate a plugin-install hook or CI."""
+    from .pipeline import admit_extension, asbom, load_contract
+
+    root = Path(args.path)
+    if not root.is_dir():
+        print(f"error: {root} is not a directory", file=sys.stderr)
+        return 2
+    contract = load_contract(args.repo) if args.repo else None
+    ext = admit_extension(root, kind=args.kind, contract=contract, allow_quarantined=args.allow_quarantined)
+
+    if args.asbom:
+        print(json.dumps(asbom([ext], org=args.org), indent=2, default=str))
+    elif args.json:
+        print(json.dumps(ext.to_public(), indent=2, default=str))
+    else:
+        print(f"extension : {ext.name} ({ext.kind} v{ext.version})")
+        print(f"verdict   : {ext.verdict.upper()}")
+        print(f"hash      : {ext.extension_hash}")
+        print(f"files     : {len(ext.files)}")
+        if ext.mcp_tools:
+            print(f"mcp tools : {', '.join(ext.mcp_tools)}")
+        if ext.quarantine_findings:
+            print(f"quarantine: {len(ext.quarantine_findings)} finding(s)")
+            for f in ext.quarantine_findings[:5]:
+                print(f"    - [{f['category']}] {f['source']}: {f['pattern']}")
+        for r in ext.reasons:
+            print(f"reason    : {r}")
+    return 0 if ext.admitted else 1
+
+
 def cmd_guard(args: argparse.Namespace) -> int:
     """Fast pre-action check for editor/agent hooks: allow/deny a single proposed
     file path and/or shell command against the repo's contract.
@@ -280,6 +315,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_comment = sub.add_parser("comment", help="Render the canonical PR-comment markdown from an 'admit --json' payload.")
     p_comment.add_argument("report", nargs="?", default="-", help="Path to the {report, receipt} JSON (default: stdin).")
     p_comment.set_defaults(func=cmd_comment)
+
+    p_ext = sub.add_parser("admit-extension", help="Govern an agent skill / MCP extension: fingerprint bytes, quarantine docs, admit or deny.")
+    p_ext.add_argument("path", help="Path to the extension directory (skill dir or MCP server).")
+    p_ext.add_argument("--kind", choices=["skill", "mcp"], help="Force the extension kind (default: auto-detect).")
+    p_ext.add_argument("--repo", help="Repo checkout whose .umbra/admission.yaml supplies the allowed_skills/allowed_mcp allowlist.")
+    p_ext.add_argument("--allow-quarantined", action="store_true", help="Admit even if documentation carries manipulation findings (explicit human override).")
+    p_ext.add_argument("--asbom", action="store_true", help="Emit a CycloneDX-aligned ASBOM for the extension instead of the verdict.")
+    p_ext.add_argument("--org", help="Org name to stamp on the ASBOM metadata.")
+    p_ext.set_defaults(func=cmd_admit_extension)
 
     p_guard = sub.add_parser("guard", help="Fast pre-action check for editor/agent hooks: allow/deny one file path or command against the contract.")
     p_guard.add_argument("--repo", default=".", help="Repo checkout to load the contract from (default: current dir).")

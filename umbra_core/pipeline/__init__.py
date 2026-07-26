@@ -17,6 +17,13 @@ from .contract import (
     load_contract,
 )
 from .gates import Gate, GateSummary, evaluate_gates
+from .extension import (
+    AdmittedExtension,
+    ExtensionFile,
+    admit_extension,
+    asbom,
+    inspect_extension,
+)
 from .render import render_pr_comment
 from .guard import GuardDecision, guard, guard_command, guard_mcp, guard_path, guard_skill, guard_tool
 from .plan import (
@@ -90,6 +97,12 @@ __all__ = [
     "GateSummary",
     "evaluate_gates",
     "render_pr_comment",
+    # admitted extensions (skill / MCP supply chain) + ASBOM
+    "AdmittedExtension",
+    "ExtensionFile",
+    "inspect_extension",
+    "admit_extension",
+    "asbom",
     # plan capability binding (CaMeL / DRIFT)
     "PlanCapabilitySet",
     "PlanAdherence",

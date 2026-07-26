@@ -7,6 +7,30 @@ change between minor versions.
 
 ## [Unreleased]
 
+### Added — Admitted Extension (skill / MCP supply chain) + ASBOM
+
+- **`admit_extension`** governs an agent extension (a *skill* directory or an *MCP*
+  server manifest) as a first-class object — the 2026 supply-chain surface the
+  per-change pipeline never sees:
+  - **Fingerprint** — every file (manifest + docs + scripts) is content-hashed into
+    a stable `extension_hash`, so "the skill I admitted" is bound by bytes; a later
+    silent edit changes the hash.
+  - **Quarantine before read** — documentation surfaces (`SKILL.md`, README) and
+    every MCP tool `description` are scanned with the trust-boundary detector; an
+    agent-directed manipulation is a **deny**, not an instruction (fail-closed;
+    `--allow-quarantined` is an explicit human override).
+  - **Allowlist** — when the contract's capability graph declares `allowed_skills`
+    / `allowed_mcp`, an extension outside it is denied.
+  - **Never grants authority** — admitting an extension only records that these
+    exact bytes were reviewed; it does not widen anything.
+- **`asbom`** emits a **CycloneDX 1.5-aligned** Agent Software Bill of Materials of
+  admitted extensions (SHA-256 hashes + `umbra:verdict` / quarantine properties)
+  for org inventory.
+- New CLI: **`umbra admit-extension <dir>`** (`--kind`, `--repo` for the allowlist,
+  `--allow-quarantined`, `--asbom`, `--org`; exits non-zero on deny). New API:
+  `admit_extension`, `inspect_extension`, `asbom`, `AdmittedExtension`,
+  `ExtensionFile`.
+
 ### Added — G1/G2/G3 proof gates (Proof Plane)
 
 - **`evaluate_gates`** distills a signed receipt into the three governance gates

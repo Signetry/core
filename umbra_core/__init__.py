@@ -9,6 +9,10 @@ from .executors.registry import (
     resolve_available,
 )
 from .pipeline import (
+    AdmittedExtension,
+    admit_extension,
+    asbom,
+    inspect_extension,
     AUTHORITY,
     AUTHORITY_LABEL,
     AdmissionReport,
@@ -78,6 +82,10 @@ __all__ = [
     "default_contract",
     "evaluate_contract",
     "evaluate_gates",
+    "AdmittedExtension",
+    "inspect_extension",
+    "admit_extension",
+    "asbom",
     "load_contract",
     "guard",
     "GuardDecision",
