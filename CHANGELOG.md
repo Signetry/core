@@ -5,7 +5,7 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
-## [Unreleased]
+## [0.3.0] — 2026-07-26
 
 ### Added — Admitted Extension (skill / MCP supply chain) + ASBOM
 
