@@ -17,6 +17,7 @@ from .contract import (
     load_contract,
 )
 from .gates import Gate, GateSummary, evaluate_gates
+from .render import render_pr_comment
 from .guard import GuardDecision, guard, guard_command, guard_mcp, guard_path, guard_skill, guard_tool
 from .plan import (
     PlanAdherence,
@@ -88,6 +89,7 @@ __all__ = [
     "Gate",
     "GateSummary",
     "evaluate_gates",
+    "render_pr_comment",
     # plan capability binding (CaMeL / DRIFT)
     "PlanCapabilitySet",
     "PlanAdherence",

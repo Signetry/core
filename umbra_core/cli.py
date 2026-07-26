@@ -8,6 +8,7 @@ developer's machine, in a git hook, and in CI:
     umbra brake  <owner> <repo> --store passports.json         # Emergency Brake -> L0
     umbra provenance <receipt.json>                            # emit SLSA/in-toto statement
     umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
+    umbra comment <report.json>                                # render the canonical PR comment
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -178,6 +179,24 @@ def cmd_gates(args: argparse.Namespace) -> int:
     return 0 if summary.all_pass else 1
 
 
+def cmd_comment(args: argparse.Namespace) -> int:
+    """Render the canonical Umbra PR-comment markdown from an ``admit --json`` payload.
+
+    Reads the ``{report, receipt}`` JSON (from a file or stdin) and prints the exact
+    PR-comment template the architecture freezes, so the GitHub Action and every
+    other surface render the identical pack."""
+    from .pipeline import render_pr_comment
+
+    try:
+        text = sys.stdin.read() if args.report in (None, "-") else Path(args.report).read_text()
+        payload = json.loads(text or "{}")
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: cannot read report payload: {exc}", file=sys.stderr)
+        return 2
+    print(render_pr_comment(payload))
+    return 0
+
+
 def cmd_guard(args: argparse.Namespace) -> int:
     """Fast pre-action check for editor/agent hooks: allow/deny a single proposed
     file path and/or shell command against the repo's contract.
@@ -257,6 +276,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_gates.add_argument("receipt", help="Path to a receipt envelope JSON file.")
     p_gates.add_argument("--json", action="store_true", help="Emit the gate summary as JSON.")
     p_gates.set_defaults(func=cmd_gates)
+
+    p_comment = sub.add_parser("comment", help="Render the canonical PR-comment markdown from an 'admit --json' payload.")
+    p_comment.add_argument("report", nargs="?", default="-", help="Path to the {report, receipt} JSON (default: stdin).")
+    p_comment.set_defaults(func=cmd_comment)
 
     p_guard = sub.add_parser("guard", help="Fast pre-action check for editor/agent hooks: allow/deny one file path or command against the contract.")
     p_guard.add_argument("--repo", default=".", help="Repo checkout to load the contract from (default: current dir).")

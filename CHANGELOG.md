@@ -25,6 +25,17 @@ change between minor versions.
   so it can gate CI; `--json` for machine output). New API: `evaluate_gates`,
   `Gate`, `GateSummary`.
 
+### Added — canonical PR-comment renderer (one template, every surface)
+
+- **`render_pr_comment`** renders the frozen GitHub PR-comment template directly
+  from the Admission Decision Pack (`{report, receipt}`), so the GitHub Action, a
+  git hook, and the hosted console all emit the identical pack — no surface can
+  invent a stronger claim than the receipt. Table (Executor · Contract · Trust
+  boundary · Checks · Verifier · Proof gates · Receipt · Auto-merge), machine-
+  readable reason codes, and the L2/L1/L0 conditional line.
+- New CLI: **`umbra comment <report.json>`** (reads the `admit --json` payload from
+  a file or stdin). New API: `render_pr_comment`.
+
 ### Added — capability graph (contract v2)
 
 - **Capability-graph contract fields** (`.umbra/admission.yaml`, all optional and
