@@ -4,7 +4,17 @@
 
 ```bash
 pip install umbra-core          # or: uv pip install umbra-core
+umbra completion zsh >> ~/.zshrc   # optional: shell completion (bash | zsh | fish)
 ```
+
+## Scaffold a contract
+
+```bash
+umbra init            # writes a conservative starter .umbra/admission.yaml
+```
+
+Edit the scope it generates, then govern a change. (Without any contract a
+conservative default applies.)
 
 ## Govern a change from Python
 
@@ -40,7 +50,10 @@ assert verify_receipt(envelope, expected_public_key=public_key_b64())["verified"
 ```bash
 umbra admit . --agent none --mission "review the pending change" --min-authority 1
 umbra verify receipt.json --public-key <base64-pubkey>
+umbra gates receipt.json           # G1/G2/G3 proof-gate summary (non-zero unless all pass)
+umbra comment report.json          # canonical PR-comment markdown from the pack
 umbra provenance receipt.json      # in-toto / SLSA statement
+umbra admit-extension ./my-skill   # govern a skill / MCP extension (+ --asbom)
 umbra brake acme app --store passports.json --reason "incident-42"
 ```
 
@@ -52,7 +65,7 @@ so it gates a git pre-push hook or CI.
 Add `.umbra/admission.yaml` to the repo:
 
 ```yaml
-version: 1
+version: 2
 allowed_paths:
   - "src/**"
   - "package.json"
@@ -64,8 +77,14 @@ forbidden_paths:
 max_files_changed: 10
 required_checks:
   - "pytest"
+# Capability graph (v2, optional — omit any line for no extra restriction):
+allowed_tools:  [Read, Edit, Bash]
+denied_bash:    ["docker\\s+run", "kubectl"]
+allowed_mcp:    ["github:search"]
+allowed_skills: ["web-search"]
 policy_owner: platform-team
 policy_version: "1.0"
 ```
 
-Without one, a conservative default applies.
+Without one, a conservative default applies. See
+[Capabilities & Proof](capabilities.md) for what each v2 field enforces.

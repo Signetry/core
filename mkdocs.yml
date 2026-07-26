@@ -40,5 +40,6 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Concepts: concepts.md
+  - Capabilities & Proof: capabilities.md
   - GitHub Action: github-action.md
   - Security: security.md
