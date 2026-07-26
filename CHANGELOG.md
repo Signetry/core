@@ -5,7 +5,7 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
-## [Unreleased]
+## [0.4.0] — 2026-07-26
 
 ### Added — CLI developer experience
 
@@ -14,6 +14,11 @@ change between minor versions.
   so a new user is one command from a governed change.
 - **`umbra completion <bash|zsh|fish>`** prints a shell completion script for the
   subcommands (dependency-free; `eval "$(umbra completion zsh)"`).
+- **`install.sh`** — a `curl … | sh` one-line installer (uv → pipx → pip, isolated
+  and fail-closed) and a **Homebrew tap** (`brew install bkd-dotcom/umbra/umbra`).
+- Docs site: a **Capabilities & Proof** page (capability graph, plan binding,
+  dual/masked verifier, G1/G2/G3 gates, extension admission) and a refreshed
+  quickstart.
 
 ## [0.3.0] — 2026-07-26
 
