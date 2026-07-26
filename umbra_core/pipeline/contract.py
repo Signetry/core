@@ -68,6 +68,23 @@ _DEFAULT_CONTRACT: dict[str, Any] = {
     "authority_on_success": "branch_pr_only",
 }
 
+# Capability graph (v2). These are OPTIONAL, additive extensions to the v1 path/
+# budget contract — a repo that ships none of them behaves exactly as before.
+# Every class is a deny/allow pattern list a repo declares in admission.yaml and
+# the deterministic guard/verifier enforce *outside the model*:
+#
+#   allowed_tools:   allowlist of agent tool/command names (e.g. Read, Edit,
+#                    Bash, npm, git). When set, a tool not on the list is denied.
+#   denied_bash:     extra regex fragments a repo forbids in agent shell commands,
+#                    layered ON TOP of the built-in dangerous-command baseline.
+#   allowed_mcp:     allowlist of "server" or "server:tool" identifiers an agent
+#                    may invoke; when set, an MCP call outside it is denied.
+#   allowed_skills:  allowlist of skill/plugin identifiers permitted to load; when
+#                    set, a non-listed skill is refused (supply-chain admission).
+#
+# Invariant preserved: capabilities can only RESTRICT. An empty list ("not
+# declared") means "no additional restriction from this class" — never a widening.
+
 
 @dataclass(frozen=True)
 class Contract:
@@ -81,12 +98,23 @@ class Contract:
     required_checks: tuple[str, ...] = ()
     network: str = "deny"
     authority_on_success: str = "branch_pr_only"
+    # --- Capability graph (v2). Optional, additive; empty = no extra restriction.
+    allowed_tools: tuple[str, ...] = ()
+    denied_bash: tuple[str, ...] = ()
+    allowed_mcp: tuple[str, ...] = ()
+    allowed_skills: tuple[str, ...] = ()
     source: str = "default"  # "repo" when loaded from .umbra/admission.yaml, else "default"
     # Policy ownership / change-control provenance. Optional in the file; absent →
     # the policy is treated as UNSIGNED (fail-safe: surfaced, never silently trusted).
     policy_owner: str = ""
     policy_version: str = ""
     policy_approved_at: str = ""
+
+    @property
+    def has_capability_graph(self) -> bool:
+        """True when this contract declares any v2 capability-graph restriction
+        (tools / bash / MCP / skills), so surfaces can label a v1 vs v2 policy."""
+        return bool(self.allowed_tools or self.denied_bash or self.allowed_mcp or self.allowed_skills)
 
     def to_public(self) -> dict[str, Any]:
         """Serializable view for API responses / receipts."""
@@ -99,6 +127,11 @@ class Contract:
             "required_checks": list(self.required_checks),
             "network": self.network,
             "authority_on_success": self.authority_on_success,
+            "allowed_tools": list(self.allowed_tools),
+            "denied_bash": list(self.denied_bash),
+            "allowed_mcp": list(self.allowed_mcp),
+            "allowed_skills": list(self.allowed_skills),
+            "capability_graph": self.has_capability_graph,
             "source": self.source,
             "policy_owner": self.policy_owner,
             "policy_version": self.policy_version,
@@ -146,7 +179,7 @@ class Contract:
         version/approval + derived ``policy_status``), which describe *who* authored
         the rules, not the rules themselves — so the rules-hash stays stable while
         policy identity is bound separately via the signed receipt payload."""
-        _provenance = {"source", "policy_owner", "policy_version", "policy_approved_at", "policy_status"}
+        _provenance = {"source", "policy_owner", "policy_version", "policy_approved_at", "policy_status", "capability_graph"}
         payload = {k: v for k, v in self.to_public().items() if k not in _provenance}
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -263,6 +296,10 @@ def contract_from_dict(data: dict[str, Any], source: str = "repo") -> Contract:
         required_checks=_as_str_tuple(d.get("required_checks")),
         network=str(d.get("network", "deny")).lower(),
         authority_on_success=str(d.get("authority_on_success", "branch_pr_only")),
+        allowed_tools=_as_str_tuple(d.get("allowed_tools")),
+        denied_bash=_as_str_tuple(d.get("denied_bash")),
+        allowed_mcp=_as_str_tuple(d.get("allowed_mcp")),
+        allowed_skills=_as_str_tuple(d.get("allowed_skills")),
         source=source,
         policy_owner=str(d.get("policy_owner", "")).strip(),
         policy_version=str(d.get("policy_version", "")).strip(),
@@ -300,6 +337,10 @@ def load_contract(repo_path: Path | str | None) -> Contract:
                     required_checks=contract.required_checks or base.required_checks,
                     network=contract.network,
                     authority_on_success=contract.authority_on_success,
+                    allowed_tools=contract.allowed_tools,
+                    denied_bash=contract.denied_bash,
+                    allowed_mcp=contract.allowed_mcp,
+                    allowed_skills=contract.allowed_skills,
                     source="repo",
                     policy_owner=contract.policy_owner,
                     policy_version=contract.policy_version,

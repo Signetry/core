@@ -7,6 +7,9 @@ developer's machine, in a git hook, and in CI:
     umbra verify <receipt.json>                                # verify a signed receipt
     umbra brake  <owner> <repo> --store passports.json         # Emergency Brake -> L0
     umbra provenance <receipt.json>                            # emit SLSA/in-toto statement
+    umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
+    umbra comment <report.json>                                # render the canonical PR comment
+    umbra admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -154,6 +157,81 @@ def cmd_provenance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_gates(args: argparse.Namespace) -> int:
+    """Print the G1/G2/G3 proof-gate summary for a signed receipt.
+
+    G1 capability integrity · G2 behavioral authenticity · G3 interaction
+    auditability. Exit non-zero unless all gates pass (so it can gate CI)."""
+    from .pipeline import evaluate_gates
+
+    try:
+        envelope = json.loads(Path(args.receipt).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: cannot read receipt: {exc}", file=sys.stderr)
+        return 2
+    summary = evaluate_gates(envelope)
+    if args.json:
+        print(json.dumps(summary.to_public(), indent=2, default=str))
+    else:
+        for g in summary.gates:
+            mark = {"pass": "PASS", "fail": "FAIL", "unproven": "UNPROVEN"}.get(g.status, g.status.upper())
+            print(f"  {g.id} {g.name:<24} [{mark}] {g.reason}")
+        print(f"  → all gates pass: {summary.all_pass}")
+    return 0 if summary.all_pass else 1
+
+
+def cmd_comment(args: argparse.Namespace) -> int:
+    """Render the canonical Umbra PR-comment markdown from an ``admit --json`` payload.
+
+    Reads the ``{report, receipt}`` JSON (from a file or stdin) and prints the exact
+    PR-comment template the architecture freezes, so the GitHub Action and every
+    other surface render the identical pack."""
+    from .pipeline import render_pr_comment
+
+    try:
+        text = sys.stdin.read() if args.report in (None, "-") else Path(args.report).read_text()
+        payload = json.loads(text or "{}")
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: cannot read report payload: {exc}", file=sys.stderr)
+        return 2
+    print(render_pr_comment(payload))
+    return 0
+
+
+def cmd_admit_extension(args: argparse.Namespace) -> int:
+    """Govern an agent extension (a skill dir or an MCP server manifest): fingerprint
+    its bytes, quarantine its documentation/tool descriptions, and admit or deny.
+
+    Exit non-zero on deny, so it can gate a plugin-install hook or CI."""
+    from .pipeline import admit_extension, asbom, load_contract
+
+    root = Path(args.path)
+    if not root.is_dir():
+        print(f"error: {root} is not a directory", file=sys.stderr)
+        return 2
+    contract = load_contract(args.repo) if args.repo else None
+    ext = admit_extension(root, kind=args.kind, contract=contract, allow_quarantined=args.allow_quarantined)
+
+    if args.asbom:
+        print(json.dumps(asbom([ext], org=args.org), indent=2, default=str))
+    elif args.json:
+        print(json.dumps(ext.to_public(), indent=2, default=str))
+    else:
+        print(f"extension : {ext.name} ({ext.kind} v{ext.version})")
+        print(f"verdict   : {ext.verdict.upper()}")
+        print(f"hash      : {ext.extension_hash}")
+        print(f"files     : {len(ext.files)}")
+        if ext.mcp_tools:
+            print(f"mcp tools : {', '.join(ext.mcp_tools)}")
+        if ext.quarantine_findings:
+            print(f"quarantine: {len(ext.quarantine_findings)} finding(s)")
+            for f in ext.quarantine_findings[:5]:
+                print(f"    - [{f['category']}] {f['source']}: {f['pattern']}")
+        for r in ext.reasons:
+            print(f"reason    : {r}")
+    return 0 if ext.admitted else 1
+
+
 def cmd_guard(args: argparse.Namespace) -> int:
     """Fast pre-action check for editor/agent hooks: allow/deny a single proposed
     file path and/or shell command against the repo's contract.
@@ -228,6 +306,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_prov = sub.add_parser("provenance", help="Emit an in-toto/SLSA provenance statement for a receipt.")
     p_prov.add_argument("receipt", help="Path to a receipt envelope JSON file.")
     p_prov.set_defaults(func=cmd_provenance)
+
+    p_gates = sub.add_parser("gates", help="Print the G1/G2/G3 proof-gate summary for a receipt (exit non-zero unless all pass).")
+    p_gates.add_argument("receipt", help="Path to a receipt envelope JSON file.")
+    p_gates.add_argument("--json", action="store_true", help="Emit the gate summary as JSON.")
+    p_gates.set_defaults(func=cmd_gates)
+
+    p_comment = sub.add_parser("comment", help="Render the canonical PR-comment markdown from an 'admit --json' payload.")
+    p_comment.add_argument("report", nargs="?", default="-", help="Path to the {report, receipt} JSON (default: stdin).")
+    p_comment.set_defaults(func=cmd_comment)
+
+    p_ext = sub.add_parser("admit-extension", help="Govern an agent skill / MCP extension: fingerprint bytes, quarantine docs, admit or deny.")
+    p_ext.add_argument("path", help="Path to the extension directory (skill dir or MCP server).")
+    p_ext.add_argument("--kind", choices=["skill", "mcp"], help="Force the extension kind (default: auto-detect).")
+    p_ext.add_argument("--repo", help="Repo checkout whose .umbra/admission.yaml supplies the allowed_skills/allowed_mcp allowlist.")
+    p_ext.add_argument("--allow-quarantined", action="store_true", help="Admit even if documentation carries manipulation findings (explicit human override).")
+    p_ext.add_argument("--asbom", action="store_true", help="Emit a CycloneDX-aligned ASBOM for the extension instead of the verdict.")
+    p_ext.add_argument("--org", help="Org name to stamp on the ASBOM metadata.")
+    p_ext.set_defaults(func=cmd_admit_extension)
 
     p_guard = sub.add_parser("guard", help="Fast pre-action check for editor/agent hooks: allow/deny one file path or command against the contract.")
     p_guard.add_argument("--repo", default=".", help="Repo checkout to load the contract from (default: current dir).")

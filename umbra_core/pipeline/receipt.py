@@ -125,6 +125,8 @@ def build_receipt(
     human_decision: str | None = None,
     pr_url: str | None = None,
     outcome: str | None = None,
+    plan_capability_set: dict[str, Any] | None = None,
+    plan_adherence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble and sign a Remediation Receipt.
 
@@ -150,6 +152,8 @@ def build_receipt(
         "check_diagnosis": check_diagnosis,
         "model_identity": model_identity,
         "context_manifest": context_manifest,
+        "plan_capability_set": plan_capability_set,
+        "plan_adherence": plan_adherence,
         "proposed_change": proposed_change,
         "provider_ledger": providers or {},
         "diff_hash": (_sha256(diff) if diff else None) or diff_hash,
@@ -165,7 +169,7 @@ def build_receipt(
     canonical = _canonical(receipt)
     canonical_hash = _sha256(canonical)
     signature = sign(canonical)
-    return {
+    envelope = {
         "receipt": receipt,
         "canonical_hash": canonical_hash,
         "signature": signature,
@@ -173,6 +177,12 @@ def build_receipt(
         "algorithm": "Ed25519",
         "key_ephemeral": signing_key_is_ephemeral(),
     }
+    # G1/G2/G3 proof-gate summary. Computed over the final envelope (G3 depends on
+    # the signature/key, which cannot live inside the signed payload) and attached
+    # to the envelope so a consumer reads the accountability verdict directly.
+    from .gates import evaluate_gates
+    envelope["gates"] = evaluate_gates(envelope).to_public()
+    return envelope
 
 
 def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None = None) -> dict[str, Any]:

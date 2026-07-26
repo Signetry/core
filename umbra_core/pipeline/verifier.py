@@ -16,6 +16,19 @@ What it checks (each a discrete, inspectable check):
 ``status`` ∈ {reviewable, blocked}; ``blocked`` means a hard safety check failed
 (contract or secret). Missing soft evidence lowers ``evidence_completeness`` but
 stays ``reviewable`` — a reviewer decides, the verifier never fakes a green.
+
+**Independent (masked) second opinion (MELON / ShieldAgent line).** The primary
+path judges the change against the contract. A determined injection may still
+produce a change that *technically* passes scope while doing what an injected
+instruction asked. The masked re-check asks a counterfactual: *with the mission
+set aside, is anything in this change explainable only by the untrusted repository
+text that was quarantined?* Concretely, it correlates the categories of detected
+trust-boundary manipulation (e.g. ``secret_access``, ``scope_expansion``,
+``command_injection``) with what the changeset actually did. When a change
+introduces exactly the behaviour an injection surface was pushing, that is a
+**hijack signal**: the deterministic path may not block it, but the pipeline caps
+authority at ≤ L1. This is a second, independent judgement — not the writer
+grading itself.
 """
 from __future__ import annotations
 
@@ -25,6 +38,25 @@ from typing import Any
 
 from .contract import ContractResult
 from ._helpers import scan_secrets, version_key
+
+
+# Signals a changeset can exhibit, mapped to the trust-boundary manipulation
+# categories that would "explain" them if present. If the repo text tried to
+# induce category X and the change now exhibits the matching signal, the masked
+# re-check treats the coincidence as a hijack signal rather than a coincidence.
+_SIGNAL_PATTERNS: dict[str, re.Pattern[str]] = {
+    "reads_secret": re.compile(r"(?i)\b(process\.env|os\.environ|getenv|dotenv|\.env\b|secret|credential|api[_-]?key|token)\b"),
+    "network_exfil": re.compile(r"(?i)\b(fetch|axios|requests\.(get|post)|urllib|curl|wget|http[s]?://|socket)\b"),
+    "shell_exec": re.compile(r"(?i)\b(subprocess|os\.system|child_process|exec\(|eval\(|spawn\(|popen)\b"),
+    "scope_expansion": re.compile(r"(?i)(deploy|\.github/workflows|infra/|ci\.ya?ml|Dockerfile|auth/)"),
+}
+
+# Which trust-boundary category "explains" which change signal.
+_CATEGORY_TO_SIGNAL: dict[str, str] = {
+    "secret_access": "reads_secret",
+    "command_injection": "shell_exec",
+    "scope_expansion": "scope_expansion",
+}
 
 
 @dataclass
@@ -45,6 +77,13 @@ class VerifierReport:
     evidence_completeness: int = 0
     changed_files: list[str] = field(default_factory=list)
     secrets_found: int = 0
+    # Independent (masked) second-opinion outcome. ``independent_status`` ∈
+    # {"clean", "hijack_signal", "unavailable"}. A hijack signal never *blocks*
+    # (the deterministic path owns blocking) but the pipeline caps authority ≤ L1
+    # when it fires — the writer's change correlates with an injection surface.
+    independent_status: str = "unavailable"
+    hijack_signal: bool = False
+    independent_detail: str = ""
 
     @property
     def blocked(self) -> bool:
@@ -57,6 +96,9 @@ class VerifierReport:
             "evidence_completeness": self.evidence_completeness,
             "changed_files": list(self.changed_files),
             "secrets_found": self.secrets_found,
+            "independent_status": self.independent_status,
+            "hijack_signal": self.hijack_signal,
+            "independent_detail": self.independent_detail,
             "checks": [c.to_public() for c in self.checks],
         }
 
@@ -78,6 +120,58 @@ def _advisory_cleared(new_manifest: str, package: str, fixed: str) -> tuple[bool
     return False, f"{package} is pinned at {pinned}, below the required fix {fixed}."
 
 
+def masked_recheck(
+    file_changes: dict[str, str],
+    trust_boundary_categories: list[str] | None,
+) -> tuple[str, bool, str]:
+    """Independent second opinion: does the change do what an injection surface
+    pushed for? Returns ``(status, hijack_signal, detail)``.
+
+    ``trust_boundary_categories`` is the set of manipulation categories detected
+    in the untrusted repository text (from the trust-boundary scan). If none were
+    detected there is nothing to correlate → ``("clean", False, ...)``. Otherwise
+    we look for the change *signal* each detected category would explain; a match
+    is a hijack signal.
+
+    Deterministic and offline: pure content inspection, no model. This is a
+    conservative correlation, not proof of intent — hence it caps authority
+    (≤ L1) rather than blocking, and always reports its reasoning.
+    """
+    categories = sorted({c for c in (trust_boundary_categories or []) if c})
+    if not categories:
+        return "clean", False, "No trust-boundary manipulation was detected, so there is no injection surface to correlate the change against."
+
+    # Collect the signals the changeset actually exhibits (path + content).
+    blob_parts: list[str] = []
+    for path, content in file_changes.items():
+        blob_parts.append(path)
+        blob_parts.append(content or "")
+    blob = "\n".join(blob_parts)
+    present_signals = {name for name, pat in _SIGNAL_PATTERNS.items() if pat.search(blob)}
+
+    hits: list[str] = []
+    for cat in categories:
+        signal = _CATEGORY_TO_SIGNAL.get(cat)
+        if signal and signal in present_signals:
+            hits.append(f"{cat}→{signal}")
+
+    if hits:
+        return (
+            "hijack_signal",
+            True,
+            "Change correlates with quarantined injection surface(s): "
+            + ", ".join(hits)
+            + ". The masked re-check cannot attribute this to the mission alone; "
+            "authority is capped pending human review.",
+        )
+    return (
+        "clean",
+        False,
+        f"Trust-boundary manipulation was detected ({', '.join(categories)}), but the "
+        "change exhibits none of the behaviours those surfaces pushed for.",
+    )
+
+
 def verify_change(
     file_changes: dict[str, str],
     contract_result: ContractResult,
@@ -88,12 +182,15 @@ def verify_change(
     test_command: str | None = None,
     test_exit_code: int | None = None,
     claimed_files: list[str] | None = None,
+    trust_boundary_categories: list[str] | None = None,
 ) -> VerifierReport:
     """Run the independent verification pass over a proposed changeset.
 
     ``file_changes`` maps changed path → new file content. Advisory/test params are
     optional context; when absent the relevant check is ``unavailable`` (lowering
-    completeness) rather than a fabricated pass.
+    completeness) rather than a fabricated pass. ``trust_boundary_categories`` are
+    the manipulation categories detected in untrusted repo text; when provided the
+    masked re-check correlates the change against them (MELON-style second opinion).
     """
     checks: list[VerifierCheck] = []
     changed = sorted(file_changes.keys())
@@ -153,6 +250,15 @@ def verify_change(
     else:
         checks.append(VerifierCheck("citations", "unavailable", "No explicit file citations to cross-check.", blocking=False))
 
+    # 6. Independent (masked) second opinion — never blocking; caps authority.
+    independent_status, hijack, independent_detail = masked_recheck(file_changes, trust_boundary_categories)
+    checks.append(VerifierCheck(
+        "independent_masked",
+        "fail" if hijack else ("pass" if independent_status == "clean" else "unavailable"),
+        independent_detail,
+        blocking=False,
+    ))
+
     resolved = sum(1 for c in checks if c.status != "unavailable")
     completeness = round(100 * resolved / len(checks)) if checks else 0
     blocked = any(c.blocking and c.status == "fail" for c in checks)
@@ -164,4 +270,7 @@ def verify_change(
         evidence_completeness=completeness,
         changed_files=changed,
         secrets_found=len(secrets),
+        independent_status=independent_status,
+        hijack_signal=hijack,
+        independent_detail=independent_detail,
     )

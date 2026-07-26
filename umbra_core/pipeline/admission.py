@@ -32,6 +32,7 @@ from typing import Any
 from ..executors.base import Executor
 from .checks import ChecksReport, run_required_checks
 from .contract import Contract, evaluate_contract, load_contract
+from .plan import derive_plan, evaluate_plan_adherence
 from .trust_boundary import (
     UNTRUSTED_SOURCES,
     build_context_manifest,
@@ -82,6 +83,8 @@ class AdmissionReport:
     context_manifest: dict[str, Any] | None = None
     context_quarantined: int = 0
     instruction_file_change_rejected: str | None = None
+    plan_capability_set: dict[str, Any] | None = None
+    plan_adherence: dict[str, Any] | None = None
 
     def to_public(self) -> dict[str, Any]:
         return {
@@ -109,6 +112,8 @@ class AdmissionReport:
             "context_manifest": self.context_manifest,
             "context_quarantined": self.context_quarantined,
             "instruction_file_change_rejected": self.instruction_file_change_rejected,
+            "plan_capability_set": self.plan_capability_set,
+            "plan_adherence": self.plan_adherence,
             "auto_merge": False,
             "human_review_required": True,
         }
@@ -272,6 +277,12 @@ def run_admission(
     contract = contract or load_contract(root)
     base_commit = _base_commit(root)
 
+    # 0. Bind the plan capability set from mission + contract BEFORE the executor
+    #    runs (CaMeL / DRIFT out-of-band control). This frozen envelope is what the
+    #    run is permitted to do; it is hashed into the receipt and, after the run,
+    #    the actual changeset is checked against it.
+    plan = derive_plan(mission, contract)
+
     # 1. Untrusted repository text — detect + quarantine agent-directed manipulation.
     tb = scan_repository_text(root)
 
@@ -287,6 +298,10 @@ def run_admission(
 
     # 4. Evaluate the changeset against the executable contract.
     contract_result = evaluate_contract(list(file_changes), contract)
+
+    # 4a. Check the actual changeset against the plan bound before the run — an
+    #     explicit, receipt-recorded record of whether the run stayed in its plan.
+    plan_adherence = evaluate_plan_adherence(plan, list(file_changes))
 
     # 5. Run required checks on the CHANGED tree (post-change).
     checks_report = run_required_checks(root, list(contract.required_checks)) if file_changes else ChecksReport()
@@ -308,6 +323,7 @@ def run_admission(
             test_command=(primary_check.command if primary_check else None),
             test_exit_code=(primary_check.exit_code if primary_check else None),
             claimed_files=list(file_changes),
+            trust_boundary_categories=sorted({f.category for f in tb.findings}),
         )
 
     report = AdmissionReport(
@@ -330,6 +346,8 @@ def run_admission(
         context_manifest=context_manifest,
         context_quarantined=tb.quarantined_count,
         instruction_file_change_rejected=instruction_violation,
+        plan_capability_set=plan.to_public(),
+        plan_adherence=plan_adherence.to_public(),
         providers={
             "change": getattr(executor, "name", "unknown"),
             "engineering": (model_identity or {}).get("executor", "unavailable"),
@@ -338,7 +356,7 @@ def run_admission(
             "trust_boundary": "deterministic",
         },
     )
-    _decide_authority(report, contract_result, verifier_report, checks_report, contract, has_change=bool(file_changes))
+    _decide_authority(report, contract_result, verifier_report, checks_report, contract, has_change=bool(file_changes), plan_adherence=plan_adherence)
     return report
 
 
@@ -395,7 +413,7 @@ def _diagnose_checks(baseline: ChecksReport | None, post: ChecksReport, has_chan
             "per_check": per_check}
 
 
-def _decide_authority(report: AdmissionReport, contract_result, verifier_report, checks_report: ChecksReport, contract: Contract, has_change: bool) -> None:
+def _decide_authority(report: AdmissionReport, contract_result, verifier_report, checks_report: ChecksReport, contract: Contract, has_change: bool, plan_adherence=None) -> None:
     """Deterministic authority decision — a result of evidence, never a setting.
 
     Level 2 (branch-PR) additionally REQUIRES that, when the contract declares
@@ -457,6 +475,30 @@ def _decide_authority(report: AdmissionReport, contract_result, verifier_report,
             "ADMITTED (analyze) — a required check ran untrusted build code un-sandboxed "
             "(host-restricted runner). Re-run on a Linux runner with bubblewrap for sandboxed "
             "enforcement to earn branch-PR authority."
+        )
+    elif plan_adherence is not None and not plan_adherence.within_plan:
+        # Out-of-band plan binding (CaMeL/DRIFT): the change fell outside the plan
+        # bound before the run. Defense-in-depth cap — never a widening.
+        report.authority_level = 1
+        report.blocked_reason = "Plan deviation: " + "; ".join(plan_adherence.deviations)
+        report.outcome = (
+            "ADMITTED (analyze) — the change deviated from the capability plan bound before the "
+            "run; branch-PR authority is withheld pending human review."
+        )
+    elif verifier_report is not None and getattr(verifier_report, "hijack_signal", False):
+        # The independent (masked) re-check found the change correlates with a
+        # quarantined injection surface. The deterministic path did not block it,
+        # but a change that does what an injection pushed for must not earn branch-
+        # PR authority on the writer's word alone — cap at analyze for human review.
+        report.authority_level = 1
+        report.blocked_reason = (
+            "Independent masked re-check raised a hijack signal: "
+            f"{getattr(verifier_report, 'independent_detail', '') or 'change correlates with a quarantined injection surface.'}"
+        )
+        report.outcome = (
+            "ADMITTED (analyze) — the change passed the contract but the independent verifier "
+            "found it correlates with quarantined injection surface(s); branch-PR authority is "
+            "withheld pending human review."
         )
     else:
         report.authority_level = 2

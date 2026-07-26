@@ -5,6 +5,100 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.3.0] — 2026-07-26
+
+### Added — Admitted Extension (skill / MCP supply chain) + ASBOM
+
+- **`admit_extension`** governs an agent extension (a *skill* directory or an *MCP*
+  server manifest) as a first-class object — the 2026 supply-chain surface the
+  per-change pipeline never sees:
+  - **Fingerprint** — every file (manifest + docs + scripts) is content-hashed into
+    a stable `extension_hash`, so "the skill I admitted" is bound by bytes; a later
+    silent edit changes the hash.
+  - **Quarantine before read** — documentation surfaces (`SKILL.md`, README) and
+    every MCP tool `description` are scanned with the trust-boundary detector; an
+    agent-directed manipulation is a **deny**, not an instruction (fail-closed;
+    `--allow-quarantined` is an explicit human override).
+  - **Allowlist** — when the contract's capability graph declares `allowed_skills`
+    / `allowed_mcp`, an extension outside it is denied.
+  - **Never grants authority** — admitting an extension only records that these
+    exact bytes were reviewed; it does not widen anything.
+- **`asbom`** emits a **CycloneDX 1.5-aligned** Agent Software Bill of Materials of
+  admitted extensions (SHA-256 hashes + `umbra:verdict` / quarantine properties)
+  for org inventory.
+- New CLI: **`umbra admit-extension <dir>`** (`--kind`, `--repo` for the allowlist,
+  `--allow-quarantined`, `--asbom`, `--org`; exits non-zero on deny). New API:
+  `admit_extension`, `inspect_extension`, `asbom`, `AdmittedExtension`,
+  `ExtensionFile`.
+
+### Added — G1/G2/G3 proof gates (Proof Plane)
+
+- **`evaluate_gates`** distills a signed receipt into the three governance gates
+  the architecture names, so a consumer reads the accountability verdict directly:
+  - **G1 Capability integrity** — *what was this agent allowed to do?* Passes when
+    a plan capability set was bound before the run and the change stayed within it.
+  - **G2 Behavioral authenticity** — *did the checks / sandbox actually run?*
+    Passes only when required checks ran under **real isolation** (`sandboxed` /
+    `network-isolated`) and passed; a `host-restricted` run is honestly `unproven`.
+  - **G3 Interaction auditability** — *is the history tamper-evident?* Passes only
+    when signed with a **non-ephemeral** key; strengthened when the receipt is in
+    the Merkle transparency log.
+- Each gate reports `pass` / `fail` / `unproven` with a reason — never a green on
+  missing evidence. `build_receipt` now attaches a `gates` summary to the envelope.
+- New CLI: **`umbra gates <receipt.json>`** (exits non-zero unless all gates pass,
+  so it can gate CI; `--json` for machine output). New API: `evaluate_gates`,
+  `Gate`, `GateSummary`.
+
+### Added — canonical PR-comment renderer (one template, every surface)
+
+- **`render_pr_comment`** renders the frozen GitHub PR-comment template directly
+  from the Admission Decision Pack (`{report, receipt}`), so the GitHub Action, a
+  git hook, and the hosted console all emit the identical pack — no surface can
+  invent a stronger claim than the receipt. Table (Executor · Contract · Trust
+  boundary · Checks · Verifier · Proof gates · Receipt · Auto-merge), machine-
+  readable reason codes, and the L2/L1/L0 conditional line.
+- New CLI: **`umbra comment <report.json>`** (reads the `admit --json` payload from
+  a file or stdin). New API: `render_pr_comment`.
+
+### Added — capability graph (contract v2)
+
+- **Capability-graph contract fields** (`.umbra/admission.yaml`, all optional and
+  additive; a contract that declares none behaves exactly as before):
+  - `allowed_tools` — allowlist of agent tool/command names; a tool off the list
+    is denied.
+  - `denied_bash` — extra shell deny patterns layered on top of the built-in
+    dangerous-command baseline (a malformed regex fails closed on literal match).
+  - `allowed_mcp` — allowlist of `server` or `server:tool` MCP identifiers.
+  - `allowed_skills` — allowlist of skill/plugin identifiers permitted to load.
+- Guard API extended: `guard(repo_path, tool=..., mcp=..., skill=...)` plus
+  `guard_tool` / `guard_mcp` / `guard_skill`. Capabilities can only *restrict*.
+- `Contract.has_capability_graph` and `capability_graph` in `to_public()` so
+  surfaces can label a v1 vs v2 policy. The derived flag is excluded from the
+  rules hash, so an empty capability graph does not change a v1 contract's hash.
+
+### Added — independent (masked) second opinion in the verifier
+
+- **`masked_recheck`** (MELON / ShieldAgent line): correlates the actual changeset
+  against the manipulation categories the trust boundary detected in untrusted
+  repository text. When a change does what an injection surface pushed for (e.g.
+  the README tried to induce secret access and the change now reads env secrets),
+  it raises a **hijack signal**.
+- A hijack signal never *blocks* (the deterministic path owns blocking) but the
+  pipeline caps earned authority at ≤ L1 for human review. New verifier fields:
+  `independent_status`, `hijack_signal`, `independent_detail` (bound into the
+  signed receipt).
+
+### Added — plan capability binding (CaMeL / DRIFT out-of-band control)
+
+- **`PlanCapabilitySet`** is derived from mission + contract *before* the executor
+  runs — a frozen, hashable envelope of what the run may do. It is recorded in the
+  admission report and signed receipt (answers G1: "what was this agent allowed to
+  do?"). Only a digest of the mission is bound, never the prose verbatim.
+- After the run, `evaluate_plan_adherence` checks the actual changeset against the
+  plan; a deviation caps authority (never widens it).
+- New API: `derive_plan`, `evaluate_plan_adherence`, `PlanCapabilitySet`,
+  `PlanAdherence`. `build_receipt` accepts `plan_capability_set` / `plan_adherence`.
+
 ## [0.2.1] — 2026-07-23
 
 ### Fixed
