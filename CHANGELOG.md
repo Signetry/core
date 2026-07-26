@@ -7,6 +7,24 @@ change between minor versions.
 
 ## [Unreleased]
 
+### Added — G1/G2/G3 proof gates (Proof Plane)
+
+- **`evaluate_gates`** distills a signed receipt into the three governance gates
+  the architecture names, so a consumer reads the accountability verdict directly:
+  - **G1 Capability integrity** — *what was this agent allowed to do?* Passes when
+    a plan capability set was bound before the run and the change stayed within it.
+  - **G2 Behavioral authenticity** — *did the checks / sandbox actually run?*
+    Passes only when required checks ran under **real isolation** (`sandboxed` /
+    `network-isolated`) and passed; a `host-restricted` run is honestly `unproven`.
+  - **G3 Interaction auditability** — *is the history tamper-evident?* Passes only
+    when signed with a **non-ephemeral** key; strengthened when the receipt is in
+    the Merkle transparency log.
+- Each gate reports `pass` / `fail` / `unproven` with a reason — never a green on
+  missing evidence. `build_receipt` now attaches a `gates` summary to the envelope.
+- New CLI: **`umbra gates <receipt.json>`** (exits non-zero unless all gates pass,
+  so it can gate CI; `--json` for machine output). New API: `evaluate_gates`,
+  `Gate`, `GateSummary`.
+
 ### Added — capability graph (contract v2)
 
 - **Capability-graph contract fields** (`.umbra/admission.yaml`, all optional and

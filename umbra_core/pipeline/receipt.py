@@ -169,7 +169,7 @@ def build_receipt(
     canonical = _canonical(receipt)
     canonical_hash = _sha256(canonical)
     signature = sign(canonical)
-    return {
+    envelope = {
         "receipt": receipt,
         "canonical_hash": canonical_hash,
         "signature": signature,
@@ -177,6 +177,12 @@ def build_receipt(
         "algorithm": "Ed25519",
         "key_ephemeral": signing_key_is_ephemeral(),
     }
+    # G1/G2/G3 proof-gate summary. Computed over the final envelope (G3 depends on
+    # the signature/key, which cannot live inside the signed payload) and attached
+    # to the envelope so a consumer reads the accountability verdict directly.
+    from .gates import evaluate_gates
+    envelope["gates"] = evaluate_gates(envelope).to_public()
+    return envelope
 
 
 def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None = None) -> dict[str, Any]:

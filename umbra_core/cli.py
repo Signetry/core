@@ -7,6 +7,7 @@ developer's machine, in a git hook, and in CI:
     umbra verify <receipt.json>                                # verify a signed receipt
     umbra brake  <owner> <repo> --store passports.json         # Emergency Brake -> L0
     umbra provenance <receipt.json>                            # emit SLSA/in-toto statement
+    umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -154,6 +155,29 @@ def cmd_provenance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_gates(args: argparse.Namespace) -> int:
+    """Print the G1/G2/G3 proof-gate summary for a signed receipt.
+
+    G1 capability integrity · G2 behavioral authenticity · G3 interaction
+    auditability. Exit non-zero unless all gates pass (so it can gate CI)."""
+    from .pipeline import evaluate_gates
+
+    try:
+        envelope = json.loads(Path(args.receipt).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: cannot read receipt: {exc}", file=sys.stderr)
+        return 2
+    summary = evaluate_gates(envelope)
+    if args.json:
+        print(json.dumps(summary.to_public(), indent=2, default=str))
+    else:
+        for g in summary.gates:
+            mark = {"pass": "PASS", "fail": "FAIL", "unproven": "UNPROVEN"}.get(g.status, g.status.upper())
+            print(f"  {g.id} {g.name:<24} [{mark}] {g.reason}")
+        print(f"  → all gates pass: {summary.all_pass}")
+    return 0 if summary.all_pass else 1
+
+
 def cmd_guard(args: argparse.Namespace) -> int:
     """Fast pre-action check for editor/agent hooks: allow/deny a single proposed
     file path and/or shell command against the repo's contract.
@@ -228,6 +252,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_prov = sub.add_parser("provenance", help="Emit an in-toto/SLSA provenance statement for a receipt.")
     p_prov.add_argument("receipt", help="Path to a receipt envelope JSON file.")
     p_prov.set_defaults(func=cmd_provenance)
+
+    p_gates = sub.add_parser("gates", help="Print the G1/G2/G3 proof-gate summary for a receipt (exit non-zero unless all pass).")
+    p_gates.add_argument("receipt", help="Path to a receipt envelope JSON file.")
+    p_gates.add_argument("--json", action="store_true", help="Emit the gate summary as JSON.")
+    p_gates.set_defaults(func=cmd_gates)
 
     p_guard = sub.add_parser("guard", help="Fast pre-action check for editor/agent hooks: allow/deny one file path or command against the contract.")
     p_guard.add_argument("--repo", default=".", help="Repo checkout to load the contract from (default: current dir).")
