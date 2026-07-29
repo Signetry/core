@@ -26,10 +26,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install umbra-reviewer
-        run: |
-          # Installed from the repo until umbra-reviewer is published to PyPI;
-          # switch to `pip install umbra-reviewer` after the first release.
-          pip install "git+https://github.com/bkd-dotcom/umbra-reviewer.git@main"
+        run: pip install "umbra-reviewer>=0.1.0"
 
       - name: Compute the PR diff
         env:
