@@ -1,0 +1,100 @@
+name: Reviewer
+
+# Advisory PR review (umbra-reviewer): surfaces architecture + security issues,
+# cross-verifies them against the deterministic self-admission check, and posts a
+# recommendation. Advisory only — it never merges and does not block the PR
+# (the self-admission + test checks remain the gates). It escalates changes to
+# security-sensitive surfaces (workflows, release, packaging) to a human.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write   # post/update the advisory review comment
+  checks: read           # cross-verify the self-admission check status
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install umbra-reviewer
+        run: |
+          # Installed from the repo until umbra-reviewer is published to PyPI;
+          # switch to `pip install umbra-reviewer` after the first release.
+          pip install "git+https://github.com/bkd-dotcom/umbra-reviewer.git@main"
+
+      - name: Compute the PR diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || true
+          echo "OUT=${RUNNER_TEMP:-/tmp}/rev" >> "$GITHUB_ENV"
+          mkdir -p "${RUNNER_TEMP:-/tmp}/rev"
+          git diff "$BASE_SHA" "$HEAD_SHA" > "${RUNNER_TEMP:-/tmp}/rev/pr.diff"
+
+      - name: Look up the self-admission check status
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs" \
+            --jq '(.check_runs // []) | map(select(.name == "self-admission")) | .[0] // {} |
+                  (if .status == "completed" then (.conclusion // "unknown") else "pending" end)' 2>/dev/null || echo "unknown")
+          case "$STATUS" in
+            success) M=success ;;
+            failure|cancelled|timed_out|action_required) M=failure ;;
+            pending|queued|in_progress) M=pending ;;
+            ""|null) M=missing ;;
+            *) M=unknown ;;
+          esac
+          echo "status=$M" >> "$GITHUB_OUTPUT"
+
+      - name: Run the advisory review
+        id: review
+        env:
+          REQ: ${{ steps.check.outputs.status }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -uo pipefail
+          umbra-reviewer review \
+            --diff "$OUT/pr.diff" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR" \
+            --required-check "$REQ" \
+            --protected ".github/workflows/*,.github/actions/**,pyproject.toml,umbra_core/pipeline/receipt.py,umbra_core/pipeline/gates.py,umbra_core/pipeline/verifier.py,umbra_core/pipeline/contract.py,umbra_core/pipeline/trust_boundary.py" \
+            --comment-out "$OUT/comment.md" \
+            --json-out "$OUT/review.json"
+          exit 0   # advisory: never fail the PR from this job
+
+      - name: Post / update the review comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs'); const path = require('path');
+            const out = process.env.OUT || '';
+            let body = 'Umbra Reviewer: no review was produced.';
+            try { body = fs.readFileSync(path.join(out, 'comment.md'), 'utf8'); } catch (e) {}
+            const marker = '<!-- umbra-reviewer -->';
+            body = marker + '\n' + body;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const mine = comments.data.find(c => c.body && c.body.includes(marker));
+            if (mine) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
