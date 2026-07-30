@@ -24,6 +24,13 @@ from .extension import (
     asbom,
     inspect_extension,
 )
+from .findings import (
+    Finding,
+    FindingsReport,
+    scan_repository,
+    scan_source,
+    semgrep_available,
+)
 from .render import render_pr_comment
 from .guard import GuardDecision, guard, guard_command, guard_mcp, guard_path, guard_skill, guard_tool
 from .plan import (
@@ -103,6 +110,12 @@ __all__ = [
     "inspect_extension",
     "admit_extension",
     "asbom",
+    # detection engine (layered SAST)
+    "scan_repository",
+    "scan_source",
+    "Finding",
+    "FindingsReport",
+    "semgrep_available",
     # plan capability binding (CaMeL / DRIFT)
     "PlanCapabilitySet",
     "PlanAdherence",

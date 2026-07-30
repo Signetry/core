@@ -29,6 +29,30 @@ jobs:
       - name: Test
         run: uv run pytest -q
 
+      - name: Verify the scan entry point (SARIF + fail-on gating)
+        run: |
+          # Prove `umbra scan` works end-to-end on a known-vulnerable fixture:
+          # it must find the planted issues, emit valid SARIF, and exit non-zero
+          # under --fail-on high (so it can gate CI).
+          mkdir -p "${RUNNER_TEMP:-/tmp}/scanfix"
+          cat > "${RUNNER_TEMP:-/tmp}/scanfix/app.py" <<'PY'
+          import os, flask
+          app = flask.Flask(__name__)
+          @app.route("/r")
+          def r():
+              cmd = flask.request.args.get("cmd")
+              os.system("tool " + cmd)
+              return "ok"
+          PY
+          uv run umbra scan "${RUNNER_TEMP:-/tmp}/scanfix" --sarif -o "${RUNNER_TEMP:-/tmp}/out.sarif"
+          uv run python -c "import json; d=json.load(open('${RUNNER_TEMP:-/tmp}/out.sarif')); assert d['version']=='2.1.0'; assert d['runs'][0]['results'], 'no findings'; print('SARIF OK:', len(d['runs'][0]['results']), 'results')"
+          # fail-on high must exit 1 on this fixture
+          if uv run umbra scan "${RUNNER_TEMP:-/tmp}/scanfix" --fail-on high; then
+            echo "expected non-zero exit under --fail-on high"; exit 1
+          else
+            echo "fail-on gating works (exited non-zero as expected)"
+          fi
+
       - name: Verify prompt-injection defense (ungoverned vs governed)
         run: uv run python demos/injection/demo.py
 

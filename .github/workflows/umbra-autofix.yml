@@ -1,0 +1,138 @@
+name: Umbra auto-fix (branch-only PR with receipt)
+
+# Governed auto-remediation: scan for vulnerabilities, have a live executor draft a
+# bounded fix per finding under the Umbra admission pipeline, and open a BRANCH-ONLY
+# pull request for each fix that earns branch-PR (L2) authority — with the signed
+# receipt attached. Umbra NEVER merges; a human reviews and merges the PR.
+#
+# Trigger manually (or on a schedule). Requires:
+#   - OPENAI_API_KEY or a logged-in Codex, or ANTHROPIC_API_KEY for Claude Code, as
+#     the executor that drafts fixes (set --fix-agent accordingly).
+#   - The default GITHUB_TOKEN with contents:write + pull-requests:write to open PRs.
+#
+# One-time setup (wiring the executor secret + PR permissions): docs/AUTOFIX_SETUP.md
+on:
+  workflow_dispatch:
+    inputs:
+      fix_agent:
+        description: "Executor that drafts fixes (codex-cli | claude-code)"
+        default: "codex-cli"
+      fail_on:
+        description: "Severity that gates the scan report (advisory here)"
+        default: "high"
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+
+permissions:
+  contents: write        # create the fix branch
+  pull-requests: write   # open the branch-only PR
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Umbra
+        run: pip install umbra-core
+
+      - name: Scan + propose governed fixes (JSON)
+        env:
+          # Provide the executor's credential as a repo secret; the executor CLI
+          # reads it. Umbra itself never merges and never pushes with these.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          # Scan the repo and, for each finding, draft a bounded fix via the live
+          # agent under the admission pipeline. --json emits {findings} then {fixes}.
+          umbra --json scan . \
+            --fix --fix-agent "${{ github.event.inputs.fix_agent || 'codex-cli' }}" \
+            --max-fixes 5 > "$OUT/scan-and-fixes.json" || true
+          echo "wrote $OUT/scan-and-fixes.json"
+
+      - name: Open a branch-only PR for each branch-PR-ready fix (never merges)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/umbra}"
+          python - "$OUT/scan-and-fixes.json" <<'PY'
+          import json, os, subprocess, sys, hashlib, pathlib
+
+          path = sys.argv[1]
+          # Output is the findings report JSON followed by a {"fixes": [...]} object.
+          # Decode consecutive JSON values robustly with raw_decode.
+          text = pathlib.Path(path).read_text().strip() if os.path.exists(path) else ""
+          objs, idx, dec = [], 0, json.JSONDecoder()
+          while idx < len(text):
+              while idx < len(text) and text[idx] in " \t\r\n":
+                  idx += 1
+              if idx >= len(text):
+                  break
+              try:
+                  obj, end = dec.raw_decode(text, idx)
+              except json.JSONDecodeError:
+                  break
+              objs.append(obj)
+              idx = end
+          fixes = []
+          for obj in objs:
+              if isinstance(obj, dict) and "fixes" in obj:
+                  fixes = obj["fixes"]
+          ready = [f for f in fixes if f.get("branch_pr_ready") and f.get("diff")]
+          if not ready:
+              print("No branch-PR-ready fixes; nothing to open (report-only).")
+              sys.exit(0)
+
+          for f in ready:
+              finding = f["finding"]
+              rid = finding.get("rule_id", "fix")
+              slug = hashlib.sha1((rid + finding.get("file","")).encode()).hexdigest()[:8]
+              branch = f"umbra/fix-{finding.get('category','issue')}-{slug}"
+              subprocess.run(["git", "checkout", "-B", branch], check=True)
+              # Apply the governed diff (recomputed by Umbra from the final tree).
+              diff = f["diff"]
+              p = pathlib.Path("umbra.patch"); p.write_text(diff)
+              subprocess.run(["git", "apply", "umbra.patch"], check=False)
+              p.unlink(missing_ok=True)
+              # Write the signed receipt into the PR for auditors.
+              receipt = f.get("receipt") or {}
+              rp = pathlib.Path(".umbra-receipt.json"); rp.write_text(json.dumps(receipt, indent=2))
+              subprocess.run(["git", "add", "-A"], check=True)
+              subprocess.run(["git", "-c", "user.name=umbra[bot]",
+                              "-c", "user.email=umbra@users.noreply.github.com",
+                              "commit", "-m",
+                              f"fix({finding.get('category')}): {finding.get('title','')}\n\n"
+                              f"Umbra admission L{f.get('authority_level')} — {f.get('outcome','')}\n"
+                              f"auto_merge: never (human merges)"], check=False)
+              subprocess.run(["git", "push", "-f", "origin", branch], check=False)
+              body = (
+                  f"### Umbra governed fix — {finding.get('category')} ({finding.get('cwe','')})\n\n"
+                  f"- File: `{finding.get('file')}:{finding.get('line')}`\n"
+                  f"- Authority earned: **L{f.get('authority_level')} ({f.get('authority')})**\n"
+                  f"- Receipt: `{receipt.get('canonical_hash','(unsigned)')}`\n"
+                  f"- `auto_merge`: **never** — a human reviews and merges.\n\n"
+                  f"> {f.get('outcome','')}\n\n"
+                  f"The signed receipt is committed as `.umbra-receipt.json` and can be "
+                  f"verified offline with `umbra verify .umbra-receipt.json`."
+              )
+              subprocess.run(["gh", "pr", "create", "--head", branch,
+                              "--title", f"Umbra fix: {finding.get('title','security fix')}",
+                              "--body", body], check=False)
+              subprocess.run(["git", "checkout", "-"], check=False)
+              print(f"opened branch-only PR for {branch}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: umbra-autofix
+          path: ${{ env.OUT }}/scan-and-fixes.json
+          if-no-files-found: ignore
