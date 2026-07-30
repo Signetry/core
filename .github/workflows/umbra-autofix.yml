@@ -20,6 +20,18 @@ on:
       fail_on:
         description: "Severity that gates the scan report (advisory here)"
         default: "high"
+      openai_base_url:
+        description: "Optional OpenAI-compatible base URL for a gateway (e.g. IBM ICA: https://api.nextgen-beta.ica.ibm.com/ica/v1). Blank = api.openai.com."
+        default: ""
+      codex_model:
+        description: "Codex model to request when using a custom base URL (e.g. gpt-5.5-gus for IBM ICA)."
+        default: ""
+      anthropic_base_url:
+        description: "Optional Anthropic-compatible base URL for a gateway (e.g. IBM ICA: https://api.nextgen-beta.ica.ibm.com/ica). Blank = api.anthropic.com."
+        default: ""
+      claude_model:
+        description: "Claude model to request when using claude-code (e.g. claude-opus-4-8 for IBM ICA)."
+        default: ""
   schedule:
     - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
 
@@ -48,6 +60,8 @@ jobs:
           # The key is needed here only to non-interactively authenticate the codex
           # CLI (piped via stdin, never echoed). Scoped to this step; not written to git.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL_IN: ${{ github.event.inputs.openai_base_url }}
+          CODEX_MODEL_IN: ${{ github.event.inputs.codex_model }}
         run: |
           # The executor that DRAFTS fixes is a separate CLI (claude / codex), not
           # part of umbra-core. Install the one selected so its `available()` probe
@@ -64,10 +78,28 @@ jobs:
             codex-cli)
               npm install -g @openai/codex || echo "::warning::codex CLI install failed; fusion will cap at analyze."
               codex --version || echo "::warning::codex CLI not runnable."
-              # Non-interactive login: read the API key from stdin (never echoed) so
-              # `codex exec` is authenticated in CI. Requires an OpenAI API key with
-              # Codex access. Non-fatal — fusion degrades to analyze if it fails.
-              if [ -n "${OPENAI_API_KEY:-}" ]; then
+              if [ -n "${OPENAI_BASE_URL_IN:-}" ]; then
+                # Custom OpenAI-compatible gateway (e.g. IBM ICA). Codex uses a named
+                # provider from an isolated CODEX_HOME with API-key auth. The model
+                # must be one your gateway entitles (e.g. gpt-5.5-gus for IBM ICA).
+                CH="${RUNNER_TEMP:-/tmp}/codex-home"; mkdir -p "$CH"
+                echo "CODEX_HOME=$CH" >> "$GITHUB_ENV"
+                MODEL="${CODEX_MODEL_IN:-gpt-5.5-gus}"
+                {
+                  echo "model = \"$MODEL\""
+                  echo "model_provider = \"gateway\""
+                  echo "preferred_auth_method = \"apikey\""
+                  echo ""
+                  echo "[model_providers.gateway]"
+                  echo "name = \"Custom OpenAI-compatible gateway\""
+                  echo "base_url = \"$OPENAI_BASE_URL_IN\""
+                  echo "env_key = \"OPENAI_API_KEY\""
+                  echo "wire_api = \"responses\""
+                } > "$CH/config.toml"
+                echo "Configured Codex for gateway $OPENAI_BASE_URL_IN (model $MODEL)."
+                # No `codex login` needed — the provider's env_key supplies auth.
+              elif [ -n "${OPENAI_API_KEY:-}" ]; then
+                # Standard api.openai.com: non-interactive login from the API key.
                 printf '%s' "$OPENAI_API_KEY" | codex login --with-api-key \
                   && codex login status \
                   || echo "::warning::codex login failed; fusion will cap at analyze."
@@ -87,6 +119,12 @@ jobs:
           # before anything is serialised. Umbra never pushes/merges with it.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Optional gateway base URLs (e.g. IBM ICA). Blank = the native provider.
+          OPENAI_BASE_URL: ${{ github.event.inputs.openai_base_url }}
+          ANTHROPIC_BASE_URL: ${{ github.event.inputs.anthropic_base_url }}
+          # Request an entitled model on the gateway (e.g. IBM ICA: gpt-5.5-gus / claude-opus-4-8).
+          UMBRA_CODEX_MODEL: ${{ github.event.inputs.codex_model }}
+          UMBRA_CLAUDE_MODEL: ${{ github.event.inputs.claude_model }}
           # The executors are fail-closed: they only run when explicitly enabled.
           UMBRA_ENABLE_CLAUDE_CODE: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'claude-code' && 'true' || 'false' }}
           UMBRA_ENABLE_CODEX_CLI: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'codex-cli' && 'true' || 'false' }}

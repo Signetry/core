@@ -103,6 +103,26 @@ def test_codex_unavailable_without_flag(monkeypatch):
     assert CodexExecutor(runner=FakeRunner({})).available() is False
 
 
+def test_codex_model_allowlist_native(monkeypatch):
+    # Native provider: only the built-in allowlist is accepted; a gateway model is dropped.
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
+    assert CodexExecutor(model="gpt-5.6-terra").model == "gpt-5.6-terra"
+    assert CodexExecutor(model="gpt-5.5-gus").model is None
+
+
+def test_codex_model_gateway_accepts_entitled_model(monkeypatch):
+    # With a gateway base URL (e.g. IBM ICA), a safe custom model name is accepted.
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.nextgen-beta.ica.ibm.com/ica/v1")
+    assert CodexExecutor(model="gpt-5.5-gus").model == "gpt-5.5-gus"
+
+
+def test_codex_model_gateway_rejects_unsafe_name(monkeypatch):
+    # Injection-safe: a model string with shell metacharacters is never accepted.
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.nextgen-beta.ica.ibm.com/ica/v1")
+    assert CodexExecutor(model="bad;rm -rf /").model is None
+    assert CodexExecutor(model="a b c").model is None
+
+
 def test_codex_available_with_flag_and_version(monkeypatch):
     monkeypatch.setenv("UMBRA_ENABLE_CODEX_CLI", "true")
     runner = FakeRunner({"codex:--version": FakeCompleted(stdout="codex 0.9.0")})

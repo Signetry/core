@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import subprocess
 import tempfile
 from datetime import UTC, datetime
@@ -81,7 +82,17 @@ class CodexExecutor:
     @staticmethod
     def _resolve_model(value: str | None) -> str | None:
         value = (value or "").strip()
-        return value if value in _CODEX_MODELS else None
+        if not value:
+            return None
+        if value in _CODEX_MODELS:
+            return value
+        # A custom OpenAI-compatible gateway (e.g. IBM ICA) has its own model names
+        # that are not in the native allowlist. Accept a syntactically-safe model
+        # name only when a gateway base URL is configured, so the strict allowlist
+        # still applies to the default api.openai.com provider.
+        if os.getenv("OPENAI_BASE_URL", "").strip() and re.fullmatch(r"[A-Za-z0-9._-]{1,64}", value):
+            return value
+        return None
 
     @staticmethod
     def _resolve_effort(value: str | None) -> str | None:
