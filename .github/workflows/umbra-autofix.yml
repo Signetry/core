@@ -142,6 +142,12 @@ jobs:
           # The executors are fail-closed: they only run when explicitly enabled.
           UMBRA_ENABLE_CLAUDE_CODE: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'claude-code' && 'true' || 'false' }}
           UMBRA_ENABLE_CODEX_CLI: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'codex-cli' && 'true' || 'false' }}
+          # On CI runners the OS sandbox (bubblewrap/Landlock) often can't initialize,
+          # so `codex exec --sandbox workspace-write` fails. Drafting happens in a
+          # disposable checkout with NO push/merge credentials, and Umbra's admission
+          # pipeline governs the result regardless — so full-access drafting here is
+          # safe and is the mode that works on the runner.
+          UMBRA_CODEX_SANDBOX: "danger-full-access"
         run: |
           OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"

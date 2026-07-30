@@ -5,6 +5,18 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.5.3] — 2026-07-30
+
+### Fixed — Codex sandbox on CI runners
+
+- `CodexExecutor` honors `UMBRA_CODEX_SANDBOX` (`read-only` | `workspace-write` |
+  `danger-full-access`) so a run can select a sandbox mode that initializes on the
+  host. On CI runners the OS sandbox (bubblewrap/Landlock) often cannot start, which
+  made `codex exec` fail; the operator can now choose full-access drafting there.
+  Safe because the executor only DRAFTS in a disposable checkout with no push/merge
+  credentials, and Umbra's admission pipeline governs the result regardless.
+- The auto-fix workflow sets `UMBRA_CODEX_SANDBOX=danger-full-access` for CI.
+
 ## [0.5.2] — 2026-07-30
 
 ### Added — OpenAI/Anthropic-compatible gateway support (e.g. IBM ICA)

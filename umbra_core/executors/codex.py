@@ -111,7 +111,19 @@ class CodexExecutor:
         return self._run_cli(prompt, repo_path, read_only=read_only)
 
     def _sandbox(self, read_only: bool) -> str:
-        return "read-only" if read_only else "workspace-write"
+        if read_only:
+            return "read-only"
+        # Default to Codex's own workspace sandbox. In environments where the OS
+        # sandbox cannot initialize (e.g. a CI runner with clamped user namespaces),
+        # the operator may select a mode that works there via UMBRA_CODEX_SANDBOX.
+        # This is safe in that context because the executor only DRAFTS a change in
+        # a disposable checkout with no push/merge credentials, and Umbra's admission
+        # pipeline (contract, verifier, sandboxed required checks) governs the result
+        # regardless of how the draft was produced.
+        override = os.getenv("UMBRA_CODEX_SANDBOX", "").strip()
+        if override in ("read-only", "workspace-write", "danger-full-access"):
+            return override
+        return "workspace-write"
 
     def _run_cli(self, prompt: str, repo_path: Path, *, read_only: bool) -> ExecutionResult:
         with tempfile.TemporaryDirectory(prefix="umbra-codex-") as temp_dir:

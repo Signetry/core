@@ -123,6 +123,24 @@ def test_codex_model_gateway_rejects_unsafe_name(monkeypatch):
     assert CodexExecutor(model="a b c").model is None
 
 
+def test_codex_sandbox_default_and_override(monkeypatch):
+    ex = CodexExecutor()
+    monkeypatch.delenv("UMBRA_CODEX_SANDBOX", raising=False)
+    assert ex._sandbox(read_only=True) == "read-only"
+    assert ex._sandbox(read_only=False) == "workspace-write"
+    # Operator override for CI runners where the OS sandbox can't initialize.
+    monkeypatch.setenv("UMBRA_CODEX_SANDBOX", "danger-full-access")
+    assert ex._sandbox(read_only=False) == "danger-full-access"
+    # read-only path is unaffected by the override.
+    assert ex._sandbox(read_only=True) == "read-only"
+
+
+def test_codex_sandbox_override_rejects_invalid(monkeypatch):
+    ex = CodexExecutor()
+    monkeypatch.setenv("UMBRA_CODEX_SANDBOX", "bogus; rm -rf /")
+    assert ex._sandbox(read_only=False) == "workspace-write"  # falls back to safe default
+
+
 def test_codex_available_with_flag_and_version(monkeypatch):
     monkeypatch.setenv("UMBRA_ENABLE_CODEX_CLI", "true")
     runner = FakeRunner({"codex:--version": FakeCompleted(stdout="codex 0.9.0")})
