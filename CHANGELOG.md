@@ -5,6 +5,33 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.5.0] — 2026-07-30
+
+### Added — detection engine + governed fix fusion
+
+- **Layered SAST detection engine** (`umbra_core.pipeline.findings`): a
+  deterministic, offline floor (Python AST taint + regex) across the OWASP set —
+  SQLi, command/code injection, unsafe deserialization, path traversal, XSS, weak
+  crypto, insecure randomness, SSRF, SSTI, JWT-none, Django raw SQL, NoSQL, XXE,
+  hardcoded secrets, TLS-off, debug mode.
+- **Cross-file / interprocedural taint** for Python and for Go/Java/PHP/Ruby/C#
+  (source in one file → call → sink in another).
+- **Multi-language rules + line-based taint** for Go/Java/PHP/Ruby/C#, sanitizer-
+  and parameterised-query-aware (zero-FP oriented).
+- **Optional layers, non-fatal when absent**: Semgrep, tree-sitter AST, and LLM
+  triage (advisory only — never strengthens or self-approves).
+- **SARIF 2.1.0 export** and disposable **remote-repo clone** (`umbra scan <url>`).
+- **Fusion**: `umbra scan --fix --fix-agent <codex-cli|claude-code>` turns each
+  finding into a bounded remediation mission, runs it through the admission
+  pipeline, and seals an Ed25519 receipt; `umbra-autofix.yml` opens branch-only fix
+  PRs (never merges). Setup: `docs/AUTOFIX_SETUP.md`.
+- **CLI**: `umbra scan` with `--json`/`--sarif`/`--output`, `--fail-on`, and the
+  opt-in `--semgrep`/`--treesitter` layers.
+
+Benchmark (see bkd-dotcom/umbra-eval): 52-case public corpus across 7 languages —
+umbra-core **100% recall / 0 false positives** vs claude-code-security-review
+(Opus 4.8) 90%.
+
 ## [0.4.0] — 2026-07-26
 
 ### Added — CLI developer experience
