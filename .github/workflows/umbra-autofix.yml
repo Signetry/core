@@ -52,7 +52,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Umbra
-        run: pip install umbra-core
+        run: pip install --upgrade "umbra-core>=0.5.2"
 
       - name: Install the executor CLI
         env:
