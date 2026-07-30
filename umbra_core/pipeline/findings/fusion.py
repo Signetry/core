@@ -28,6 +28,7 @@ from ...executors.registry import resolve_available
 from ..admission import AdmissionReport, run_admission
 from ..receipt import build_receipt
 from .model import Finding
+from .secret_redaction import redact_secrets
 
 
 def mission_for_finding(finding: Finding) -> str:
@@ -42,13 +43,17 @@ def mission_for_finding(finding: Finding) -> str:
 
 
 def _receipt_for(report: AdmissionReport) -> dict[str, Any]:
-    """Seal an admission report into an Ed25519-signed receipt envelope."""
+    """Seal an admission report into an Ed25519-signed receipt envelope.
+
+    The diff is secret-redacted first (BYOK safety): even if an executor echoed a
+    credential-shaped token into the change, it never reaches the receipt."""
     return build_receipt(
         repo=report.repo, base_commit=report.base_commit, contract=report.contract,
         contract_result=report.contract_result, verifier=report.verifier,
         trust_boundary=report.trust_boundary, proposed_change=report.proposed_change,
         providers=report.providers, authority_level=report.authority_level,
-        authority=report.authority, executor=report.executor, diff=report.diff,
+        authority=report.authority, executor=report.executor,
+        diff=redact_secrets(report.diff),
         checks=report.checks, baseline_checks=report.baseline_checks,
         check_diagnosis=report.check_diagnosis, model_identity=report.model_identity,
         context_manifest=report.context_manifest, outcome=report.outcome,
@@ -64,7 +69,8 @@ class FixProposal:
 
     @property
     def diff(self) -> str | None:
-        return self.report.diff
+        # Secret-redacted so an artifact/PR built from this never carries a key.
+        return redact_secrets(self.report.diff)
 
     @property
     def branch_pr_ready(self) -> bool:
@@ -72,15 +78,20 @@ class FixProposal:
         return self.report.authority_level >= 2
 
     def to_public(self) -> dict[str, Any]:
+        # Redact the diff in BOTH surfaces so no artifact/PR built from this can
+        # carry an executor credential (bring-your-own-key safety).
+        admission = self.report.to_public()
+        if admission.get("diff"):
+            admission["diff"] = redact_secrets(admission["diff"])
         return {
             "finding": self.finding.to_public(),
             "mission": self.mission,
-            "admission": self.report.to_public(),
+            "admission": admission,
             "authority_level": self.report.authority_level,
             "authority": self.report.authority,
             "outcome": self.report.outcome,
             "branch_pr_ready": self.branch_pr_ready,
-            "diff": self.report.diff,
+            "diff": self.diff,
             "receipt": self.receipt,
             "auto_merge": False,
         }
