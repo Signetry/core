@@ -9,13 +9,15 @@ Fixes land on the latest minor release published to
 
 | Version | Supported |
 |---|---|
-| `>= 0.1.3` | ✅ (current — includes all published hardening) |
+| `>= 0.5.0` | ✅ (current — detection engine, `--fix` fusion, BYOK secret redaction) |
+| `0.1.3`–`0.4.x` | ✅ governance core; upgrade for the detection engine + BYOK hardening |
 | `0.1.0`–`0.1.2` | ⚠️ superseded — upgrade to the latest |
 
 `0.1.0`–`0.1.2` contain issues fixed in later releases (path-matching bypasses,
 dev-key verification trust, and — in the companion GitHub Action `< v0.1.3` — a
-workflow script-injection sink). Pin the Action to `@v1` (which moves forward) or
-`@v0.1.3+`, and install `umbra-core>=0.1.3`.
+workflow script-injection sink). `0.5.1+` adds bring-your-own-key credential
+redaction for `--fix`. Pin the Action to `@v1` (which moves forward) or
+`@v0.1.3+`, and install `umbra-core>=0.5.0`.
 
 ## Reporting a vulnerability
 
@@ -59,6 +61,45 @@ Read this before relying on umbra-core for a security guarantee.
   between the agent and the human; a human still merges. `auto_merge` is always
   false.
 
+### Detection scan + governed auto-fix (`umbra scan` / `umbra scan --fix`)
+
+`umbra scan` is a read-only static analysis over the source (deterministic AST +
+regex; optional Semgrep/tree-sitter/LLM-triage layers). It performs **no code
+execution** on the scanned repo, needs no credentials by default, and runs offline.
+The optional LLM-triage layer is *advisory only*: it can drop or annotate findings,
+never add or strengthen one.
+
+`umbra scan --fix` is the only path that runs a **live agent** (Codex / Claude
+Code / …) with a **real API key** against repository code, so it has the largest
+attack surface. Its safety rests on three properties, all enforced by the mechanism:
+
+- **Bring-your-own-key, isolated.** The executor credential is read from the
+  caller's own environment (a repo secret in CI). It is scoped to the drafting step,
+  never written to git, never passed to `git push`/merge, and never shared with any
+  other run or repo. Umbra redacts credential shapes from the diff, the receipt, and
+  every artifact before serialising, and the CI workflow additionally masks the
+  value and **fails closed** if any credential shape appears in the output.
+- **Disposable, credential-free drafting checkout.** The agent edits a throwaway
+  checkout that has no push/merge credentials and no access to your other secrets
+  (required-check subprocesses get an *allowlist* env — API keys can't reach them by
+  construction). Because the checkout is disposable and cannot push, the agent's
+  filesystem sandbox is defense-in-depth, not the boundary; on a CI runner where the
+  OS sandbox can't initialise you may set `UMBRA_CODEX_SANDBOX=danger-full-access`
+  for drafting *only* — the real containment is the disposable checkout plus the
+  admission pipeline that governs the result.
+- **The draft earns authority from evidence, not from the agent.** Whatever the
+  agent produces is run through the same contract → trust-boundary → required-checks
+  → independent-verifier pipeline. A fix that touches a forbidden path, introduces a
+  secret, fails a required check, or correlates with a quarantined injection is
+  capped at ≤ L1 and never becomes a PR. Only L2 opens a **branch-only** PR; a human
+  merges. `auto_merge` is always false.
+
+**Trusting the scanned repo.** Treat `--fix` like running a coding agent on that
+code: only point it at repositories you're willing to have an agent read. The
+untrusted-instruction quarantine reduces prompt-injection-via-repo-text, but a
+sufficiently adversarial repo is out of scope — scan such repos read-only
+(`umbra scan`, no `--fix`).
+
 ## Hardening recommendations for operators
 
 - Set a managed `UMBRA_SIGNING_KEY` (base64 of ≥32 random bytes) and pin its
@@ -68,3 +109,23 @@ Read this before relying on umbra-core for a security guarantee.
 - Own and version your `.umbra/admission.yaml` (`policy_owner` / `policy_version`).
 - Make the admission status check **required** in branch protection, and enable
   it for administrators too, so nothing merges without a receipt.
+
+### Running `--fix` safely (live agent + real key)
+
+- **Scope the credential to its own repo.** Put the executor key in the target
+  repo's Actions secrets (or org secret you control), never a shared/global one; a
+  scan of repo A must never use repo B's key. See `docs/AUTOFIX_SETUP.md`.
+- **Least-privilege token.** The workflow needs only `contents: write` +
+  `pull-requests: write` to open branch-only PRs — no admin, no merge. Keep
+  branch protection on `main`; the fix PR still requires a human.
+- **Bound the blast radius in the contract.** Set tight `allowed_paths` /
+  `forbidden_paths` and a small `diff_budget` so an over-eager draft is capped at
+  L1 rather than opening a PR. Keep `.github/**` and `.umbra/**` forbidden.
+- **Cap cost and volume.** Use `--max-fixes` (start at 3–5). Detection (`umbra
+  scan`) is free/offline; only `--fix` spends model calls.
+- **Prefer report-only for untrusted code.** Run `umbra scan` (no `--fix`) on
+  repositories you don't fully trust; only enable `--fix` where you'd let an agent
+  edit the code anyway.
+- **Rotate on exposure.** If a key was ever pasted outside a secret store, rotate
+  it. Umbra redacts credential shapes from its own outputs, but treat any key that
+  left a secret manager as compromised.
