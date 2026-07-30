@@ -8,6 +8,35 @@ Umbra **never merges**; a human reviews and merges the PR.
 
 This page is the one-time setup to wire the executor credential.
 
+## Using a gateway (IBM ICA and other OpenAI/Anthropic-compatible proxies)
+
+Bring-your-own-key works with a gateway too. Pass the base URL and an entitled
+model as workflow inputs; the key still lives only in your repo's secret.
+
+| Input | Codex | Claude Code |
+|---|---|---|
+| `openai_base_url` | e.g. `https://api.nextgen-beta.ica.ibm.com/ica/v1` | — |
+| `codex_model` | e.g. `gpt-5.5-gus` (an entitled model) | — |
+| `anthropic_base_url` | — | e.g. `https://api.nextgen-beta.ica.ibm.com/ica` |
+| `claude_model` | — | e.g. `claude-opus-4-8` |
+| secret | `OPENAI_API_KEY` (the gateway key) | `ANTHROPIC_API_KEY` (the gateway key) |
+
+Verified live on IBM ICA: both executors draft a real fix that earns **L2** (in-
+scope, verified) with a signed receipt — see the demo PRs on
+[umbra-autofix-demo](https://github.com/bkd-dotcom/umbra-autofix-demo).
+
+> **Model note (IBM ICA):** Codex requires a model whose backend supports the
+> Responses API. On ICA, `gpt-5.5-gus` works; the `gpt-5.6-*-dzus` models route to
+> Azure OpenAI and reject Codex's Responses API version. Only models in your team's
+> entitlement (`global-models`) are accessible.
+>
+> **Known CI limitation:** running `codex exec`'s multi-turn agent mode *inside
+> GitHub Actions* against the ICA **beta** gateway can fail even when a one-shot
+> call and a local run succeed (a Responses-API/tool-use quirk of the beta proxy,
+> not of Umbra). If you hit this, run `--fix-agent claude-code` with the Anthropic
+> gateway inputs, or run the fusion locally (`umbra scan --fix`) where it is proven
+> to reach L2 + receipt + branch-only PR.
+
 ## Bring your own key — the security model
 
 **Every user brings their own key. No one's credential is ever shared, and no key
