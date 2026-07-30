@@ -6,6 +6,7 @@
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Umbra%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
 [![Docs](https://img.shields.io/badge/docs-umbra--core-blue)](https://binaydalai.me/umbra-core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **An agent-agnostic change-control plane for coding agents.**
 
@@ -337,6 +338,25 @@ Ed25519-signed receipt), an earned-authority passport with an Emergency Brake,
 SLSA/in-toto provenance, and an append-only Merkle transparency log — all driven
 by any `Executor`. As of **0.5.0** it also ships a layered SAST detection engine
 (`umbra scan`) and governed fix fusion (`umbra scan --fix`).
+
+## Contributing
+
+Contributions are welcome — umbra-core is the kernel, so a change here reaches every
+integration. High-value, well-scoped first contributions:
+
+- **A new detection rule** — add a vuln class or language to
+  `umbra_core/pipeline/findings/` with a test in `tests/test_findings_engine.py`
+  (the [umbra-eval](https://github.com/bkd-dotcom/umbra-eval) corpus is where you
+  prove it against ground truth).
+- **An executor adapter** — wire a new coding agent behind the `Executor` protocol
+  (`umbra_core/executors/`); the pipeline is unchanged.
+- **Docs / examples** — clarify the admission pipeline, hardening, or a recipe.
+
+Every PR runs the test suite on Python 3.11–3.13 plus umbra-core's own admission
+self-check. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md); keep `auto_merge` false and governance
+logic in the kernel. Security issues: see [SECURITY.md](SECURITY.md) (private
+reporting), not a public issue.
 
 ## License
 
