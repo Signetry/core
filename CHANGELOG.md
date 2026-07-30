@@ -5,6 +5,21 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.5.2] — 2026-07-30
+
+### Added — OpenAI/Anthropic-compatible gateway support (e.g. IBM ICA)
+
+- `CodexExecutor` accepts a custom, syntactically-safe model name when
+  `OPENAI_BASE_URL` points at a gateway (e.g. `gpt-5.5-gus` on IBM ICA), in addition
+  to the native allowlist. The strict allowlist still applies to `api.openai.com`.
+- The auto-fix workflow gained `openai_base_url` / `codex_model` /
+  `anthropic_base_url` / `claude_model` inputs so a run can use a gateway with the
+  caller's own key (bring-your-own-key), configuring Codex via an isolated
+  `CODEX_HOME` provider and Claude via `ANTHROPIC_BASE_URL` + `UMBRA_CLAUDE_MODEL`.
+
+Verified live on IBM ICA: Codex (`gpt-5.5-gus`) and Claude (`claude-opus-4-8`) each
+draft a fix that earns L2 through the admission pipeline.
+
 ## [0.5.1] — 2026-07-30
 
 ### Security — bring-your-own-key safety for `--fix`
