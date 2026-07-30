@@ -33,6 +33,7 @@ from . import (
     resolve_available,
     revoke,
     run_admission,
+    scan_repository,
     to_slsa_provenance,
     verify_receipt,
 )
@@ -118,6 +119,93 @@ def cmd_admit(args: argparse.Namespace) -> int:
 
     # Exit code gates hooks/CI: non-zero unless the run met the authority bar.
     return 0 if report.authority_level >= args.min_authority else 1
+
+
+def cmd_scan(args: argparse.Namespace) -> int:
+    """Layered SAST over a repository — the detection floor that reaches parity
+    with LLM scanners while staying offline and deterministic by default.
+
+    Accepts a local path OR a git URL (shallow-cloned to a disposable checkout,
+    like a hosted scanner). Emits text, ``--json``, or ``--sarif`` (the GitHub
+    code-scanning standard). Exits non-zero when a finding meets/exceeds
+    ``--fail-on`` severity, so it can gate CI."""
+    from . import __version__
+    from .pipeline.findings.fetch import resolve_scan_target
+    from .pipeline.findings.model import Severity
+    from .pipeline.findings.sarif import to_sarif
+
+    fix_proposals = None
+    try:
+        with resolve_scan_target(args.repo, depth=args.depth) as root:
+            if not root.exists():
+                print(f"error: path not found: {root}", file=sys.stderr)
+                return 2
+            report = scan_repository(root, use_semgrep=args.semgrep, semgrep_config=args.semgrep_config,
+                                     use_treesitter=getattr(args, "treesitter", False))
+            # --fix: propose governed, receipted fixes INSIDE the checkout (the
+            # disposable clone still exists here; admission runs in it).
+            if getattr(args, "fix", False) and report.findings:
+                from .pipeline.findings.fusion import propose_fixes
+                fix_proposals = propose_fixes(
+                    root, report.findings, max_fixes=args.max_fixes,
+                    agent=getattr(args, "fix_agent", None),
+                )
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.sarif:
+        payload = json.dumps(to_sarif(report, tool_version=__version__), indent=2)
+        if args.output:
+            Path(args.output).write_text(payload)
+            print(f"wrote SARIF: {args.output} ({len(report.findings)} result(s))", file=sys.stderr)
+        else:
+            print(payload)
+    elif args.json:
+        payload = json.dumps(report.to_public(), indent=2, default=str)
+        if args.output:
+            Path(args.output).write_text(payload)
+            print(f"wrote JSON: {args.output}", file=sys.stderr)
+        else:
+            print(payload)
+    else:
+        counts = report.counts()
+        print(f"umbra scan {args.repo} — {len(report.findings)} finding(s) across "
+              f"{report.files_scanned} file(s) [{', '.join(report.layers)}]")
+        for f in report.findings:
+            cwe = f" {f.cwe}" if f.cwe else ""
+            print(f"  {f.severity.value.upper():8} {f.file}:{f.line} "
+                  f"[{f.category}]{cwe} — {f.title} (conf {f.confidence:.2f})")
+        if report.layers_unavailable:
+            print(f"  (layers not run: {', '.join(report.layers_unavailable)})")
+        shown = ", ".join(f"{k}={v}" for k, v in counts.items() if v)
+        if shown:
+            print(f"  summary: {shown}")
+
+    # --fix: report governed fix proposals (JSON adds a `fixes` array).
+    if fix_proposals is not None:
+        if args.json or args.sarif:
+            # Append fusion output as a separate JSON object on stderr-free stdout.
+            print(json.dumps({"fixes": [fp.to_public() for fp in fix_proposals]},
+                             indent=2, default=str))
+        else:
+            print(f"\nGoverned fix proposals ({len(fix_proposals)}):")
+            for fp in fix_proposals:
+                r = fp.report
+                rh = (fp.receipt or {}).get("canonical_hash", "")
+                tag = "branch-PR ready" if fp.branch_pr_ready else "analyze"
+                print(f"  {fp.finding.category} @ {fp.finding.file}:{fp.finding.line} "
+                      f"→ L{r.authority_level} ({r.authority}) · {tag}"
+                      + (f" · receipt {rh[:16]}…" if rh else ""))
+            print("  (auto_merge: never · each proposal is admission-governed and receipt-sealed)")
+
+    if args.fail_on:
+        threshold = Severity(args.fail_on).rank
+        offending = [f for f in report.findings if f.severity.rank >= threshold]
+        if offending:
+            print(f"FAIL: {len(offending)} finding(s) at or above {args.fail_on}", file=sys.stderr)
+            return 1
+    return 0
 
 
 def cmd_verify(args: argparse.Namespace) -> int:
@@ -390,6 +478,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_admit.add_argument("--receipt-out", help="Write the signed receipt envelope to this file.")
     p_admit.add_argument("--min-authority", type=int, default=2, help="Exit non-zero unless the run earns at least this level (default 2 = branch-PR).")
     p_admit.set_defaults(func=cmd_admit)
+
+    p_scan = sub.add_parser("scan", help="Layered SAST over a repo (deterministic floor + optional Semgrep): find code vulnerabilities.")
+    p_scan.add_argument("repo", help="Path to a checkout OR a git URL (shallow-cloned to a disposable temp dir).")
+    p_scan.add_argument("--semgrep", action="store_true", help="Also run Semgrep if installed (merged & deduped; absence is non-fatal).")
+    p_scan.add_argument("--semgrep-config", default="auto", help="Semgrep config/ruleset (default 'auto'; pass a local path for offline).")
+    p_scan.add_argument("--treesitter", action="store_true", help="Also run the tree-sitter AST layer if the optional packages are installed (higher-precision multi-language; non-fatal if absent).")
+    p_scan.add_argument("--sarif", action="store_true", help="Emit SARIF 2.1.0 (GitHub code-scanning standard).")
+    p_scan.add_argument("--output", "-o", help="Write output to this file instead of stdout.")
+    p_scan.add_argument("--depth", type=int, default=1, help="Clone depth when scanning a git URL (default 1).")
+    p_scan.add_argument("--fail-on", choices=["critical", "high", "medium", "low", "info"], help="Exit non-zero if any finding meets/exceeds this severity (gate CI).")
+    p_scan.add_argument("--fix", action="store_true", help="Propose a governed, receipt-sealed fix per finding: bounded mission → admission pipeline → earned authority (never merges).")
+    p_scan.add_argument("--fix-agent", help="Executor that drafts fixes with --fix (e.g. codex-cli, claude-code). Default: auto-select a live agent, else deterministic (no change).")
+    p_scan.add_argument("--max-fixes", type=int, default=10, help="Max findings to propose fixes for with --fix (highest severity first; default 10).")
+    p_scan.set_defaults(func=cmd_scan)
 
     p_verify = sub.add_parser("verify", help="Verify a signed receipt against a pinned public key.")
     p_verify.add_argument("receipt", help="Path to a receipt envelope JSON file.")
