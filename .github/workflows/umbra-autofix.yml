@@ -47,6 +47,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Enable a working sandbox for the executor
+        run: |
+          # Codex/Claude sandbox the agent while it drafts (workspace-write). On
+          # Ubuntu runners, unprivileged user namespaces are clamped by AppArmor,
+          # which makes the sandbox fail to initialize (codex exec rc=1). Install
+          # bubblewrap and relax the clamp so the sandbox can start. All non-fatal.
+          if ! command -v bwrap >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq bubblewrap || \
+              echo "::warning::could not install bubblewrap."
+          fi
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 >/dev/null 2>&1 || true
+          sudo sysctl -w kernel.unprivileged_userns_clone=1 >/dev/null 2>&1 || true
+          command -v bwrap >/dev/null 2>&1 && echo "bubblewrap ready." || echo "::notice::bwrap unavailable; executor may cap at analyze."
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
