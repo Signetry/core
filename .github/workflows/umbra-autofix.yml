@@ -42,6 +42,26 @@ jobs:
       - name: Install Umbra
         run: pip install umbra-core
 
+      - name: Install the executor CLI
+        env:
+          FIX_AGENT: ${{ github.event.inputs.fix_agent || 'codex-cli' }}
+        run: |
+          # The executor that DRAFTS fixes is a separate CLI (claude / codex), not
+          # part of umbra-core. Install the one selected so its `available()` probe
+          # passes and it can actually propose a change (else fusion caps at analyze).
+          set -euo pipefail
+          case "$FIX_AGENT" in
+            claude-code)
+              npm install -g @anthropic-ai/claude-code || echo "::warning::claude CLI install failed; fusion will cap at analyze."
+              claude --version || echo "::warning::claude CLI not runnable."
+              ;;
+            codex-cli)
+              npm install -g @openai/codex || echo "::warning::codex CLI install failed; fusion will cap at analyze."
+              codex --version || echo "::warning::codex CLI not runnable."
+              ;;
+            *) echo "::error::Unknown fix_agent '$FIX_AGENT'"; exit 1 ;;
+          esac
+
       - name: Scan + propose governed fixes (JSON)
         env:
           # Bring-your-own-key: the executor's credential is read from THIS repo's
@@ -51,6 +71,9 @@ jobs:
           # before anything is serialised. Umbra never pushes/merges with it.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The executors are fail-closed: they only run when explicitly enabled.
+          UMBRA_ENABLE_CLAUDE_CODE: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'claude-code' && 'true' || 'false' }}
+          UMBRA_ENABLE_CODEX_CLI: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'codex-cli' && 'true' || 'false' }}
         run: |
           OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
