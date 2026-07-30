@@ -585,6 +585,53 @@ def test_fusion_agent_none_is_deterministic(tmp_path):
     assert proposal.to_public()["auto_merge"] is False
 
 
+# --- bring-your-own-key: secret redaction never leaks a credential ----------
+
+
+def test_redaction_scrubs_credential_shapes():
+    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+
+    cases = [
+        ('api_key = "sk-live-abc123def456ghi789jkl"', "sk-"),
+        ('ANTHROPIC_API_KEY="sk-ant-abcdefghij1234567890"', "sk-ant-"),
+        ("token: ghp_abcdefghij1234567890ABCD", "ghp_"),
+        ("aws = AKIAIOSFODNN7EXAMPLE", "AKIA"),
+    ]
+    for text, shape in cases:
+        out = redact_secrets(text)
+        assert shape not in out, f"credential shape leaked: {out}"
+        assert "REDACTED" in out
+
+
+def test_redaction_leaves_normal_code_untouched():
+    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+
+    for src in ("x = y + 1", "def query(uid): return db.execute(sql, uid)",
+                "url = 'https://api.example.com/v1'"):
+        assert redact_secrets(src) == src
+
+
+def test_redaction_handles_none():
+    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+    assert redact_secrets(None) is None
+    assert redact_secrets("") == ""
+
+
+def test_check_env_is_allowlist_no_api_keys_leak(monkeypatch):
+    """The required-check subprocess env is an allowlist — no executor key can reach
+    it by construction, regardless of what is set in the parent environment."""
+    from umbra_core.pipeline.checks import _scrubbed_env
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-not-leak")
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_should_not_leak")
+    env = _scrubbed_env()
+    joined = " ".join(f"{k}={v}" for k, v in env.items())
+    assert "should-not-leak" not in joined and "should_not_leak" not in joined
+    for k in env:
+        assert not any(frag in k.upper() for frag in ("OPENAI", "ANTHROPIC", "API_KEY", "TOKEN"))
+
+
 def test_fusion_mission_is_bounded_to_finding():
     from umbra_core.pipeline.findings import Finding, Severity, mission_for_finding
     from umbra_core.pipeline.findings.model import Source

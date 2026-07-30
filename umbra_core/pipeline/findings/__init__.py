@@ -13,6 +13,7 @@ from .fetch import resolve_scan_target
 from .fusion import FixProposal, mission_for_finding, propose_fix, propose_fixes
 from .model import Finding, FindingsReport, Severity, Source
 from .sarif import to_sarif
+from .secret_redaction import redact_secrets
 from .semgrep_backend import scan_with_semgrep, semgrep_available
 from .triage import triage_findings
 
@@ -21,6 +22,7 @@ __all__ = [
     "scan_source",
     "resolve_scan_target",
     "to_sarif",
+    "redact_secrets",
     "Finding",
     "FindingsReport",
     "Severity",

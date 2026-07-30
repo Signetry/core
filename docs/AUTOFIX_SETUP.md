@@ -8,6 +8,35 @@ Umbra **never merges**; a human reviews and merges the PR.
 
 This page is the one-time setup to wire the executor credential.
 
+## Bring your own key — the security model
+
+**Every user brings their own key. No one's credential is ever shared, and no key
+leaks.** This is enforced by the mechanism, not just policy:
+
+- **Your key lives in your repo.** The workflow reads
+  `${{ secrets.OPENAI_API_KEY }}` / `${{ secrets.ANTHROPIC_API_KEY }}` from **your
+  own repository's** Actions secrets. There is no central Umbra key and no shared
+  credential — if you don't set a secret, no live fix runs (the scan still works;
+  fusion degrades to the deterministic, no-change path). Publishing/adopting Umbra
+  never exposes anyone else's key to you or yours to them.
+- **Scoped to one step.** The credential is set in the *scan* step's `env` only.
+  The PR-opening step runs without it. It is never written to disk or committed.
+- **Never in git, artifacts, receipts, or PRs.** The engine redacts credential
+  shapes (OpenAI/Anthropic/GitHub/AWS/Google/Slack keys, PEM private keys, and
+  generic `secret=…`/`token=…` assignments) from the diff **and** the receipt
+  before anything is serialised. The workflow also registers the values with the
+  runner's log masker (`::add-mask::`) and **fails closed** if any credential shape
+  is found in the output before a PR is opened.
+- **Never reaches your build/checks.** Required-check subprocesses run with an
+  **allowlisted** environment (only `PATH`/`HOME`/`LANG`/… are copied) — API keys
+  cannot reach an untrusted check by construction, not merely by a denylist.
+- **The executor only drafts; Umbra decides and never merges.** The key lets the
+  agent write a patch in a disposable checkout. Umbra is never given push/merge
+  credentials for the fix; `auto_merge` is always false.
+
+If you self-host or run this across an org, each repo (or org secret you control)
+carries its own key; a scan of repo A never uses repo B's credential.
+
 ## What you need
 
 1. An **executor credential** for whichever agent drafts the fixes:

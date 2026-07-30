@@ -44,19 +44,38 @@ jobs:
 
       - name: Scan + propose governed fixes (JSON)
         env:
-          # Provide the executor's credential as a repo secret; the executor CLI
-          # reads it. Umbra itself never merges and never pushes with these.
+          # Bring-your-own-key: the executor's credential is read from THIS repo's
+          # own secret and used only to let the agent draft the patch. It is scoped
+          # to this step alone (the PR-opening step below does not see it), never
+          # written to git, and Umbra redacts credential shapes from the diff/receipt
+          # before anything is serialised. Umbra never pushes/merges with it.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
+          # Belt-and-suspenders: register the values with the runner's log masker so
+          # they can never surface in logs even if a tool echoed them.
+          [ -n "$OPENAI_API_KEY" ] && echo "::add-mask::$OPENAI_API_KEY"
+          [ -n "$ANTHROPIC_API_KEY" ] && echo "::add-mask::$ANTHROPIC_API_KEY"
           # Scan the repo and, for each finding, draft a bounded fix via the live
           # agent under the admission pipeline. --json emits {findings} then {fixes}.
           umbra --json scan . \
             --fix --fix-agent "${{ github.event.inputs.fix_agent || 'codex-cli' }}" \
             --max-fixes 5 > "$OUT/scan-and-fixes.json" || true
           echo "wrote $OUT/scan-and-fixes.json"
+
+      - name: Fail closed if any credential shape leaked into the output
+        run: |
+          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/umbra}"
+          # Defense-in-depth: the engine redacts secrets from diffs/receipts, but if a
+          # recognisable credential shape ever appears in the artifact, abort before it
+          # can reach a PR. (Matches provider key prefixes + PEM private-key blocks.)
+          if grep -Eq 'sk-(ant-)?[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE KEY' "$OUT/scan-and-fixes.json" 2>/dev/null; then
+            echo "::error::A credential-shaped token was found in the fix output; aborting so it cannot reach a PR."
+            exit 1
+          fi
+          echo "no credential shapes in output — safe to open PRs"
 
       - name: Open a branch-only PR for each branch-PR-ready fix (never merges)
         env:

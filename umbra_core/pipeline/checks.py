@@ -60,8 +60,11 @@ _ALLOWED_PROFILES: tuple[re.Pattern[str], ...] = (
 )
 
 # Env-var name fragments whose values must never reach a check subprocess.
-_SECRET_FRAGMENTS = ("OPENAI", "GITHUB", "UMBRA_FERNET", "UMBRA_SIGNING", "SESSION_SECRET",
-                     "RESEND", "GOOGLE", "TOKEN", "SECRET", "PASSWORD", "API_KEY", "AWS", "GCP")
+_SECRET_FRAGMENTS = ("OPENAI", "ANTHROPIC", "CLAUDE", "CODEX", "GEMINI", "MISTRAL",
+                     "COHERE", "HUGGINGFACE", "HF_TOKEN", "GITHUB", "GH_TOKEN",
+                     "UMBRA_FERNET", "UMBRA_SIGNING", "SESSION_SECRET",
+                     "RESEND", "GOOGLE", "TOKEN", "SECRET", "PASSWORD", "PASSWD",
+                     "API_KEY", "APIKEY", "AWS", "GCP", "AZURE", "CREDENTIAL", "PRIVATE_KEY")
 
 # Profiles that EXECUTE repository-supplied build code (install scripts, PEP517
 # backends, arbitrary git/index URLs). Running these outside a real sandbox
