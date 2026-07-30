@@ -5,6 +5,21 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.5.1] — 2026-07-30
+
+### Security — bring-your-own-key safety for `--fix`
+
+- Redact credential shapes (OpenAI/Anthropic/GitHub/AWS/Google/Slack keys, PEM
+  private keys, generic `secret=`/`token=` assignments) from any fix diff, receipt,
+  or artifact before it is serialised — so a governed fix or auto-fix PR can never
+  carry an executor credential.
+- Extend the required-check env defense-in-depth denylist (ANTHROPIC/CLAUDE/CODEX/
+  GEMINI/AZURE/…); the check environment remains an allowlist, so keys cannot reach
+  a check subprocess by construction.
+- Every user brings their own key: the executor credential lives only in the
+  caller's own environment/repo secret, is never shared, never written to git, and
+  never used to push or merge. See `docs/AUTOFIX_SETUP.md`.
+
 ## [0.5.0] — 2026-07-30
 
 ### Added — detection engine + governed fix fusion
