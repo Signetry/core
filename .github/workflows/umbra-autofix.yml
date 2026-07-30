@@ -45,19 +45,35 @@ jobs:
       - name: Install the executor CLI
         env:
           FIX_AGENT: ${{ github.event.inputs.fix_agent || 'codex-cli' }}
+          # The key is needed here only to non-interactively authenticate the codex
+          # CLI (piped via stdin, never echoed). Scoped to this step; not written to git.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # The executor that DRAFTS fixes is a separate CLI (claude / codex), not
           # part of umbra-core. Install the one selected so its `available()` probe
           # passes and it can actually propose a change (else fusion caps at analyze).
           set -euo pipefail
+          [ -n "${OPENAI_API_KEY:-}" ] && echo "::add-mask::$OPENAI_API_KEY"
           case "$FIX_AGENT" in
             claude-code)
               npm install -g @anthropic-ai/claude-code || echo "::warning::claude CLI install failed; fusion will cap at analyze."
               claude --version || echo "::warning::claude CLI not runnable."
+              # Claude Code authenticates strictly via ANTHROPIC_API_KEY at run time
+              # (set in the scan step); no separate login command is needed.
               ;;
             codex-cli)
               npm install -g @openai/codex || echo "::warning::codex CLI install failed; fusion will cap at analyze."
               codex --version || echo "::warning::codex CLI not runnable."
+              # Non-interactive login: read the API key from stdin (never echoed) so
+              # `codex exec` is authenticated in CI. Requires an OpenAI API key with
+              # Codex access. Non-fatal — fusion degrades to analyze if it fails.
+              if [ -n "${OPENAI_API_KEY:-}" ]; then
+                printf '%s' "$OPENAI_API_KEY" | codex login --with-api-key \
+                  && codex login status \
+                  || echo "::warning::codex login failed; fusion will cap at analyze."
+              else
+                echo "::warning::OPENAI_API_KEY not set; codex cannot authenticate."
+              fi
               ;;
             *) echo "::error::Unknown fix_agent '$FIX_AGENT'"; exit 1 ;;
           esac
