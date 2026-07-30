@@ -24,7 +24,8 @@ Executor (protocol)
 The governing insight: **a coding agent cannot approve its own authority to make
 a change.** The patch-writer is never the patch-approver. `umbra-core` is the
 layer that can decide — agent-agnostically — and seals every decision in a
-signed receipt.
+signed receipt. It also **finds the vulnerabilities** (`umbra scan`, 7 languages,
+deterministic + offline) and can **govern the fix** end-to-end.
 
 ## Why this is agent-agnostic (and why that matters)
 
@@ -53,6 +54,7 @@ pip install umbra-core
 |---|---|---|
 | **PyPI package** | anything you script | `pip install umbra-core` |
 | **CLI + git hook** | the agent on your machine | `umbra admit . --mission "..." --agent claude-code` |
+| **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `umbra scan . --sarif` · `umbra scan . --fix` |
 | **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/bkd-dotcom/umbra-action) |
 | **MCP server** | agents that speak MCP | `python -m umbra_core.mcp_server` |
 | **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [bkd-dotcom/umbra-plugins](https://github.com/bkd-dotcom/umbra-plugins) |
@@ -61,6 +63,43 @@ pip install umbra-core
 The GitHub Action is the highest-reach checkpoint: it sits at the repo, so it
 governs *any* agent that opens a PR. Make **"Umbra Admission"** a required status
 check and nothing merges without a signed receipt. `auto_merge` is always false.
+
+## Find vulnerabilities — then govern the fix (`umbra scan`)
+
+`umbra-core` also ships a **layered SAST detection engine**: a deterministic,
+offline floor (Python AST taint + cross-file/interprocedural taint, plus rules and
+line-based taint for Go, Java, PHP, Ruby, C#) covering the OWASP set — SQL/command/
+code injection, unsafe deserialization, path traversal, XSS, weak crypto, insecure
+randomness, SSRF, SSTI, JWT-none, NoSQL, XXE, hardcoded secrets, TLS-off, debug
+mode. Optional, non-fatal layers add Semgrep, tree-sitter AST, and advisory LLM
+triage (which can only reduce noise — never strengthen or self-approve).
+
+```bash
+umbra scan .                                   # scan a checkout
+umbra scan https://github.com/owner/repo.git   # or a git URL (disposable clone)
+umbra scan . --sarif -o results.sarif          # GitHub code-scanning standard
+umbra scan . --fail-on high                     # non-zero exit to gate CI
+```
+
+On a public 52-case, 7-language benchmark (see
+[bkd-dotcom/umbra-eval](https://github.com/bkd-dotcom/umbra-eval)), the engine
+reaches **100% recall at 0 false positives** — matching/leading a top LLM scanner
+while staying deterministic, offline, and free.
+
+**Then close the loop no scanner can:** `--fix` turns each finding into a *bounded*
+remediation mission, runs it through the admission pipeline above, and seals a
+signed receipt — output is not just "here's a bug" but "here's the bug, the agent's
+fix, the evidence it passed checks, the authority it earned, and a verifiable
+receipt." It never merges.
+
+```bash
+# draft a governed fix per finding via a live agent; only branch-PR-ready (L2) fixes
+# become branch-only PRs (with the receipt attached). auto_merge is never true.
+umbra scan . --fix --fix-agent codex-cli
+```
+
+Wire it as a scheduled GitHub Action that opens branch-only fix PRs with receipts —
+setup in [docs/AUTOFIX_SETUP.md](docs/AUTOFIX_SETUP.md).
 
 ## Who it's for
 
@@ -296,7 +335,8 @@ into an agent-agnostic package: the executor layer, the full admission pipeline
 (contract → trust boundary → checks → verifier → earned authority →
 Ed25519-signed receipt), an earned-authority passport with an Emergency Brake,
 SLSA/in-toto provenance, and an append-only Merkle transparency log — all driven
-by any `Executor`.
+by any `Executor`. As of **0.5.0** it also ships a layered SAST detection engine
+(`umbra scan`) and governed fix fusion (`umbra scan --fix`).
 
 ## License
 
