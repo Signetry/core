@@ -4,12 +4,11 @@
 > This repository is strictly for viewing and contributing to the original project. You may not use, copy, modify, distribute, or commercialize this code for your own personal or commercial projects without explicit written permission. Only the original author retains the right to use and monetize this project.
 
 
-[![PyPI](https://img.shields.io/pypi/v/umbra-core.svg)](https://pypi.org/project/umbra-core/)
 [![CI](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/pypi/pyversions/umbra-core.svg)](https://pypi.org/project/umbra-core/)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Umbra%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
 [![Docs](https://img.shields.io/badge/docs-umbra--core-blue)](https://binaydalai.me/umbra-core/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Source-available](https://img.shields.io/badge/source-available-informational.svg)](CLA.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/bkd-dotcom/umbra-umbrella/issues/10)
 
 **An agent-agnostic change-control plane for coding agents.**
 
@@ -51,12 +50,13 @@ One core (`run_admission`), five checkpoints an agent's change must pass through
 — see [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md):
 
 ```bash
-pip install umbra-core
+# Source-available (not on PyPI). Install from the source repo:
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 ```
 
 | Surface | Governs | Command |
 |---|---|---|
-| **PyPI package** | anything you script | `pip install umbra-core` |
+| **Source install** | anything you script | `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"` |
 | **CLI + git hook** | the agent on your machine | `umbra admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `umbra scan . --sarif` · `umbra scan . --fix` |
 | **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/bkd-dotcom/umbra-action) |
@@ -344,12 +344,18 @@ by any `Executor`. As of **0.5.0** it also ships a layered SAST detection engine
 
 ## Contributing
 
-Contributions are accepted **only under the [Contribution Agreement](CONTRIBUTING.md)**:
-by submitting a Pull Request you assign and transfer all copyright and ownership of
-your contribution to the repository owner, who retains the exclusive right to use and
-monetize the entire codebase. If you do not agree, do not submit a PR.
+**Source-available, PRs welcome.** The code is public to read, evaluate, and
+contribute to — but it is **not open source**; it is All Rights Reserved and
+contributions are accepted **only under the [Contribution Agreement](CONTRIBUTING.md)
+/ [CLA](CLA.md)**: by submitting a PR you assign copyright and ownership of your
+contribution to the owner, who alone may use and monetize the codebase. You are
+**credited** in [CONTRIBUTORS.md](CONTRIBUTORS.md) and release notes, but gain no
+right to use, sell, or rebrand it. If you don't agree, don't submit a PR.
 
-If you do agree, well-scoped areas to contribute:
+🌱 **Where to start:** the
+[good-first-issues board](https://github.com/bkd-dotcom/umbra-umbrella/issues/10)
+and [Discussions](https://github.com/bkd-dotcom/umbra-umbrella/discussions).
+Well-scoped areas here:
 
 - **A new detection rule** — add a vuln class or language to
   `umbra_core/pipeline/findings/` with a test in `tests/test_findings_engine.py`.
