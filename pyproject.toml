@@ -4,7 +4,7 @@ version = "0.5.3"
 description = "An agent-agnostic change-control plane for coding agents. Governs Codex, Claude Code, Cursor, or any agent behind one admission pipeline and proves every change with a signed receipt."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "Proprietary — All Rights Reserved" }
 authors = [{ name = "Binay Dalai" }]
 keywords = [
     "ai-agents", "coding-agents", "governance", "supply-chain", "slsa",
@@ -13,7 +13,6 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
