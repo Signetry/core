@@ -16,3 +16,10 @@ Your acceptance is recorded in `signatures/cla.json`. A PR **cannot be merged** 
 the CLA is signed. Umbra is **not open source** (All Rights Reserved) — by signing
 you assign copyright/ownership of your contribution to the Owner and gain no right to
 use, sell, or commercialize it yourself.
+
+## Credit
+
+Contributors are **acknowledged** in [CONTRIBUTORS.md](CONTRIBUTORS.md), the Git
+history, and release notes. This is attribution only — you may truthfully say you
+contributed, but it grants no ownership and no right to use, sell, or rebrand the
+project as your own. See the "Recognition of Contributors" clause in [CLA.md](CLA.md).
