@@ -1,0 +1,42 @@
+name: CLA
+
+# Requires every contributor to sign the Contributor License Agreement (CLA.md)
+# before their pull request can be merged. Runs entirely in this repo's Actions —
+# no third-party OAuth app. Signatures are recorded in signatures/cla.json on this
+# repo, so there is a durable, auditable record that each contributor assigned
+# copyright/ownership of their contribution to the Owner.
+#
+# A contributor signs by commenting the exact statement below on their PR:
+#   I have read the CLA Document and I hereby sign the CLA
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: write
+  contents: write        # write the signatures file
+  pull-requests: write   # comment + label the PR
+  statuses: write
+
+jobs:
+  cla:
+    runs-on: ubuntu-latest
+    # Skip Dependabot / the Owner's own automated PRs if desired; contributors still gate.
+    steps:
+      - name: CLA Assistant
+        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
+        uses: contributor-assistant/github-action@v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-signatures: "signatures/cla.json"
+          path-to-document: "https://github.com/bkd-dotcom/umbra-core/blob/main/CLA.md"
+          branch: "main"
+          allowlist: "dependabot[bot],bkd-dotcom"
+          custom-notsigned-prcomment: "Thanks for your contribution! Before it can be merged, please read the **[Contributor License Agreement](https://github.com/bkd-dotcom/umbra-core/blob/main/CLA.md)** — Umbra is **All Rights Reserved**, and by signing you assign copyright/ownership of your contribution to the Owner (you may not use, sell, or commercialize it yourself). To agree, reply with exactly:"
+          custom-pr-sign-comment: "I have read the CLA Document and I hereby sign the CLA"
+          custom-allsigned-prcomment: "All contributors have signed the CLA. ✅"
+          lock-pullrequest-aftermerge: false
