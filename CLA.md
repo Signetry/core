@@ -42,7 +42,26 @@ You acknowledge and agree that:
   except as expressly permitted in writing by the Owner.
 - The Project is **not open source** and is licensed "All Rights Reserved."
 
-## 4. Your representations
+## 4. Recognition of Contributors (credit, not rights)
+
+The Owner will **credit You as a contributor** — for example, in Git commit history,
+in a `CONTRIBUTORS` file, and/or in release notes — as a courtesy and acknowledgement
+of Your work.
+
+This recognition is **attribution only**. It does **not**:
+
+- grant You any ownership, license, or right to use, copy, sell, sublicense, or
+  commercialize the Project or Your Contribution;
+- entitle You to represent the Project, or any part of it, as Your own work, product,
+  or property, or to market or sell it under Your own name or brand; or
+- create any partnership, employment, or revenue-sharing relationship with the Owner.
+
+You may factually and truthfully state that You contributed to the Project (e.g. on a
+résumé or portfolio). You may **not** claim authorship or ownership of the Project as
+a whole, nor use the Project's name or the Owner's name to endorse or promote your own
+products without the Owner's written permission.
+
+## 5. Your representations
 
 You represent that:
 
@@ -55,12 +74,12 @@ You represent that:
   contains no third-party code unless clearly identified and compatible with this
   Agreement.
 
-## 5. No warranty
+## 6. No warranty
 
 Your Contribution is provided "as is," without warranty of any kind. You are not
 expected to provide support for Your Contribution.
 
-## 6. Miscellaneous
+## 7. Miscellaneous
 
 This Agreement is the entire agreement concerning Contributions. If any provision is
 unenforceable, the remaining provisions remain in effect. This Agreement is governed
