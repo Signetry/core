@@ -1,11 +1,14 @@
 # umbra-core
 
+> **Copyright (c) 2026 Binay Dalai. All rights reserved.**
+> This repository is strictly for viewing and contributing to the original project. You may not use, copy, modify, distribute, or commercialize this code for your own personal or commercial projects without explicit written permission. Only the original author retains the right to use and monetize this project.
+
+
 [![PyPI](https://img.shields.io/pypi/v/umbra-core.svg)](https://pypi.org/project/umbra-core/)
 [![CI](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/umbra-core.svg)](https://pypi.org/project/umbra-core/)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Umbra%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
 [![Docs](https://img.shields.io/badge/docs-umbra--core-blue)](https://binaydalai.me/umbra-core/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **An agent-agnostic change-control plane for coding agents.**
@@ -341,23 +344,28 @@ by any `Executor`. As of **0.5.0** it also ships a layered SAST detection engine
 
 ## Contributing
 
-Contributions are welcome — umbra-core is the kernel, so a change here reaches every
-integration. High-value, well-scoped first contributions:
+Contributions are accepted **only under the [Contribution Agreement](CONTRIBUTING.md)**:
+by submitting a Pull Request you assign and transfer all copyright and ownership of
+your contribution to the repository owner, who retains the exclusive right to use and
+monetize the entire codebase. If you do not agree, do not submit a PR.
+
+If you do agree, well-scoped areas to contribute:
 
 - **A new detection rule** — add a vuln class or language to
-  `umbra_core/pipeline/findings/` with a test in `tests/test_findings_engine.py`
-  (the [umbra-eval](https://github.com/bkd-dotcom/umbra-eval) corpus is where you
-  prove it against ground truth).
+  `umbra_core/pipeline/findings/` with a test in `tests/test_findings_engine.py`.
 - **An executor adapter** — wire a new coding agent behind the `Executor` protocol
-  (`umbra_core/executors/`); the pipeline is unchanged.
+  (`umbra_core/executors/`).
 - **Docs / examples** — clarify the admission pipeline, hardening, or a recipe.
 
 Every PR runs the test suite on Python 3.11–3.13 plus umbra-core's own admission
-self-check. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md); keep `auto_merge` false and governance
-logic in the kernel. Security issues: see [SECURITY.md](SECURITY.md) (private
-reporting), not a public issue.
+self-check. Read [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Security issues: see [SECURITY.md](SECURITY.md)
+(private reporting), not a public issue.
 
 ## License
 
-[MIT](LICENSE) © 2026 Binay Dalai.
+**Copyright (c) 2026 Binay Dalai. All rights reserved.** This code is not open
+source. You may not use, copy, modify, distribute, or commercialize it for your own
+personal or commercial purposes without explicit written permission from the author,
+who alone retains the right to use and monetize this project. See the notice at the
+top of this file and [CONTRIBUTING.md](CONTRIBUTING.md).
