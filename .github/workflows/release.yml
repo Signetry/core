@@ -1,16 +1,15 @@
 name: Release
 
-# Publishes umbra-core to PyPI when a version tag is pushed (e.g. v0.1.0).
-# Uses PyPI Trusted Publishing (OIDC) — no API token is stored as a secret.
+# Cuts a GitHub Release when a version tag is pushed (e.g. v0.5.3).
 #
-# One-time setup on PyPI (https://pypi.org/manage/account/publishing/):
-#   Project name:      umbra-core
-#   Owner:             bkd-dotcom
-#   Repository name:   umbra-core
-#   Workflow name:     release.yml
-#   Environment name:  pypi
+# umbra-core is SOURCE-AVAILABLE (All Rights Reserved) and is NOT published to
+# PyPI — it is installed from source by tag:
+#   pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+# The former PyPI Trusted-Publishing job was removed on the source-available
+# lockdown (all PyPI releases were yanked). This workflow only builds/tests and
+# attaches the built artifacts to a GitHub Release for convenience.
 #
-# Then: git tag v0.1.0 && git push origin v0.1.0
+# Then: git tag v0.5.3 && git push origin v0.5.3
 
 on:
   push:
@@ -38,7 +37,7 @@ jobs:
             echo "::error::Tag v$TAG does not match pyproject version $PKG"; exit 1
           fi
 
-      - name: Test before publishing
+      - name: Test before releasing
         run: |
           uv sync --extra dev
           uv run ruff check .
@@ -56,26 +55,8 @@ jobs:
           name: dist
           path: dist/
 
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/umbra-core/
-    permissions:
-      id-token: write   # OIDC token for Trusted Publishing
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
   github-release:
-    needs: publish
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write   # create the GitHub Release
@@ -104,6 +85,11 @@ jobs:
           if [ ! -s notes.md ]; then
             echo "Release ${GITHUB_REF_NAME}. See CHANGELOG.md." > notes.md
           fi
+          echo "" >> notes.md
+          echo "Source-available (All Rights Reserved); install from source:" >> notes.md
+          echo '```' >> notes.md
+          echo "pip install \"umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@${GITHUB_REF_NAME}\"" >> notes.md
+          echo '```' >> notes.md
           echo "Notes for ${GITHUB_REF_NAME}:"; cat notes.md
 
       - name: Create GitHub Release

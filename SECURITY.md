@@ -4,8 +4,10 @@ umbra-core is a security tool, so we hold its own security to a high bar.
 
 ## Supported versions
 
-Fixes land on the latest minor release published to
-[PyPI](https://pypi.org/project/umbra-core/). Always run the latest.
+Fixes land on the latest tagged release of the
+[source repo](https://github.com/bkd-dotcom/umbra-core/releases) (umbra-core is
+source-available and installed from source — not published to PyPI). Always run the
+latest.
 
 | Version | Supported |
 |---|---|
@@ -17,7 +19,8 @@ Fixes land on the latest minor release published to
 dev-key verification trust, and — in the companion GitHub Action `< v0.1.3` — a
 workflow script-injection sink). `0.5.1+` adds bring-your-own-key credential
 redaction for `--fix`. Pin the Action to `@v1` (which moves forward) or
-`@v0.1.3+`, and install `umbra-core>=0.5.0`.
+`@v0.1.3+`, and install `umbra-core` from source at `@v0.5.3` or later
+(`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"`).
 
 ## Reporting a vulnerability
 

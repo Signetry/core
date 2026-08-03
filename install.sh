@@ -4,22 +4,23 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/bkd-dotcom/umbra-core/main/install.sh | sh
 #
-# Installs the `umbra` CLI (the umbra-core PyPI package) using the best tool
-# available, preferring an isolated install so it never clobbers your project
-# environments:
+# Installs the `umbra` CLI (umbra-core) from its **source repo** using the best
+# tool available, preferring an isolated install so it never clobbers your project
+# environments. umbra-core is source-available (All Rights Reserved) and is NOT
+# published to PyPI, so all installs pull from git by tag:
 #
-#   1. uv    (uv tool install umbra-core)      — fastest, isolated
-#   2. pipx  (pipx install umbra-core)         — isolated
-#   3. pip   (pip install --user umbra-core)   — fallback
+#   1. uv    (uv tool install ...)      — fastest, isolated
+#   2. pipx  (pipx install ...)         — isolated
+#   3. pip   (pip install --user ...)   — fallback
 #
 # Honest + fail-closed: it prints exactly which tool it used, verifies `umbra`
 # is on PATH afterward, and exits non-zero if the install or the verification
 # failed. It never pipes anything else into a shell.
 set -eu
 
-VERSION="${UMBRA_VERSION:-}"     # optional: UMBRA_VERSION=0.3.0 sh install.sh
-SPEC="umbra-core"
-[ -n "$VERSION" ] && SPEC="umbra-core==${VERSION}"
+# optional: UMBRA_VERSION=0.5.3 sh install.sh  (defaults to the latest hardened tag)
+VERSION="${UMBRA_VERSION:-0.5.3}"
+SPEC="umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v${VERSION}"
 
 say() { printf '  %s\n' "$1"; }
 have() { command -v "$1" >/dev/null 2>&1; }

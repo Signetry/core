@@ -10,10 +10,11 @@ Codex, Cursor, Copilot, Devin, or a human, identically.
 > the agent would defeat the purpose. Every surface below is a checkpoint the
 > agent's change must pass through.
 
-## 1. PyPI package (the foundation)
+## 1. Python package from source (the foundation)
 
 ```bash
-pip install umbra-core           # or: uv pip install umbra-core
+# source-available (All Rights Reserved); not on PyPI — install from source
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 ```
 
 ```python
@@ -74,7 +75,7 @@ status check* in branch protection and nothing merges without a receipt.
 ## 4. MCP server (agents call governance themselves)
 
 ```bash
-pip install "umbra-core[mcp]"
+pip install "umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 python -m umbra_core.mcp_server            # stdio transport
 ```
 
@@ -101,6 +102,6 @@ wrap `run_admission` in your API framework of choice and persist passports with 
 |---|---|
 | Govern every agent with the least work | **GitHub Action** (surface 3) |
 | Govern on the developer's machine | **CLI + git hook** (surface 2) |
-| Let others build on it | **PyPI** (surface 1) |
+| Let others build on it | **Python package from source** (surface 1) |
 | Agents that speak MCP | **MCP server** (surface 4) |
 | A product with a UI | **Hosted API** (surface 5) |
