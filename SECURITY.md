@@ -20,7 +20,7 @@ dev-key verification trust, and â€” in the companion GitHub Action `< v0.1.3` â€
 workflow script-injection sink). `0.5.1+` adds bring-your-own-key credential
 redaction for `--fix`. Pin the Action to `@v1` (which moves forward) or
 `@v0.1.3+`, and install `umbra-core` from source at `@v0.5.3` or later
-(`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"`).
+(`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`).
 
 ## Reporting a vulnerability
 

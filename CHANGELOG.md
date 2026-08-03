@@ -5,6 +5,20 @@ All notable changes to **umbra-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.5.4] — 2026-08-03
+
+### Changed — source-available distribution (no PyPI)
+
+- umbra-core is **source-available** (All Rights Reserved) and is **no longer
+  published to PyPI** — all prior PyPI releases were yanked. Install from source:
+  `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`.
+- `install.sh` installs from the git tag (`UMBRA_VERSION` overrides), not PyPI.
+- `release.yml` no longer publishes to PyPI; it builds/tests and cuts a GitHub
+  Release with the git-source install command.
+- Docs (SECURITY, INTEGRATIONS, RELEASING, ORG_MIGRATION, docs/site, LAUNCH),
+  the bundled git hook, the MCP server hints, and the integrations action install
+  umbra-core from source. No functional/library API change from `0.5.3`.
+
 ## [0.5.3] — 2026-07-30
 
 ### Fixed — Codex sandbox on CI runners
