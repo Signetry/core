@@ -3,7 +3,8 @@
 ## Install
 
 ```bash
-pip install umbra-core          # or: uv pip install umbra-core
+# source-available (All Rights Reserved); not on PyPI — install from source
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 umbra completion zsh >> ~/.zshrc   # optional: shell completion (bash | zsh | fish)
 ```
 

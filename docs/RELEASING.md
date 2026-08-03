@@ -1,36 +1,32 @@
 # Releasing umbra-core
 
-Releases publish to [PyPI](https://pypi.org/project/umbra-core/) automatically
-via [`.github/workflows/release.yml`](.github/workflows/release.yml) when a
-version tag is pushed. Publishing uses **PyPI Trusted Publishing (OIDC)** — no
-API token is stored.
+umbra-core is **source-available** (All Rights Reserved) and is **not published to
+PyPI** — it is distributed and installed **from source by tag**:
 
-## One-time setup (per project, on PyPI)
+```bash
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+```
 
-1. Create the project owner account and sign in to PyPI.
-2. Go to **Account → Publishing → Add a pending publisher** and register:
-   - PyPI project name: `umbra-core`
-   - Owner: `bkd-dotcom`
-   - Repository name: `umbra-core`
-   - Workflow name: `release.yml`
-   - Environment name: `pypi`
-3. In the GitHub repo, create an **Environment** named `pypi`
-   (Settings → Environments). Optionally require a reviewer for the publish job.
+Pushing a version tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml),
+which verifies + tests + builds the artifacts and cuts a **GitHub Release** (the
+former PyPI Trusted-Publishing job was removed on the source-available lockdown, as
+all prior PyPI releases were yanked).
 
 ## Cutting a release
 
 1. Bump the version in [`pyproject.toml`](pyproject.toml) (`[project].version`).
-2. Commit: `git commit -am "release: v0.1.0"`.
+2. Commit: `git commit -am "release: v0.5.3"`.
 3. Tag and push:
    ```bash
-   git tag v0.1.0
+   git tag v0.5.3
    git push origin main --tags
    ```
 4. The `Release` workflow will:
    - verify the tag matches `pyproject.toml`,
    - run `ruff` + `pytest`,
    - build sdist + wheel and run `twine check`,
-   - publish to PyPI via OIDC.
+   - create a **GitHub Release** with the built artifacts and the git-source
+     install command (no PyPI upload).
 
 Verify locally before tagging:
 

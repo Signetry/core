@@ -26,7 +26,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install umbra-reviewer
-        run: pip install "umbra-reviewer>=0.1.0"
+        # source-available (All Rights Reserved); install from source, not PyPI.
+        run: pip install "umbra-reviewer @ git+https://github.com/bkd-dotcom/umbra-reviewer@v0.1.0"
 
       - name: Compute the PR diff
         env:

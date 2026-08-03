@@ -28,9 +28,9 @@ false — a human merges.
 ## Install
 
 ```bash
-pip install umbra-core
+# source-available (All Rights Reserved); not on PyPI — install from source
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 ```
 
-- Package: <https://pypi.org/project/umbra-core/>
+- Source (install from here): <https://github.com/bkd-dotcom/umbra-core>
 - Action (Marketplace): <https://github.com/marketplace/actions/umbra-admission>
-- Source: <https://github.com/bkd-dotcom/umbra-core>
