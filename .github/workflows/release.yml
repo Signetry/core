@@ -14,7 +14,10 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      # Only full semver tags (e.g. v0.5.4) cut a release. A moving major tag
+      # (if ever added) must not trigger this — its name won't match the
+      # pyproject version and would fail the tag/version check.
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: read
