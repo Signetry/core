@@ -34,7 +34,7 @@ jobs:
         with:
           path-to-signatures: "signatures/cla.json"
           path-to-document: "https://github.com/bkd-dotcom/umbra-core/blob/main/CLA.md"
-          branch: "main"
+          branch: "cla-signatures"
           allowlist: "dependabot[bot],bkd-dotcom"
           custom-notsigned-prcomment: "Thanks for your contribution! Before it can be merged, please read the **[Contributor License Agreement](https://github.com/bkd-dotcom/umbra-core/blob/main/CLA.md)** — Umbra is **All Rights Reserved**, and by signing you assign copyright/ownership of your contribution to the Owner (you may not use, sell, or commercialize it yourself). To agree, reply with exactly:"
           custom-pr-sign-comment: "I have read the CLA Document and I hereby sign the CLA"
