@@ -66,7 +66,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install Umbra
-        run: pip install --upgrade "umbra-core>=0.5.2"
+        # umbra-core is source-available (All Rights Reserved) and not on PyPI —
+        # install it from the source repo by tag.
+        run: pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
 
       - name: Install the executor CLI
         env:
