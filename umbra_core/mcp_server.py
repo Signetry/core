@@ -7,7 +7,7 @@ tools run the deterministic pipeline and return the earned authority + a signed
 receipt; the verdict is produced outside the model.
 
 Run it:
-    pip install "umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+    pip install "umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
     python -m umbra_core.mcp_server        # stdio transport
 
 Register it with an MCP client (e.g. Claude Code) pointing at this command.
@@ -106,7 +106,7 @@ def build_server():  # pragma: no cover - exercised only when mcp is installed
     except ImportError as exc:  # noqa: F841
         raise SystemExit(
             "The MCP server needs the optional dependency: pip install "
-            "'umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3'"
+            "'umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4'"
         ) from None
 
     mcp = FastMCP("umbra-core")

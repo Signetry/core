@@ -51,12 +51,12 @@ One core (`run_admission`), five checkpoints an agent's change must pass through
 
 ```bash
 # Source-available (not on PyPI). Install from the source repo:
-pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
 ```
 
 | Surface | Governs | Command |
 |---|---|---|
-| **Source install** | anything you script | `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"` |
+| **Source install** | anything you script | `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"` |
 | **CLI + git hook** | the agent on your machine | `umbra admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `umbra scan . --sarif` · `umbra scan . --fix` |
 | **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/bkd-dotcom/umbra-action) |

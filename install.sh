@@ -19,7 +19,7 @@
 set -eu
 
 # optional: UMBRA_VERSION=0.5.3 sh install.sh  (defaults to the latest hardened tag)
-VERSION="${UMBRA_VERSION:-0.5.3}"
+VERSION="${UMBRA_VERSION:-0.5.4}"
 SPEC="umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v${VERSION}"
 
 say() { printf '  %s\n' "$1"; }

@@ -4,7 +4,7 @@ umbra-core is **source-available** (All Rights Reserved) and is **not published 
 PyPI** — it is distributed and installed **from source by tag**:
 
 ```bash
-pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
 ```
 
 Pushing a version tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml),

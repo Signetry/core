@@ -46,7 +46,7 @@ runs:
     - name: Install umbra-core
       shell: bash
       # source-available (All Rights Reserved); not on PyPI — install from source.
-      run: pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3"
+      run: pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
 
     - name: Stage the PR change as a working-tree diff
       id: stage

@@ -20,7 +20,7 @@ if [[ "${UMBRA_SKIP:-0}" == "1" ]]; then
 fi
 
 if ! command -v umbra >/dev/null 2>&1; then
-  echo "umbra: CLI not found — install from source with 'pip install \"umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.3\"'." >&2
+  echo "umbra: CLI not found — install from source with 'pip install \"umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4\"'." >&2
   echo "umbra: skipping the governance gate (not installed)." >&2
   exit 0
 fi
