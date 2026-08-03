@@ -24,6 +24,18 @@ permissions:
 jobs:
   cla:
     runs-on: ubuntu-latest
+    # Skip the CLA gate for the Owner and bots (they are allowlisted). Skipping the
+    # job makes the required check "cla" resolve as passed for these actors, so
+    # their PRs never see a spurious CLA failure. Real contributors still run it.
+    if: >-
+      ${{
+        !(
+          github.event.pull_request.user.login == 'bkd-dotcom' ||
+          github.event.pull_request.user.login == 'dependabot[bot]' ||
+          github.event.issue.user.login == 'bkd-dotcom' ||
+          github.event.issue.user.login == 'dependabot[bot]'
+        )
+      }}
     # Skip Dependabot / the Owner's own automated PRs if desired; contributors still gate.
     steps:
       - name: CLA Assistant
