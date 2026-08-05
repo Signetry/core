@@ -78,7 +78,7 @@ jobs:
 
       - name: Post / update the review comment
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs'); const path = require('path');
