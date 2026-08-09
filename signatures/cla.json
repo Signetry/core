@@ -1,3 +1,12 @@
 {
-   "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "AdvaitVarhade",
+      "id": 199199199,
+      "comment_id": 5224799778,
+      "created_at": "2026-08-08T05:49:50Z",
+      "repoId": 1309100718,
+      "pullRequestNo": 73
+    }
+  ]
 }
