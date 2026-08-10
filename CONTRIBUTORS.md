@@ -19,4 +19,4 @@ owner.
 <!-- Contributors who have signed the CLA are added here (alphabetical by GitHub
      handle). To be credited, contribute a PR and sign the CLA. -->
 
-_Be the first — open a PR, sign the CLA, and your name goes here._
+- **Advait Varhade** ([@AdvaitVarhade](https://github.com/AdvaitVarhade)) — SSRF (CWE-918) detection rule for JavaScript/Node ([#73](https://github.com/bkd-dotcom/umbra-core/pull/73))
