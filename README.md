@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/brand/mark.png" alt="signetry" width="96" height="96"/>
+  <img src="https://raw.githubusercontent.com/Signetry/core/main/docs/assets/brand/mark.png" alt="signetry" width="96" height="96"/>
 </p>
 
 <h1 align="center">signetry</h1>
