@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- provenark — horizontal lockup: mark + mono wordmark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 128" role="img" aria-label="provenark">
+  <defs>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9D8DF1"/>
+      <stop offset="1" stop-color="#6E56CF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- mark -->
+  <g>
+    <rect x="2" y="2" width="124" height="124" rx="30" fill="#0E0F14"/>
+    <path d="M34 102 L64 26 L94 102" fill="none" stroke="#ECE7DA" stroke-width="10"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M46 78 L58 88 L84 62" fill="none" stroke="url(#seal)" stroke-width="10"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="64" cy="24" r="10" fill="url(#seal)" stroke="#0E0F14" stroke-width="3"/>
+  </g>
+
+  <!-- wordmark: mono, lowercase, tight; the seal dot rhymes with the mark's node -->
+  <text x="150" y="80"
+        font-family="'JetBrains Mono','IBM Plex Mono',ui-monospace,Menlo,monospace"
+        font-size="46" font-weight="700" letter-spacing="-2" fill="#0E0F14">proven<tspan fill="#6E56CF">ark</tspan></text>
+</svg>

@@ -1,4 +1,14 @@
-# umbra-core
+<p align="center">
+  <img src="docs/assets/brand/mark.svg" alt="provenark" width="96" height="96"/>
+</p>
+
+<h1 align="center">provenark</h1>
+
+<p align="center"><em>earned authority for every agent change — sealed in a signed receipt</em></p>
+
+<p align="center"><sub>package/CLI: <code>umbra-core</code> · <code>umbra</code> (rename in progress)</sub></p>
+
+---
 
 > **Copyright (c) 2026 Binay Dalai. All rights reserved.**
 > This repository is strictly for viewing and contributing to the original project. You may not use, copy, modify, distribute, or commercialize this code for your own personal or commercial projects without explicit written permission. Only the original author retains the right to use and monetize this project.

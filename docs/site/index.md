@@ -1,6 +1,10 @@
-# umbra-core
+<p align="center">
+  <img src="assets/brand/mark-transparent.svg" alt="provenark" width="88" height="88"/>
+</p>
 
-**An agent-agnostic change-control plane for coding agents.**
+# provenark
+
+**A change-control plane for coding agents.**
 
 Coding agents (Claude Code, Codex, Cursor, Copilot, Devin) can change your
 repository. umbra-core is the layer that decides **how much authority a given

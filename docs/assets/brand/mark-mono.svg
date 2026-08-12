@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- provenark — monochrome mark (single ink color, no gradient; for stamps, print, dark-on-light or light-on-dark via currentColor) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="provenark" fill="none">
+  <path d="M34 102 L64 26 L94 102" stroke="currentColor" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M46 78 L58 88 L84 62" stroke="currentColor" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="64" cy="24" r="10" fill="currentColor"/>
+</svg>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- provenark — social / OG card (1200x630) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="provenark">
+  <defs>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9D8DF1"/>
+      <stop offset="1" stop-color="#6E56CF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="34%" r="60%">
+      <stop offset="0" stop-color="#1a1830"/>
+      <stop offset="1" stop-color="#0E0F14"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- faint verification-tree lattice, very low opacity, as texture -->
+  <g stroke="#6E56CF" stroke-opacity="0.08" stroke-width="2">
+    <path d="M120 560 L300 360 L480 560 M300 360 L300 200 M480 560 L660 360 L840 560 M660 360 L660 200 M300 200 L480 90 L660 200"/>
+    <path d="M900 560 L1040 400 M1080 560 L1040 400 L1040 260"/>
+  </g>
+
+  <!-- mark -->
+  <g transform="translate(150,215) scale(1.55)">
+    <path d="M34 102 L64 26 L94 102" fill="none" stroke="#ECE7DA" stroke-width="10"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M46 78 L58 88 L84 62" fill="none" stroke="url(#seal)" stroke-width="10"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="64" cy="24" r="10" fill="url(#seal)"/>
+  </g>
+
+  <!-- wordmark + tagline -->
+  <text x="370" y="300" font-family="'JetBrains Mono',ui-monospace,Menlo,monospace"
+        font-size="90" font-weight="700" letter-spacing="-4" fill="#ECE7DA">proven<tspan fill="#9D8DF1">ark</tspan></text>
+  <text x="374" y="360" font-family="'JetBrains Mono',ui-monospace,Menlo,monospace"
+        font-size="28" letter-spacing="0" fill="#8f90a0">a change-control plane for coding agents</text>
+  <text x="374" y="404" font-family="'JetBrains Mono',ui-monospace,Menlo,monospace"
+        font-size="21" letter-spacing="0" fill="#5f606c">earned authority, sealed in a signed receipt.</text>
+</svg>
