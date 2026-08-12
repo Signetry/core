@@ -1,10 +1,10 @@
 # Live auto-fix PRs — setup
 
 The `signetry-autofix.yml` workflow scans a repo, has a **live executor** (Codex or
-Claude Code) draft a bounded fix per finding under the Umbra admission pipeline,
+Claude Code) draft a bounded fix per finding under the Signetry admission pipeline,
 and opens a **branch-only pull request** for each fix that earns branch-PR (L2)
 authority — with the Ed25519-signed receipt committed as `.signetry-receipt.json`.
-Umbra **never merges**; a human reviews and merges the PR.
+Signetry **never merges**; a human reviews and merges the PR.
 
 This page is the one-time setup to wire the executor credential.
 
@@ -23,7 +23,7 @@ model as workflow inputs; the key still lives only in your repo's secret.
 
 Verified live on IBM ICA: both executors draft a real fix that earns **L2** (in-
 scope, verified) with a signed receipt — see the demo PRs on
-[umbra-autofix-demo](https://github.com/Signetry/autofix-demo).
+[signetry-autofix-demo](https://github.com/Signetry/autofix-demo).
 
 > **Model note (IBM ICA):** Codex requires a model whose backend supports the
 > Responses API. On ICA, `gpt-5.5-gus` works; the `gpt-5.6-*-dzus` models route to
@@ -33,7 +33,7 @@ scope, verified) with a signed receipt — see the demo PRs on
 > **Known CI limitation:** running `codex exec`'s multi-turn agent mode *inside
 > GitHub Actions* against the ICA **beta** gateway can fail even when a one-shot
 > call and a local run succeed (a Responses-API/tool-use quirk of the beta proxy,
-> not of Umbra). If you hit this, run `--fix-agent claude-code` with the Anthropic
+> not of Signetry). If you hit this, run `--fix-agent claude-code` with the Anthropic
 > gateway inputs, or run the fusion locally (`signetry scan --fix`) where it is proven
 > to reach L2 + receipt + branch-only PR.
 
@@ -44,9 +44,9 @@ leaks.** This is enforced by the mechanism, not just policy:
 
 - **Your key lives in your repo.** The workflow reads
   `${{ secrets.OPENAI_API_KEY }}` / `${{ secrets.ANTHROPIC_API_KEY }}` from **your
-  own repository's** Actions secrets. There is no central Umbra key and no shared
+  own repository's** Actions secrets. There is no central Signetry key and no shared
   credential — if you don't set a secret, no live fix runs (the scan still works;
-  fusion degrades to the deterministic, no-change path). Publishing/adopting Umbra
+  fusion degrades to the deterministic, no-change path). Publishing/adopting Signetry
   never exposes anyone else's key to you or yours to them.
 - **Scoped to one step.** The credential is set in the *scan* step's `env` only.
   The PR-opening step runs without it. It is never written to disk or committed.
@@ -59,8 +59,8 @@ leaks.** This is enforced by the mechanism, not just policy:
 - **Never reaches your build/checks.** Required-check subprocesses run with an
   **allowlisted** environment (only `PATH`/`HOME`/`LANG`/… are copied) — API keys
   cannot reach an untrusted check by construction, not merely by a denylist.
-- **The executor only drafts; Umbra decides and never merges.** The key lets the
-  agent write a patch in a disposable checkout. Umbra is never given push/merge
+- **The executor only drafts; Signetry decides and never merges.** The key lets the
+  agent write a patch in a disposable checkout. Signetry is never given push/merge
   credentials for the fix; `auto_merge` is always false.
 
 If you self-host or run this across an org, each repo (or org secret you control)
@@ -84,7 +84,7 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 | `ANTHROPIC_API_KEY` | Claude Code | Your Anthropic API key |
 
 You only need the one matching your chosen `--fix-agent`. The workflow passes it to
-the executor's CLI as an environment variable; **Umbra itself never uses it to push
+the executor's CLI as an environment variable; **Signetry itself never uses it to push
 or merge** — the credential only lets the agent draft the patch in a disposable
 checkout.
 
@@ -128,7 +128,7 @@ on:
 
 ## 4. Run it
 
-- **Manually:** repo → **Actions → "Umbra auto-fix" → Run workflow**, pick the agent.
+- **Manually:** repo → **Actions → "Signetry auto-fix" → Run workflow**, pick the agent.
 - **Locally (to preview before enabling CI):**
 
   ```bash
@@ -141,7 +141,7 @@ on:
 
 ## What actually happens (and what never does)
 
-- For each finding, Umbra hands the agent a **bounded mission** ("fix this CWE at
+- For each finding, Signetry hands the agent a **bounded mission** ("fix this CWE at
   file:line; change only what's necessary"). The contract still bounds the change.
 - The drafted change runs through the **admission pipeline** (contract → trust
   boundary → required checks → independent verifier) and earns L0/L1/L2 from
@@ -150,7 +150,7 @@ on:
   reported but **not** opened as PRs.
 - Every PR body shows the earned authority and the receipt hash; the receipt is
   committed so an auditor can run `signetry verify .signetry-receipt.json` offline.
-- `auto_merge` is **always false**. Umbra opens branch-only PRs; a human merges.
+- `auto_merge` is **always false**. Signetry opens branch-only PRs; a human merges.
 
 ## Costs & limits
 

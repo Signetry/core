@@ -1,8 +1,8 @@
-# Umbra Contributor License Agreement (CLA)
+# Signetry Contributor License Agreement (CLA)
 
 **Copyright (c) 2026 Binay Dalai. All rights reserved.**
 
-Thank you for your interest in contributing to Umbra ("the Project"), owned by
+Thank you for your interest in contributing to Signetry ("the Project"), owned by
 Binay Dalai ("the Owner"). This Contributor License Agreement ("Agreement")
 governs any contribution you submit. You must agree to it before your contribution
 can be accepted.

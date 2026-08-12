@@ -6,7 +6,7 @@ the agent writes a file or runs a command: given ONE proposed path or command,
 decide allow/deny against the repository's ``.signetry/admission.yaml`` — instantly,
 deterministically, with no model and no network.
 
-This lets Umbra govern an agent from *inside* the editor without the agent
+This lets Signetry govern an agent from *inside* the editor without the agent
 governing itself: the hook runs this deterministic code, not the model.
 
 It is a *pre-flight* check, not a replacement for admission — the full pipeline

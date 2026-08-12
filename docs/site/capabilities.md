@@ -1,6 +1,6 @@
 # Capabilities & Proof
 
-Umbra v0.3.0 governs more than paths. This page covers the capability graph, the
+Signetry v0.3.0 governs more than paths. This page covers the capability graph, the
 plan binding, the dual verifier, the G1/G2/G3 proof gates, and extension admission
 — all deterministic, offline, and bound into the signed receipt.
 
@@ -28,7 +28,7 @@ signetry guard --repo . --command "docker run …" # deny if it matches denied_b
 
 ## Plan capability binding (CaMeL / DRIFT)
 
-Before the executor runs, Umbra freezes a **PlanCapabilitySet** from the mission +
+Before the executor runs, Signetry freezes a **PlanCapabilitySet** from the mission +
 contract — a hashable envelope of what the run may do (only a *digest* of the
 mission is bound, never its prose). After the run, the actual changeset is checked
 against that plan; a deviation caps authority (never widens it). The plan hash is

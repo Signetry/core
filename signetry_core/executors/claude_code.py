@@ -5,8 +5,8 @@ the *same* admission pipeline as Codex. It runs headless (``-p``) inside a
 disposable checkout with:
 
 - ``--bare`` — skips CLAUDE.md auto-discovery, so the agent does not silently
-  ingest untrusted repository instruction files. This reinforces Umbra's trust
-  boundary: the agent can't read manipulation Umbra hasn't vetted.
+  ingest untrusted repository instruction files. This reinforces Signetry's trust
+  boundary: the agent can't read manipulation Signetry hasn't vetted.
 - ``--disallowed-tools`` — git push/commit/merge and other authority-bearing
   commands are refused at the tool layer; the agent cannot self-grant authority.
 - the diff is recomputed from ``git`` on the final tree, so the signed change
@@ -122,7 +122,7 @@ class ClaudeCodeExecutor:
         command = [
             "claude", "-p", cli_prompt,
             "--output-format", "json",
-            "--bare",  # do NOT auto-read CLAUDE.md — Umbra's trust boundary owns that
+            "--bare",  # do NOT auto-read CLAUDE.md — Signetry's trust boundary owns that
             "--permission-mode", permission_mode,
             "--disallowed-tools", *_DISALLOWED_TOOLS,
             "--add-dir", str(repo_path),

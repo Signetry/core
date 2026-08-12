@@ -68,9 +68,9 @@ jobs:
 ```
 
 Every PR — no matter which agent opened it — gets an admission run, a verdict
-comment, and a signed receipt artifact. Make **"Umbra Admission"** a *required
+comment, and a signed receipt artifact. Make **"Signetry Admission"** a *required
 status check* in branch protection and nothing merges without a receipt.
-`auto_merge` is always false — Umbra governs the agent; a human merges.
+`auto_merge` is always false — Signetry governs the agent; a human merges.
 
 ## 4. MCP server (agents call governance themselves)
 

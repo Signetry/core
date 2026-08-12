@@ -4,7 +4,7 @@
 code it writes but through the **extensions it loads** — Claude/agent *skills*
 (a ``SKILL.md`` + scripts) and *MCP servers* (tools whose descriptions the model
 reads as instructions). A poisoned skill doc or a hijacking MCP tool description
-is prompt injection with a delivery mechanism Umbra's per-change pipeline never
+is prompt injection with a delivery mechanism Signetry's per-change pipeline never
 sees, because the manipulation rides in *before* the agent proposes anything.
 
 This module makes an extension a first-class governed object:
@@ -317,7 +317,7 @@ def asbom(extensions: list[AdmittedExtension], *, org: str | None = None) -> dic
         "specVersion": CYCLONEDX_SPEC,
         "metadata": {
             "timestamp": datetime.now(UTC).isoformat(),
-            "tools": [{"vendor": "Umbra", "name": "signetry-core", "components": []}],
+            "tools": [{"vendor": "Signetry", "name": "signetry-core", "components": []}],
             **({"component": {"type": "application", "name": org}} if org else {}),
         },
         "components": components,

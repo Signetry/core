@@ -1,13 +1,13 @@
 # GitHub Action
 
-**Umbra Admission** governs every pull request — from Claude Code, Codex, Cursor,
+**Signetry Admission** governs every pull request — from Claude Code, Codex, Cursor,
 Copilot, Devin, or a human — and attaches a signed receipt. On the
 [GitHub Marketplace](https://github.com/marketplace/actions/umbra-admission).
 
 ## Usage
 
 ```yaml
-name: Umbra Admission
+name: Signetry Admission
 on:
   pull_request:
 permissions:
@@ -27,7 +27,7 @@ jobs:
           signing-key: ${{ secrets.SIGNETRY_SIGNING_KEY }}   # optional: stable receipts
 ```
 
-Make **"Umbra Admission"** a *required status check* in branch protection (enable
+Make **"Signetry Admission"** a *required status check* in branch protection (enable
 it for administrators too) and nothing merges without a receipt.
 
 ## Inputs
@@ -39,7 +39,7 @@ it for administrators too) and nothing merges without a receipt.
 | `agent` | `""` | Force `codex-cli`/`claude-code` to re-run; blank governs the existing diff. |
 | `signing-key` | `""` | Base64 Ed25519 key (32+ bytes) for stable receipts. |
 | `require-sandbox` | `false` | Fail closed if code-executing checks can't run sandboxed. |
-| `umbra-version` | latest | Pin a specific `signetry-core` source **tag** (e.g. `0.5.4`). Installed from the source repo — not PyPI. |
+| `signetry-version` | latest | Pin a specific `signetry-core` source **tag** (e.g. `0.5.4`). Installed from the source repo — not PyPI. |
 | `python-version` | `3.12` | Python to run on. |
 
 ## Behavior

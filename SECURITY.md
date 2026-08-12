@@ -79,7 +79,7 @@ attack surface. Its safety rests on three properties, all enforced by the mechan
 - **Bring-your-own-key, isolated.** The executor credential is read from the
   caller's own environment (a repo secret in CI). It is scoped to the drafting step,
   never written to git, never passed to `git push`/merge, and never shared with any
-  other run or repo. Umbra redacts credential shapes from the diff, the receipt, and
+  other run or repo. Signetry redacts credential shapes from the diff, the receipt, and
   every artifact before serialising, and the CI workflow additionally masks the
   value and **fails closed** if any credential shape appears in the output.
 - **Disposable, credential-free drafting checkout.** The agent edits a throwaway
@@ -130,5 +130,5 @@ sufficiently adversarial repo is out of scope — scan such repos read-only
   repositories you don't fully trust; only enable `--fix` where you'd let an agent
   edit the code anyway.
 - **Rotate on exposure.** If a key was ever pasted outside a secret store, rotate
-  it. Umbra redacts credential shapes from its own outputs, but treat any key that
+  it. Signetry redacts credential shapes from its own outputs, but treat any key that
   left a secret manager as compromised.

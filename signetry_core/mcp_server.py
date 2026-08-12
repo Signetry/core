@@ -113,14 +113,14 @@ def build_server():  # pragma: no cover - exercised only when mcp is installed
 
     @mcp.tool()
     def signetry_admit(repo_path: str, mission: str, agent: str | None = None, label: str | None = None) -> dict[str, Any]:
-        """Run the Umbra admission pipeline on a checkout: govern an agent's change
+        """Run the Signetry admission pipeline on a checkout: govern an agent's change
         (contract, trust boundary, checks, independent verifier) and return the
         earned authority (0/1/2) plus a signed receipt. auto_merge is always false."""
         return _admit(repo_path, mission, agent, label)
 
     @mcp.tool()
     def signetry_verify(receipt_json: str, public_key: str | None = None) -> dict[str, Any]:
-        """Verify a signed Umbra receipt against a pinned public key. Pass the
+        """Verify a signed Signetry receipt against a pinned public key. Pass the
         production public_key; without it, verification of a dev-key receipt is
         refused (the dev seed is public)."""
         return _verify(receipt_json, public_key)

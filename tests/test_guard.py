@@ -99,7 +99,7 @@ def test_cli_guard_hook_output_denies(tmp_path, capsys):
     assert rc == 0  # hook-output always exits 0; the JSON carries the deny
     decision = json.loads(out)
     assert decision["hookSpecificOutput"]["permissionDecision"] == "deny"
-    assert "Umbra" in decision["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "Signetry" in decision["hookSpecificOutput"]["permissionDecisionReason"]
 
 
 def test_cli_guard_allow_exit_code(tmp_path):

@@ -271,7 +271,7 @@ def cmd_gates(args: argparse.Namespace) -> int:
 
 
 def cmd_comment(args: argparse.Namespace) -> int:
-    """Render the canonical Umbra PR-comment markdown from an ``admit --json`` payload.
+    """Render the canonical Signetry PR-comment markdown from an ``admit --json`` payload.
 
     Reads the ``{report, receipt}`` JSON (from a file or stdin) and prints the exact
     PR-comment template the architecture freezes, so the GitHub Action and every
@@ -352,7 +352,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",
                     "permissionDecision": "deny",
-                    "permissionDecisionReason": f"Umbra: {decision.reason}",
+                    "permissionDecisionReason": f"Signetry: {decision.reason}",
                 }
             }))
         return 0
@@ -366,7 +366,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
 
 # A commented starter contract written by `signetry init`. Conservative by default:
 # dependency-manifest scope, small diff budget, deploy/CI/secrets off-limits.
-_STARTER_CONTRACT = """# Umbra executable change contract — the machine-enforced boundary for agent work.
+_STARTER_CONTRACT = """# Signetry executable change contract — the machine-enforced boundary for agent work.
 # Docs: https://github.com/Signetry/signetry  ·  edited by humans, versioned in git.
 version: 2
 task_type: dependency-remediation

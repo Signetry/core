@@ -1,10 +1,10 @@
 """SLSA / in-toto provenance for admission receipts.
 
-An Umbra Remediation Receipt is proof of *how much authority a change earned and
+An Signetry Remediation Receipt is proof of *how much authority a change earned and
 why*. This module expresses that same evidence in the **in-toto Statement** shape
 carrying a **SLSA Provenance v1 predicate**, so a receipt plugs into existing
 supply-chain tooling (Sigstore, `slsa-verifier`, GitHub attestations) instead of
-being an Umbra-only artifact.
+being an Signetry-only artifact.
 
 Mapping (honest, lossless where the vocabularies align):
 - ``subject``            — the change: the diff hash as a digest, named by repo/commit.

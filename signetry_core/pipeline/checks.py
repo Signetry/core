@@ -10,7 +10,7 @@ declare an arbitrary command — so execution is constrained on three axes and t
    (``npm test``, ``npm ci``, ``pytest``, ``true``/``false`` for evals, …). A
    declared command that doesn't match a profile is reported ``blocked`` and never
    executed. This is the primary control — a repo cannot run ``curl … | sh``.
-2. **Scrubbed environment.** The child gets a minimal env with every Umbra/OpenAI/
+2. **Scrubbed environment.** The child gets a minimal env with every Signetry/OpenAI/
    GitHub/cloud secret stripped, so a check can't read credentials.
 3. **Isolation, by the strongest tier that actually preflights.** A repo's build
    scripts (``npm install``) are hostile code, so we run them under the strongest

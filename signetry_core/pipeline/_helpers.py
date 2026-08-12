@@ -1,6 +1,6 @@
 """Small, self-contained deterministic helpers used across the pipeline.
 
-Ported from Umbra's ``features.py`` / ``remediation.py`` and trimmed to what the
+Ported from Signetry's ``features.py`` / ``remediation.py`` and trimmed to what the
 governance core needs. No model, no network.
 """
 from __future__ import annotations

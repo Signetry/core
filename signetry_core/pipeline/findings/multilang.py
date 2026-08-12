@@ -2,7 +2,7 @@
 
 The Python AST engine gives precise, low-FP coverage for Python; JavaScript/TS get
 targeted regex rules. This module extends breadth to the other common server
-languages so Umbra can scan polyglot real-world repos (the axis where LLM scanners
+languages so Signetry can scan polyglot real-world repos (the axis where LLM scanners
 otherwise had an edge). Each rule is written narrowly — it requires a user-input or
 concatenation/interpolation signal — so a compiled-in constant does not trip it.
 
