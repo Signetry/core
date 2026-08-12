@@ -5,7 +5,7 @@ Live links:
 - **Marketplace:** https://github.com/marketplace/actions/umbra-admission
 - Source (install from here; not on PyPI): https://github.com/Signetry/core
 - Action: https://github.com/Signetry/action
-- Demo (see the PRs): https://github.com/bkd-dotcom/umbra-demo-repo/pulls
+- Demo (see the PRs): https://github.com/Signetry/autofix-demo/pulls
 
 ---
 
@@ -94,7 +94,7 @@ jobs:
 ```
 
 Live demo — a permitted change passes, a forbidden `deploy.yml` edit is blocked:
-https://github.com/bkd-dotcom/umbra-demo-repo/pulls
+https://github.com/Signetry/autofix-demo/pulls
 
 Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`
 → `signetry admit`), a git pre-push hook, an MCP server, or a Python library.
