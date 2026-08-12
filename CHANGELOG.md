@@ -5,6 +5,16 @@ All notable changes to **signetry-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.6.0] — 2026-08-12
+
+### Changed — renamed to signetry-core (BREAKING)
+
+- Platform renamed to **Signetry**. The kernel is now **signetry-core** (import
+  `signetry_core`, CLI `signetry`). Environment variables `UMBRA_*` → `SIGNETRY_*`,
+  config directory `.umbra/` → `.signetry/`, and receipt/provenance schema
+  identifiers moved to the `signetry` namespace. No backward-compatible fallbacks.
+- Install: `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`.
+
 ## [Unreleased]
 
 ### Changed — project rename: `umbra-core` → `signetry-core` (BREAKING, no fallback)

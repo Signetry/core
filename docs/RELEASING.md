@@ -4,7 +4,7 @@ signetry-core is **source-available** (All Rights Reserved) and is **not publish
 PyPI** — it is distributed and installed **from source by tag**:
 
 ```bash
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
 ```
 
 Pushing a version tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml),

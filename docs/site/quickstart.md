@@ -4,7 +4,7 @@
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
 signetry completion zsh >> ~/.zshrc   # optional: shell completion (bash | zsh | fish)
 ```
 
