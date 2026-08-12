@@ -27,9 +27,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bkd-dotcom/umbra-core"
-Repository = "https://github.com/bkd-dotcom/umbra-core"
-Issues = "https://github.com/bkd-dotcom/umbra-core/issues"
+Homepage = "https://github.com/Signetry/core"
+Repository = "https://github.com/Signetry/core"
+Issues = "https://github.com/Signetry/core/issues"
 
 [project.scripts]
 umbra = "umbra_core.cli:main"

@@ -47,9 +47,9 @@ done
    READMEs, `docs/site/*`, `integrations/github-action/example-workflow.yml`,
    `umbra-action` README/`action.yml` comments, `umbra-plugins`
    `.claude-plugin/marketplace.json`, `docs/INTEGRATIONS.md`, `docs/LAUNCH.md`.
-   Also update the `git+https://github.com/bkd-dotcom/umbra-core@vX.Y.Z` install
+   Also update the `git+https://github.com/Signetry/core@vX.Y.Z` install
    references (READMEs, workflows, `action.yml`, install.sh) to the new owner.
-4. **Action pin** — `uses: bkd-dotcom/umbra-action@v1` → `uses: <ORG>/umbra-action@v1`
+4. **Action pin** — `uses: Signetry/action@v1` → `uses: <ORG>/umbra-action@v1`
    (the redirect keeps the old one working, but update docs for correctness).
 5. **Docs site** — GitHub Pages / custom domain on `<ORG>/umbra-core`.
 6. **Marketplace** — confirm the `umbra-action` listing shows the new owner.

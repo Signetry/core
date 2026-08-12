@@ -7,7 +7,7 @@ body:
       value: |
         For **security vulnerabilities** (scope bypass, authority escalation,
         receipt forgery, secret exposure) do NOT use this form — see
-        [SECURITY.md](https://github.com/bkd-dotcom/umbra-core/security/policy).
+        [SECURITY.md](https://github.com/Signetry/core/security/policy).
   - type: input
     id: version
     attributes:

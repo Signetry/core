@@ -21,7 +21,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0                       # base must be reachable for the diff
-      - uses: bkd-dotcom/umbra-action@v1
+      - uses: Signetry/action@v1
         with:
           min-authority: "1"                   # 0 observe · 1 analyze · 2 branch-PR
           signing-key: ${{ secrets.UMBRA_SIGNING_KEY }}   # optional: stable receipts

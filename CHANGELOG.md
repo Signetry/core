@@ -11,7 +11,7 @@ change between minor versions.
 
 - umbra-core is **source-available** (All Rights Reserved) and is **no longer
   published to PyPI** — all prior PyPI releases were yanked. Install from source:
-  `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`.
+  `pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`.
 - `install.sh` installs from the git tag (`UMBRA_VERSION` overrides), not PyPI.
 - `release.yml` no longer publishes to PyPI; it builds/tests and cuts a GitHub
   Release with the git-source install command.
@@ -84,7 +84,7 @@ draft a fix that earns L2 through the admission pipeline.
 - **CLI**: `umbra scan` with `--json`/`--sarif`/`--output`, `--fail-on`, and the
   opt-in `--semgrep`/`--treesitter` layers.
 
-Benchmark (see bkd-dotcom/umbra-eval): 52-case public corpus across 7 languages —
+Benchmark (see Signetry/eval): 52-case public corpus across 7 languages —
 umbra-core **100% recall / 0 false positives** vs claude-code-security-review
 (Opus 4.8) 90%.
 
@@ -321,12 +321,12 @@ No functional or security changes to the library since 0.1.3.
 
 > Note: `0.1.0`–`0.1.2` are superseded by `0.1.3`. See [SECURITY.md](SECURITY.md).
 
-[0.2.1]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.2.1
-[0.2.0]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.2.0
-[0.1.4]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.1.4
-[0.1.3]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.1.3
-[0.1.2]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.1.2
-[0.1.1]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.1.1
-[0.1.0]: https://github.com/bkd-dotcom/umbra-core/releases/tag/v0.1.0
+[0.2.1]: https://github.com/Signetry/core/releases/tag/v0.2.1
+[0.2.0]: https://github.com/Signetry/core/releases/tag/v0.2.0
+[0.1.4]: https://github.com/Signetry/core/releases/tag/v0.1.4
+[0.1.3]: https://github.com/Signetry/core/releases/tag/v0.1.3
+[0.1.2]: https://github.com/Signetry/core/releases/tag/v0.1.2
+[0.1.1]: https://github.com/Signetry/core/releases/tag/v0.1.1
+[0.1.0]: https://github.com/Signetry/core/releases/tag/v0.1.0
 
 <!-- cla skip verify 1785776744 -->

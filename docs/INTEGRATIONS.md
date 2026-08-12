@@ -14,7 +14,7 @@ Codex, Cursor, Copilot, Devin, or a human, identically.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
+pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
 ```python
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with: { ref: ${{ github.event.pull_request.head.sha }}, fetch-depth: 0 }
-      - uses: bkd-dotcom/umbra-action@v1
+      - uses: Signetry/action@v1
         with:
           min-authority: "1"
           signing-key: ${{ secrets.UMBRA_SIGNING_KEY }}
@@ -75,7 +75,7 @@ status check* in branch protection and nothing merges without a receipt.
 ## 4. MCP server (agents call governance themselves)
 
 ```bash
-pip install "umbra-core[mcp] @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
+pip install "umbra-core[mcp] @ git+https://github.com/Signetry/core@v0.5.4"
 python -m umbra_core.mcp_server            # stdio transport
 ```
 

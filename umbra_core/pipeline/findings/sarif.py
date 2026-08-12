@@ -32,7 +32,7 @@ _SECURITY_SEVERITY = {
     Severity.INFO: "1.0",
 }
 
-_TOOL_URI = "https://github.com/bkd-dotcom/umbra-core"
+_TOOL_URI = "https://github.com/Signetry/core"
 
 
 def _rule_id(f: Finding) -> str:

@@ -2,12 +2,12 @@
 
 umbra-core is a security tool; we hold its own security to a high bar. The full
 policy (supported versions, **private** vulnerability reporting) is in
-[`SECURITY.md`](https://github.com/bkd-dotcom/umbra-core/security/policy).
+[`SECURITY.md`](https://github.com/Signetry/core/security/policy).
 
 ## Report a vulnerability
 
 Do **not** open a public issue. Use private reporting:
-<https://github.com/bkd-dotcom/umbra-core/security/advisories/new>
+<https://github.com/Signetry/core/security/advisories/new>
 
 ## Honest scope
 

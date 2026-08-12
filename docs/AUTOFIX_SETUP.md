@@ -23,7 +23,7 @@ model as workflow inputs; the key still lives only in your repo's secret.
 
 Verified live on IBM ICA: both executors draft a real fix that earns **L2** (in-
 scope, verified) with a signed receipt — see the demo PRs on
-[umbra-autofix-demo](https://github.com/bkd-dotcom/umbra-autofix-demo).
+[umbra-autofix-demo](https://github.com/Signetry/autofix-demo).
 
 > **Model note (IBM ICA):** Codex requires a model whose backend supports the
 > Responses API. On ICA, `gpt-5.5-gus` works; the `gpt-5.6-*-dzus` models route to

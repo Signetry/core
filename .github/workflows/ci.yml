@@ -89,7 +89,7 @@ jobs:
           uv run umbra --json admit . \
             --agent none \
             --mission "Governed change to umbra-core; must stay within the repo contract and pass the suite." \
-            --label "bkd-dotcom/umbra-core" \
+            --label "Signetry/core" \
             --min-authority 1 \
             --receipt-out "$OUT/umbra-receipt.json" | tee "$OUT/umbra-report.json"
 

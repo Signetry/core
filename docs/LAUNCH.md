@@ -3,8 +3,8 @@
 Copy-paste-ready announcement copy for umbra-core / the Umbra Admission action.
 Live links:
 - **Marketplace:** https://github.com/marketplace/actions/umbra-admission
-- Source (install from here; not on PyPI): https://github.com/bkd-dotcom/umbra-core
-- Action: https://github.com/bkd-dotcom/umbra-action
+- Source (install from here; not on PyPI): https://github.com/Signetry/core
+- Action: https://github.com/Signetry/action
 - Demo (see the PRs): https://github.com/bkd-dotcom/umbra-demo-repo/pulls
 
 ---
@@ -34,7 +34,7 @@ provenance. Make it a required status check and nothing merges without a receipt
 `auto_merge` is always false — a human merges.
 
 Agent-agnostic; **source-available** (All Rights Reserved — not open source),
-installed from source (`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`).
+installed from source (`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`).
 On the GitHub Marketplace:
 https://github.com/marketplace/actions/umbra-admission
 
@@ -89,18 +89,18 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with: { ref: "${{ github.event.pull_request.head.sha }}", fetch-depth: 0 }
-      - uses: bkd-dotcom/umbra-action@v1
+      - uses: Signetry/action@v1
         with: { min-authority: "1" }
 ```
 
 Live demo — a permitted change passes, a forbidden `deploy.yml` edit is blocked:
 https://github.com/bkd-dotcom/umbra-demo-repo/pulls
 
-Also usable as a CLI (`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`
+Also usable as a CLI (`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`
 → `umbra admit`), a git pre-push hook, an MCP server, or a Python library.
 Source-available (All Rights Reserved — not open source).
 
-Core: https://github.com/bkd-dotcom/umbra-core
+Core: https://github.com/Signetry/core
 
 ---
 

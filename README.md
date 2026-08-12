@@ -14,11 +14,11 @@
 > This repository is strictly for viewing and contributing to the original project. You may not use, copy, modify, distribute, or commercialize this code for your own personal or commercial projects without explicit written permission. Only the original author retains the right to use and monetize this project.
 
 
-[![CI](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bkd-dotcom/umbra-core/actions/workflows/ci.yml)
+[![CI](https://github.com/Signetry/core/actions/workflows/ci.yml/badge.svg)](https://github.com/Signetry/core/actions/workflows/ci.yml)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Umbra%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
 [![Docs](https://img.shields.io/badge/docs-umbra--core-blue)](https://binaydalai.me/umbra-core/)
 [![Source-available](https://img.shields.io/badge/source-available-informational.svg)](CLA.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/bkd-dotcom/umbra-umbrella/issues/10)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/Signetry/signetry/issues/10)
 
 **An agent-agnostic change-control plane for coding agents.**
 
@@ -61,17 +61,17 @@ One core (`run_admission`), five checkpoints an agent's change must pass through
 
 ```bash
 # Source-available (not on PyPI). Install from the source repo:
-pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
+pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
 | Surface | Governs | Command |
 |---|---|---|
-| **Source install** | anything you script | `pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"` |
+| **Source install** | anything you script | `pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"` |
 | **CLI + git hook** | the agent on your machine | `umbra admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `umbra scan . --sarif` · `umbra scan . --fix` |
-| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/bkd-dotcom/umbra-action) |
+| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/Signetry/action) |
 | **MCP server** | agents that speak MCP | `python -m umbra_core.mcp_server` |
-| **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [bkd-dotcom/umbra-plugins](https://github.com/bkd-dotcom/umbra-plugins) |
+| **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [bkd-dotcom/umbra-plugins](https://github.com/Signetry/plugins) |
 | **Hosted API** | any CI/agent that posts a change | see [umbra.engineer](https://umbra.engineer) |
 
 The GitHub Action is the highest-reach checkpoint: it sits at the repo, so it
@@ -96,7 +96,7 @@ umbra scan . --fail-on high                     # non-zero exit to gate CI
 ```
 
 On a public 52-case, 7-language benchmark (see
-[bkd-dotcom/umbra-eval](https://github.com/bkd-dotcom/umbra-eval)), the engine
+[Signetry/eval](https://github.com/Signetry/eval)), the engine
 reaches **100% recall at 0 false positives** — matching/leading a top LLM scanner
 while staying deterministic, offline, and free.
 
@@ -363,8 +363,8 @@ contribution to the owner, who alone may use and monetize the codebase. You are
 right to use, sell, or rebrand it. If you don't agree, don't submit a PR.
 
 🌱 **Where to start:** the
-[good-first-issues board](https://github.com/bkd-dotcom/umbra-umbrella/issues/10)
-and [Discussions](https://github.com/bkd-dotcom/umbra-umbrella/discussions).
+[good-first-issues board](https://github.com/Signetry/signetry/issues/10)
+and [Discussions](https://github.com/Signetry/signetry/discussions).
 Well-scoped areas here:
 
 - **A new detection rule** — add a vuln class or language to

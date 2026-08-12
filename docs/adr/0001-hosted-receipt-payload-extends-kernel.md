@@ -77,4 +77,4 @@ change with no governance benefit:
 
 - `umbra_core/pipeline/receipt.py` — kernel `build_receipt` / `verify_receipt`.
 - Hosted `backend/receipt.py` — app payload assembly + the delegation note.
-- [`umbra-umbrella` ARCHITECTURE](https://github.com/bkd-dotcom/umbra-umbrella/blob/main/ARCHITECTURE.md) — platform overview.
+- [`umbra-umbrella` ARCHITECTURE](https://github.com/Signetry/signetry/blob/main/ARCHITECTURE.md) — platform overview.

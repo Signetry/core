@@ -27,7 +27,7 @@ jobs:
 
       - name: Install umbra-reviewer
         # source-available (All Rights Reserved); install from source, not PyPI.
-        run: pip install "umbra-reviewer @ git+https://github.com/bkd-dotcom/umbra-reviewer@v0.1.1"
+        run: pip install "umbra-reviewer @ git+https://github.com/Signetry/reviewer@v0.1.1"
 
       - name: Compute the PR diff
         env:
