@@ -9,7 +9,7 @@ such content so it can be quarantined from the agent's writable-task context.
 Honest scope (what this is and is NOT):
 - This is a deterministic detector for a defined set of manipulation patterns
   (regex-based). A determined attacker can paraphrase around any fixed pattern set —
-  so detection is deliberately NOT the security claim. It demonstrates that Umbra
+  so detection is deliberately NOT the security claim. It demonstrates that Signetry
   treats repository text as data and can catch *tested* injection attempts. It is NOT
   a claim to prevent all prompt injection — no such guarantee exists. Reports say
   "flagged this content", never "the repo is safe".
@@ -275,9 +275,9 @@ def scan_structural(text: str, source: str) -> list[QuarantineFinding]:
     return findings
 
 
-_REDACTION = "[Umbra: line quarantined as untrusted repository content — excluded from the agent's task context]"
+_REDACTION = "[Signetry: line quarantined as untrusted repository content — excluded from the agent's task context]"
 _FULL_REDACTION = (
-    "[Umbra: this untrusted instruction file was fully quarantined — its entire "
+    "[Signetry: this untrusted instruction file was fully quarantined — its entire "
     "contents are treated as data and withheld from the agent's task context.]\n"
 )
 
@@ -298,7 +298,7 @@ def _quarantine_mode() -> str:
 
 def sanitize_text(text: str, source: str) -> tuple[str, int]:
     """Return ``text`` with untrusted manipulation quarantined, plus the count of
-    redacted lines. The sanitized text is what Umbra hands the agent as context.
+    redacted lines. The sanitized text is what Signetry hands the agent as context.
 
     In ``line`` mode (default) flagged lines are replaced with a marker. The whole
     file is quarantined instead when (a) ``SIGNETRY_QUARANTINE_MODE=full`` or (b) a
@@ -449,15 +449,15 @@ def build_context_manifest(
     """Record, for the signed receipt, exactly what the coding agent was allowed to
     trust while deciding — not only what it changed.
 
-    - ``trusted_policy``    — Umbra-owned instruction sources (the mission/contract).
+    - ``trusted_policy``    — Signetry-owned instruction sources (the mission/contract).
       These are the ONLY inputs treated as instructions.
-    - ``included_evidence`` — repository-derived context **Umbra supplied to the model**
+    - ``included_evidence`` — repository-derived context **Signetry supplied to the model**
       as QUOTED EVIDENCE (never as instructions). Each entry: ``{source, class, treatment}``.
     - ``excluded`` / ``redaction_count`` — untrusted instruction files that were
       redacted on disk before the agent ran (from the trust-boundary scan), with the
       count of quarantined lines and the categories seen.
 
-    Scoped honestly: this records the context **Umbra constructs and supplies**. A
+    Scoped honestly: this records the context **Signetry constructs and supplies**. A
     workspace-access agent may independently read files in the checkout, and the CLI
     does not expose a complete read log, so this is not a claim to enumerate everything
     the model saw, nor a guarantee against all prompt injection.
@@ -471,9 +471,9 @@ def build_context_manifest(
         "redaction_count": (tb_result.quarantined_count if tb_result else 0),
         "excluded_categories": categories,
         "invariant": (
-            "Repository text that Umbra supplies in its constructed context is passed to "
+            "Repository text that Signetry supplies in its constructed context is passed to "
             "the coding agent as quoted evidence, never as executable instructions. Only "
-            "Umbra-owned policy is treated as instruction. Untrusted instruction files are "
+            "Signetry-owned policy is treated as instruction. Untrusted instruction files are "
             "redacted on disk before the agent runs. This does not enumerate every file the "
             "agent may independently read, nor guarantee against all prompt injection."
         ),

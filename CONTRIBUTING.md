@@ -13,7 +13,7 @@ I have read the CLA Document and I hereby sign the CLA
 ```
 
 Your acceptance is recorded in `signatures/cla.json`. A PR **cannot be merged** until
-the CLA is signed. Umbra is **not open source** (All Rights Reserved) — by signing
+the CLA is signed. Signetry is **not open source** (All Rights Reserved) — by signing
 you assign copyright/ownership of your contribution to the Owner and gain no right to
 use, sell, or commercialize it yourself.
 

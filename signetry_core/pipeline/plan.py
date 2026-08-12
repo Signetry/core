@@ -1,6 +1,6 @@
 """Plan capability binding (CaMeL / DRIFT line) — freeze what a run may do.
 
-Before an executor runs, Umbra derives a **PlanCapabilitySet** from the mission
+Before an executor runs, Signetry derives a **PlanCapabilitySet** from the mission
 and the contract: the concrete, frozen set of capabilities this specific run is
 permitted to exercise (allowed/forbidden paths, diff budget, tool/MCP/skill
 allowlists, network posture). The set is:

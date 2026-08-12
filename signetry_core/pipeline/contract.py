@@ -19,7 +19,7 @@ Design invariants:
 - Safe default: when a repo ships no ``.signetry/admission.yaml``, a conservative
   default contract applies (dependency-manifest scope, small diff budget) so the
   feature is meaningful even without per-repo configuration.
-- Never widens authority: the contract can only *restrict* what Umbra does. It
+- Never widens authority: the contract can only *restrict* what Signetry does. It
   never grants auto-merge or any authority the rest of the system doesn't already
   gate behind a human.
 """
@@ -364,7 +364,7 @@ def is_malformed_path(path: str) -> bool:
     Git output that has been quoted/escaped (non-ASCII under the default
     ``core.quotePath``), or that contains traversal/absolute/NUL/backslash
     components, cannot be matched reliably against globs — a permissive miss
-    would be a scope bypass. We fail closed on these. (Umbra reads git paths with
+    would be a scope bypass. We fail closed on these. (Signetry reads git paths with
     ``core.quotePath=false`` so legitimate non-ASCII names arrive unquoted; a path
     that still looks quoted here is anomalous.)
     """

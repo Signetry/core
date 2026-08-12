@@ -75,7 +75,7 @@ class ExecutionResult:
 
 @runtime_checkable
 class Executor(Protocol):
-    """Any coding agent Umbra can govern.
+    """Any coding agent Signetry can govern.
 
     Implementations wrap a CLI or API (Codex, Claude Code, Cursor, …) behind
     this single contract. The governance core depends only on this protocol, so

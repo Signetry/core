@@ -10,7 +10,7 @@
 
 `signetry-core` defines the canonical **Remediation Receipt**: a signed
 (`Ed25519`), canonicalized record of one governed change — kind
-`umbra.remediation-receipt`. The hosted platform (`umbra` / umbra.engineer)
+`signetry.remediation-receipt`. The hosted platform (`umbra` / umbra.engineer)
 produces receipts for the same purpose but through an app-specific pipeline that
 knows about things the kernel deliberately does not: OSV advisories and the Codex
 CLI configuration that ran.
@@ -77,4 +77,4 @@ change with no governance benefit:
 
 - `signetry_core/pipeline/receipt.py` — kernel `build_receipt` / `verify_receipt`.
 - Hosted `backend/receipt.py` — app payload assembly + the delegation note.
-- [`umbra-umbrella` ARCHITECTURE](https://github.com/Signetry/signetry/blob/main/ARCHITECTURE.md) — platform overview.
+- [`signetry-umbrella` ARCHITECTURE](https://github.com/Signetry/signetry/blob/main/ARCHITECTURE.md) — platform overview.

@@ -1,6 +1,6 @@
 """Codex CLI executor — adapts ``codex exec`` to the Executor protocol.
 
-Ported from Umbra's original ``codex_client.py`` and reshaped to the
+Ported from Signetry's original ``codex_client.py`` and reshaped to the
 agent-agnostic :class:`~signetry_core.executors.base.Executor` interface. Codex is
 run against a disposable checkout with a hard no-push/no-merge instruction and
 no GitHub write credentials.
@@ -117,7 +117,7 @@ class CodexExecutor:
         # sandbox cannot initialize (e.g. a CI runner with clamped user namespaces),
         # the operator may select a mode that works there via SIGNETRY_CODEX_SANDBOX.
         # This is safe in that context because the executor only DRAFTS a change in
-        # a disposable checkout with no push/merge credentials, and Umbra's admission
+        # a disposable checkout with no push/merge credentials, and Signetry's admission
         # pipeline (contract, verifier, sandboxed required checks) governs the result
         # regardless of how the draft was produced.
         override = os.getenv("SIGNETRY_CODEX_SANDBOX", "").strip()

@@ -1,6 +1,6 @@
 """Fusion: turn a detection finding into a governed, receipted fix proposal.
 
-This is the capability no pure scanner has. A scanner says "here is a bug". Umbra
+This is the capability no pure scanner has. A scanner says "here is a bug". Signetry
 can go further: take a finding, hand a **bounded** remediation mission to an
 executor (Codex / Claude Code / any adapter), run the resulting change through the
 full admission pipeline (contract → trust boundary → checks → independent verifier

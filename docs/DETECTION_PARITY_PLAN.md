@@ -2,20 +2,20 @@
 
 > Status: working plan. Author-run benchmark evidence included. This doc is the
 > source of truth the `signetry_core/pipeline/findings/` implementation and the
-> `umbra-eval` head-to-head harness are built against.
+> `signetry-eval` head-to-head harness are built against.
 
 ## Why this exists
 
-Two adjacent tools were tested against Umbra:
+Two adjacent tools were tested against Signetry:
 
 - **`@openai/codex-security`** (OpenAI) — an LLM vulnerability scanner (`gpt-5.6-sol`
   at `xhigh`); outputs findings (SARIF/CSV/JSON).
 - **`claude-code-security-review`** (Anthropic) — an LLM PR security reviewer;
   diff-aware, outputs structured findings with confidence scores.
 
-Both are **vulnerability scanners**. Umbra is a **change-control / admission plane**
+Both are **vulnerability scanners**. Signetry is a **change-control / admission plane**
 (governs whether an agent's change is *admitted* and proves it with a signed
-receipt). They are different categories — but a buyer still asks "does Umbra find
+receipt). They are different categories — but a buyer still asks "does Signetry find
 the bugs these find?" Before this work the honest answer was *no*, which undercut
 the whole platform. This plan closes that gap **and** proves the governance
 advantage the scanners structurally cannot match.
@@ -32,15 +32,15 @@ code.
 | claude-code-security-review (real, via Claude prompt) | yes | **13 / 14** | **0** | Anthropic key / Claude sub; $ per PR |
 | @openai/codex-security | auth OK, then quota-blocked | n/a (account limit) | n/a | ChatGPT login/API key; $ per scan |
 | signetry-core (before) | offline | **0 / 14** | 0 | none |
-| umbra-reviewer deterministic scanner | offline | **~3 / 14** | 0 | none |
+| signetry-reviewer deterministic scanner | offline | **~3 / 14** | 0 | none |
 
 The one vuln Claude "missed" (GT-11 open redirect) is **deliberately excluded** by
 its own false-positive filter, so its effective recall on in-scope classes is 14/14.
 
 ## The two scoreboards
 
-1. **Vuln detection** — Umbra lost (0–3 vs 13/14). Table stakes.
-2. **Agent governance** — Umbra wins by default: on-disk injection quarantine,
+1. **Vuln detection** — Signetry lost (0–3 vs 13/14). Table stakes.
+2. **Agent governance** — Signetry wins by default: on-disk injection quarantine,
    earned/revocable authority (L0/L1/L2), independent verifier + masked
    hijack-signal re-check, Ed25519 signed receipts, fail-closed sandboxed checks.
    Claude's own README: *"not hardened against prompt injection."* Neither scanner
@@ -68,15 +68,15 @@ detail, remediation, confidence, source, cwe`.
 
 ## Fusing detection into governance (the moat)
 
-A scan produces findings -> Umbra hands a finding to an executor as a bounded "fix
+A scan produces findings -> Signetry hands a finding to an executor as a bounded "fix
 this CWE at file:line" mission -> the fix runs through `run_admission` -> earns
 L0/L1/L2 with a signed receipt. Output is not "here's a bug" but **"here's the bug,
 the agent's fix, the evidence it passed checks, and a verifiable receipt."**
 
 ## Proving it: head-to-head eval
 
-Extend `umbra-eval` with a `detection` scenario category scored against the shared
-ground-truth fixture: recall + false-positive rate for Umbra vs the two
+Extend `signetry-eval` with a `detection` scenario category scored against the shared
+ground-truth fixture: recall + false-positive rate for Signetry vs the two
 competitors on identical inputs, alongside the existing ASR/utility metrics.
 
 ## Acceptance criteria
@@ -87,9 +87,9 @@ competitors on identical inputs, alongside the existing ASR/utility metrics.
 - [x] Semgrep merged when present; absence never errors.
 - [x] LLM triage never promotes a finding to blocking on its own (test-enforced).
 - [x] `signetry scan <repo>` CLI with `--fail-on` severity gating for CI.
-- [x] `umbra-eval benchmark` emits a head-to-head table on shared ground truth;
+- [x] `signetry-eval benchmark` emits a head-to-head table on shared ground truth;
       replays captured competitor output, reports not-run tools honestly.
-- [x] `pytest` stays green (signetry-core 200, umbra-eval 26).
+- [x] `pytest` stays green (signetry-core 200, signetry-eval 26).
 
 ## Result (measured)
 
@@ -99,7 +99,7 @@ competitors on identical inputs, alongside the existing ASR/utility metrics.
 | claude-code-security-review | 100% (13/13) | 0 | Anthropic key | $ per PR |
 | openai-codex-security | not run (account quota) | — | ChatGPT/API | $ per scan |
 
-Umbra reached **detection parity** with the LLM scanners while remaining offline,
+Signetry reached **detection parity** with the LLM scanners while remaining offline,
 deterministic, and free — then keeps the governance layer (earned authority,
 injection quarantine, independent verifier, signed receipts) that the scanners do
-not attempt. Reproduce with `umbra-eval benchmark --markdown`.
+not attempt. Reproduce with `signetry-eval benchmark --markdown`.

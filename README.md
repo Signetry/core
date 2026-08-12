@@ -15,7 +15,7 @@
 
 
 [![CI](https://github.com/Signetry/core/actions/workflows/ci.yml/badge.svg)](https://github.com/Signetry/core/actions/workflows/ci.yml)
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Umbra%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Signetry%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
 [![Docs](https://img.shields.io/badge/docs-signetry--core-blue)](https://binaydalai.me/signetry-core/)
 [![Source-available](https://img.shields.io/badge/source-available-informational.svg)](CLA.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/Signetry/signetry/issues/10)
@@ -69,13 +69,13 @@ pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
 | **Source install** | anything you script | `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"` |
 | **CLI + git hook** | the agent on your machine | `signetry admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `signetry scan . --sarif` · `signetry scan . --fix` |
-| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Umbra Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/Signetry/action) |
+| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Signetry Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/Signetry/action) |
 | **MCP server** | agents that speak MCP | `python -m signetry_core.mcp_server` |
-| **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [bkd-dotcom/umbra-plugins](https://github.com/Signetry/plugins) |
+| **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [Signetry/plugins](https://github.com/Signetry/plugins) |
 | **Hosted API** | any CI/agent that posts a change | see [umbra.engineer](https://umbra.engineer) |
 
 The GitHub Action is the highest-reach checkpoint: it sits at the repo, so it
-governs *any* agent that opens a PR. Make **"Umbra Admission"** a required status
+governs *any* agent that opens a PR. Make **"Signetry Admission"** a required status
 check and nothing merges without a signed receipt. `auto_merge` is always false.
 
 ## Find vulnerabilities — then govern the fix (`signetry scan`)
@@ -315,7 +315,7 @@ gate_pr(store, "acme-org", report.repo)         # raises PassportError (revoked)
 ## SLSA / in-toto provenance + transparency log
 
 A receipt maps to an **in-toto Statement carrying a SLSA Provenance v1 predicate**,
-so it plugs into supply-chain tooling instead of being an Umbra-only artifact —
+so it plugs into supply-chain tooling instead of being a Signetry-only artifact —
 the builder id encodes which agent produced the change:
 
 ```python

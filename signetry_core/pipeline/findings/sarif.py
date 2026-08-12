@@ -3,7 +3,7 @@
 SARIF (Static Analysis Results Interchange Format) is the industry-standard output
 GitHub code scanning, VS Code, and most security dashboards consume — the same
 format ``@openai/codex-security`` and ``claude-code-security-review`` can emit. This
-lets Umbra's findings drop into the exact same pipelines, so adopting Umbra is a
+lets Signetry's findings drop into the exact same pipelines, so adopting Signetry is a
 format-compatible swap, not a migration.
 
 Pure stdlib, deterministic (no timestamps injected), no network.

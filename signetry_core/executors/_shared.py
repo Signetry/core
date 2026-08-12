@@ -54,7 +54,7 @@ def sanitize_paths(text: str, repo_path: Path) -> str:
 
 def bounded_prompt(mission: str, agent_label: str) -> str:
     """The hard no-authority instruction wrapped around every mission."""
-    return f"""You are {agent_label} working for Umbra in a disposable local checkout.
+    return f"""You are {agent_label} working for Signetry in a disposable local checkout.
 Mission: {mission}
 
 Hard rules: never push, commit, create a PR, merge, approve, deploy, force-push,
@@ -64,7 +64,7 @@ files, exact tests run, and anything that prevented verification."""
 
 
 def reason_prompt(mission: str, agent_label: str) -> str:
-    return f"""You are {agent_label} acting as Umbra's reasoning analyst in a read-only workspace.
+    return f"""You are {agent_label} acting as Signetry's reasoning analyst in a read-only workspace.
 Task:
 {mission}
 

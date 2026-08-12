@@ -1,7 +1,7 @@
-# Umbra as a complete platform — and how it outperforms Claude/Codex on every baseline
+# Signetry as a complete platform — and how it outperforms Claude/Codex on every baseline
 
 > Status: working roadmap with measured results. This is the honest map of where
-> Umbra already wins, where it is at parity, where it still trails, and the exact
+> Signetry already wins, where it is at parity, where it still trails, and the exact
 > work to close each gap.
 
 ## The two scoreboards (say this out loud)
@@ -19,7 +19,7 @@ match — and proving both with numbers a skeptic can reproduce.
 ## Measured results (author-run, reproducible)
 
 ### 40-case public corpus, head-to-head vs Claude Opus 4.8
-`umbra-eval corpus --markdown`
+`signetry-eval corpus --markdown`
 
 | Scanner | Recall | False positives | Cost | Determinism |
 |---|---|---|---|---|
@@ -44,7 +44,7 @@ decoys for false-positive measurement, every case with cited provenance.
   & deduped) when the binary is on PATH; still optional and non-fatal when absent.
 
 ### Real public vulnerable repos
-`umbra-eval realrepo` (live clone + scan)
+`signetry-eval realrepo` (live clone + scan)
 
 - **PyGoat** (Django): 15 findings across 9 classes.
 - **Vulnerable-Flask-App**: 20 findings across 8 classes.
@@ -67,9 +67,9 @@ decoys for false-positive measurement, every case with cited provenance.
 - `signetry scan ... --json` / text — machine or human output.
 - `signetry scan ... --fail-on high` — non-zero exit to gate CI.
 
-## Where Umbra already OUTPERFORMS
+## Where Signetry already OUTPERFORMS
 
-| Dimension | Claude / Codex | Umbra |
+| Dimension | Claude / Codex | Signetry |
 |---|---|---|
 | Recall on the hard corpus | 84% | **96%** |
 | False positives | 0 (via LLM filter that costs recall) | **0 (structural, via taint)** |
@@ -80,11 +80,11 @@ decoys for false-positive measurement, every case with cited provenance.
 | Governance (authority, quarantine, verifier, receipts) | none | **yes** |
 | SARIF / CI gating | yes | **yes (parity)** |
 
-## Where Umbra is at PARITY
+## Where Signetry is at PARITY
 - Canonical OWASP/CWE patterns (both ~100%).
 - SARIF output, CI severity gating, PR review comment.
 
-## Where Umbra still TRAILS (and the plan)
+## Where Signetry still TRAILS (and the plan)
 
 | Gap | Impact | Plan |
 |---|---|---|
@@ -93,7 +93,7 @@ decoys for false-positive measurement, every case with cited provenance.
 | **Semantic/novel bugs** | LLMs win on truly novel logic flaws | Keep the **LLM triage layer** as an opt-in high-recall pass; deterministic floor stays the free baseline. |
 | **Framework breadth** | New sinks appear constantly | Rule packs per framework (Django/Flask/Express/Rails/Spring), community-contributable. |
 
-## What makes Umbra a COMPLETE platform (roadmap)
+## What makes Signetry a COMPLETE platform (roadmap)
 
 Detection is one plane. A complete platform that beats them on *every* baseline
 adds the planes the scanners don't have (most already exist in signetry-core):
@@ -115,7 +115,7 @@ adds the planes the scanners don't have (most already exist in signetry-core):
 
 ## The one-line pitch
 
-*Umbra matches (and on hard cases beats) the best LLM security scanners on
+*Signetry matches (and on hard cases beats) the best LLM security scanners on
 detection — deterministically, offline, and free — then does the thing they can't:
 decide whether an agent's fix is allowed to ship, and prove it with a signed
 receipt.*

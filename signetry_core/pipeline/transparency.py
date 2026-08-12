@@ -1,6 +1,6 @@
 """Append-only Merkle transparency log for receipts.
 
-A signed receipt proves "Umbra issued this specific record". A transparency log
+A signed receipt proves "Signetry issued this specific record". A transparency log
 proves something the signature alone cannot: that a receipt was **entered into an
 append-only history** and that history has **not been rewritten** since. This is
 the difference between "this document is authentic" and "this document can't have

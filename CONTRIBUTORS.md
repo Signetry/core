@@ -1,6 +1,6 @@
 # Contributors
 
-Umbra is **owned by Binay Dalai** and is **All Rights Reserved** (not open source).
+Signetry is **owned by Binay Dalai** and is **All Rights Reserved** (not open source).
 The people below are gratefully acknowledged for contributions accepted under the
 [Contributor License Agreement](CLA.md).
 

@@ -94,7 +94,7 @@ def render_pr_comment(payload: dict[str, Any]) -> str:
         gate_line = " · ".join(f"{g['id']} {g['status']}" for g in gates["gates"])
 
     lines = [
-        f"## Umbra Admission — {verdict} · Authority L{level} ({label})",
+        f"## Signetry Admission — {verdict} · Authority L{level} ({label})",
         "",
         "| | |",
         "|---|---|",
@@ -123,7 +123,7 @@ def render_pr_comment(payload: dict[str, Any]) -> str:
         lines.append("**Blocked** — out of policy or failed verification.")
     lines += [
         "",
-        "> `auto_merge` is always false. Umbra governs the agent; it never merges. "
-        "Verify the signed receipt against Umbra's pinned public key.",
+        "> `auto_merge` is always false. Signetry governs the agent; it never merges. "
+        "Verify the signed receipt against Signetry's pinned public key.",
     ]
     return "\n".join(lines)

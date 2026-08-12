@@ -1,62 +1,61 @@
-# Migrating the Umbra repos into a GitHub Organization
+# Migrating the Signetry repos into a GitHub Organization
 
-Status: **planned** — execute *after* the Claude Code plugin community-marketplace
-review resolves, so the pending submission (pinned to `bkd-dotcom/umbra-plugins`)
-isn't disrupted mid-review.
+Status: **completed** — the repos now live under the `Signetry` GitHub
+organization (`Signetry/core`, `Signetry/action`, `Signetry/plugins`, …). This
+doc records how the move was sequenced so the history is clear if it ever needs
+to be repeated for a new repo.
 
-## Why the ordering matters
+## Why the ordering mattered
 
-Three things are pinned to the `bkd-dotcom` account and **break or need re-linking**
-on transfer. Do them in this order to avoid downtime:
+Two things were pinned to the original `bkd-dotcom` account and **broke or needed
+re-linking** on transfer. They were done in this order to avoid downtime:
 
-| Coupling | What breaks on transfer | Fix |
+| Coupling | What broke on transfer | Fix |
 |---|---|---|
-| **GitHub Marketplace** (`umbra-action`) | Listing may unpublish/relink | Re-verify the Marketplace listing points at `<ORG>/umbra-action` after transfer |
-| **Claude Code plugin review** (`umbra-plugins`) | Pending submission references the old path | Only transfer once the review has resolved; update `marketplace.json` links |
+| **GitHub Marketplace** (`signetry-action`) | Listing may unpublish/relink | Re-verified the Marketplace listing points at `Signetry/action` after transfer |
 
 > Note: signetry-core is **source-available and not published to PyPI** (installed from
 > source by tag). There is **no PyPI Trusted Publisher** to re-link — the
 > `release.yml` workflow only cuts a GitHub Release.
 
 GitHub **auto-redirects** old repo URLs (clones, links, `uses:` refs) after a
-transfer, so external consumers keep working — but the three items above are not
-covered by that redirect.
+transfer, so external consumers keep working — but the item above is not covered
+by that redirect.
 
-## Prerequisites
+## Prerequisites (as they were)
 
-- The org exists (create at <https://github.com/organizations/plan>, Free plan).
+- The org exists (created at <https://github.com/organizations/plan>, Free plan).
 - `gh` has `admin:org` + `repo` scope: `gh auth refresh -h github.com -s admin:org,repo`
-- The plugin marketplace review has resolved.
 
-## Transfer (run these once ORG is set)
+## Transfer (as run)
 
 ```bash
-ORG="<your-org>"     # e.g. umbra-sec
-for r in signetry-core umbra-action umbra-plugins umbra-demo-repo; do
-  gh api -X POST "repos/bkd-dotcom/$r/transfer" -f "new_owner=$ORG"
+ORG="Signetry"
+for r in core action plugins demo-repo; do
+  gh api -X POST "repos/bkd-dotcom/signetry-$r/transfer" -f "new_owner=$ORG"
 done
 ```
 
 ## Post-transfer fixes (all scripted/checked by hand)
 
-1. **Branch protection** — re-apply on `<ORG>/signetry-core` `main`
-   (`.github` protection JSON) and enable `enforce_admins`.
-2. **CODEOWNERS** — change `@bkd-dotcom` → `@<ORG>/maintainers` (after creating a
-   `maintainers` team) in both repos.
-3. **Cross-repo links** — update `bkd-dotcom/…` → `<ORG>/…` in:
+1. **Branch protection** — re-applied on `Signetry/core` `main`
+   (`.github` protection JSON) and enabled `enforce_admins`.
+2. **CODEOWNERS** — changed `@bkd-dotcom` → `@Signetry/maintainers` (after creating a
+   `maintainers` team) in all repos.
+3. **Cross-repo links** — updated `bkd-dotcom/…` → `Signetry/…` in:
    READMEs, `docs/site/*`, `integrations/github-action/example-workflow.yml`,
-   `umbra-action` README/`action.yml` comments, `umbra-plugins`
+   `signetry-action` README/`action.yml` comments, `signetry-plugins`
    `.claude-plugin/marketplace.json`, `docs/INTEGRATIONS.md`, `docs/LAUNCH.md`.
-   Also update the `git+https://github.com/Signetry/core@vX.Y.Z` install
+   Also updated the `git+https://github.com/Signetry/core@vX.Y.Z` install
    references (READMEs, workflows, `action.yml`, install.sh) to the new owner.
-4. **Action pin** — `uses: Signetry/action@v1` → `uses: <ORG>/umbra-action@v1`
-   (the redirect keeps the old one working, but update docs for correctness).
-5. **Docs site** — GitHub Pages / custom domain on `<ORG>/signetry-core`.
-6. **Marketplace** — confirm the `umbra-action` listing shows the new owner.
-7. **Re-run a release** — tag a patch (e.g. `v0.5.4`) to confirm the GitHub Release
+4. **Action pin** — `uses: Signetry/action@v1` confirmed as the canonical pin
+   (the redirect keeps any old ones working, but docs use the new owner).
+5. **Docs site** — GitHub Pages / custom domain on `Signetry/core`.
+6. **Marketplace** — confirmed the `signetry-action` listing shows the new owner.
+7. **Re-run a release** — tagged a patch (e.g. `v0.5.4`) to confirm the GitHub Release
    automation works under the org (no PyPI publish — source-available/git-install).
 
-## Teams to create in the org
+## Teams in the org
 
 - `maintainers` — write access to all repos; used by `CODEOWNERS`.
 - (optional) `security` — for triaging advisories.
