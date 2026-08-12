@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  provenark — primary mark (v2, simplified)
+  Concept: an ark/vault "A" whose interior negative space is a checkmark (verified),
+  capped by a single sealed node at the apex (the signed root of provenance).
+  Minimal strokes so it holds at 16px. One accent: the apex seal.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="provenark">
+  <defs>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9D8DF1"/>
+      <stop offset="1" stop-color="#6E56CF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="#0E0F14"/>
+
+  <!-- The A/ark: two legs meeting at an apex. Drawn as one open path. -->
+  <path d="M34 102 L64 26 L94 102"
+        fill="none" stroke="#ECE7DA" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Crossbar as a check tick: the "verified" assertion binding the A. -->
+  <path d="M46 78 L58 88 L84 62"
+        fill="none" stroke="url(#seal)" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Sealed root node at the apex: the signed receipt. Single solid accent. -->
+  <circle cx="64" cy="24" r="10" fill="url(#seal)" stroke="#0E0F14" stroke-width="3"/>
+</svg>
