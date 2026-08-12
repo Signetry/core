@@ -7,7 +7,7 @@
 **A change-control plane for coding agents.**
 
 Coding agents (Claude Code, Codex, Cursor, Copilot, Devin) can change your
-repository. umbra-core is the layer that decides **how much authority a given
+repository. signetry-core is the layer that decides **how much authority a given
 change has earned — and proves it** — for any agent. It sits *above* the agent, at
 the repository, where governance is enforceable.
 
@@ -33,7 +33,7 @@ false — a human merges.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
 - Source (install from here): <https://github.com/Signetry/core>
@@ -41,7 +41,7 @@ pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
 
 ## License & contributing
 
-umbra-core is **source-available** — the code is public to read, evaluate, and
+signetry-core is **source-available** — the code is public to read, evaluate, and
 contribute to, but it is **not open source**. It is **All Rights Reserved
 (© 2026 Binay Dalai)** and installed from source (not PyPI).
 

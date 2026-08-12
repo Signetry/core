@@ -1,17 +1,17 @@
-"""The ``umbra`` command-line interface.
+"""The ``signetry`` command-line interface.
 
 One entry point over the agent-agnostic core, so the same governance runs on a
 developer's machine, in a git hook, and in CI:
 
-    umbra admit  <repo> --agent claude-code --mission "..."   # govern an agent's change
-    umbra verify <receipt.json>                                # verify a signed receipt
-    umbra brake  <owner> <repo> --store passports.json         # Emergency Brake -> L0
-    umbra provenance <receipt.json>                            # emit SLSA/in-toto statement
-    umbra gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
-    umbra comment <report.json>                                # render the canonical PR comment
-    umbra admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
-    umbra init                                                 # scaffold .umbra/admission.yaml
-    umbra completion zsh                                        # shell completion script
+    signetry admit  <repo> --agent claude-code --mission "..."   # govern an agent's change
+    signetry verify <receipt.json>                                # verify a signed receipt
+    signetry brake  <owner> <repo> --store passports.json         # Emergency Brake -> L0
+    signetry provenance <receipt.json>                            # emit SLSA/in-toto statement
+    signetry gates <receipt.json>                                 # G1/G2/G3 proof-gate summary
+    signetry comment <report.json>                                # render the canonical PR comment
+    signetry admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
+    signetry init                                                 # scaffold .signetry/admission.yaml
+    signetry completion zsh                                        # shell completion script
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
 gates a pre-push hook or a CI required check. ``--min-authority`` tunes the bar.
@@ -73,7 +73,7 @@ def cmd_admit(args: argparse.Namespace) -> int:
         if not executor.available():
             print(
                 f"error: agent {args.agent!r} is not available. Enable + authenticate it "
-                f"(e.g. UMBRA_ENABLE_CLAUDE_CODE=true / UMBRA_ENABLE_CODEX_CLI=true).",
+                f"(e.g. SIGNETRY_ENABLE_CLAUDE_CODE=true / SIGNETRY_ENABLE_CODEX_CLI=true).",
                 file=sys.stderr,
             )
             return 2
@@ -82,7 +82,7 @@ def cmd_admit(args: argparse.Namespace) -> int:
         if executor is None:
             print(
                 "error: no coding agent is available. Enable one with "
-                "UMBRA_ENABLE_CLAUDE_CODE=true or UMBRA_ENABLE_CODEX_CLI=true, "
+                "SIGNETRY_ENABLE_CLAUDE_CODE=true or SIGNETRY_ENABLE_CODEX_CLI=true, "
                 "or pass --agent.",
                 file=sys.stderr,
             )
@@ -170,7 +170,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
             print(payload)
     else:
         counts = report.counts()
-        print(f"umbra scan {args.repo} — {len(report.findings)} finding(s) across "
+        print(f"signetry scan {args.repo} — {len(report.findings)} finding(s) across "
               f"{report.files_scanned} file(s) [{', '.join(report.layers)}]")
         for f in report.findings:
             cwe = f" {f.cwe}" if f.cwe else ""
@@ -222,7 +222,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
         if not ok and result.get("reason"):
             print("NOT VERIFIED  — " + result["reason"])
         else:
-            print(("VERIFIED" if ok else "NOT VERIFIED") + f"  (issued_by_umbra={result['issued_by_umbra']}, hash_matches={result['hash_matches']})")
+            print(("VERIFIED" if ok else "NOT VERIFIED") + f"  (issued_by_signetry={result['issued_by_signetry']}, hash_matches={result['hash_matches']})")
     return 0 if result["verified"] else 1
 
 
@@ -364,7 +364,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
     return 0 if decision.allowed else 1
 
 
-# A commented starter contract written by `umbra init`. Conservative by default:
+# A commented starter contract written by `signetry init`. Conservative by default:
 # dependency-manifest scope, small diff budget, deploy/CI/secrets off-limits.
 _STARTER_CONTRACT = """# Umbra executable change contract — the machine-enforced boundary for agent work.
 # Docs: https://github.com/Signetry/signetry  ·  edited by humans, versioned in git.
@@ -404,20 +404,20 @@ policy_version: "1.0"
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    """Scaffold a starter ``.umbra/admission.yaml`` in a repo so a new user is one
+    """Scaffold a starter ``.signetry/admission.yaml`` in a repo so a new user is one
     command away from a governed change. Never overwrites without ``--force``."""
     root = Path(args.repo).resolve()
     if not root.is_dir():
         print(f"error: {root} is not a directory", file=sys.stderr)
         return 2
-    dest = root / ".umbra" / "admission.yaml"
+    dest = root / ".signetry" / "admission.yaml"
     if dest.exists() and not args.force:
         print(f"error: {dest} already exists (use --force to overwrite)", file=sys.stderr)
         return 1
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(_STARTER_CONTRACT)
     print(f"wrote {dest}")
-    print("Next: edit the scope, then run  umbra admit .  (or add the GitHub Action).")
+    print("Next: edit the scope, then run  signetry admit .  (or add the GitHub Action).")
     return 0
 
 
@@ -425,17 +425,17 @@ def cmd_init(args: argparse.Namespace) -> int:
 # they complete the subcommand names, which is the high-value case.
 _COMMANDS = "admit verify brake provenance gates comment admit-extension guard init completion"
 _COMPLETIONS = {
-    "bash": f"""# umbra bash completion — add to ~/.bashrc:  eval "$(umbra completion bash)"
-_umbra_complete() {{
+    "bash": f"""# signetry bash completion — add to ~/.bashrc:  eval "$(signetry completion bash)"
+_signetry_complete() {{
   local cur="${{COMP_WORDS[COMP_CWORD]}}"
   if [ "$COMP_CWORD" -eq 1 ]; then
     COMPREPLY=( $(compgen -W "{_COMMANDS}" -- "$cur") )
   fi
 }}
-complete -o default -F _umbra_complete umbra
+complete -o default -F _signetry_complete signetry
 """,
-    "zsh": f"""# umbra zsh completion — add to ~/.zshrc:  eval "$(umbra completion zsh)"
-_umbra() {{
+    "zsh": f"""# signetry zsh completion — add to ~/.zshrc:  eval "$(signetry completion zsh)"
+_signetry() {{
   local -a cmds
   cmds=({_COMMANDS})
   if (( CURRENT == 2 )); then
@@ -444,10 +444,10 @@ _umbra() {{
     _files
   fi
 }}
-compdef _umbra umbra
+compdef _signetry signetry
 """,
-    "fish": f"""# umbra fish completion — save to ~/.config/fish/completions/umbra.fish
-complete -c umbra -n "__fish_use_subcommand" -a "{_COMMANDS}"
+    "fish": f"""# signetry fish completion — save to ~/.config/fish/completions/signetry.fish
+complete -c signetry -n "__fish_use_subcommand" -a "{_COMMANDS}"
 """,
 }
 
@@ -463,7 +463,7 @@ def cmd_completion(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="umbra", description="Agent-agnostic change-control plane for coding agents.")
+    parser = argparse.ArgumentParser(prog="signetry", description="Agent-agnostic change-control plane for coding agents.")
     parser.add_argument("--json", action="store_true", help="Machine-readable JSON output.")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -521,7 +521,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_ext = sub.add_parser("admit-extension", help="Govern an agent skill / MCP extension: fingerprint bytes, quarantine docs, admit or deny.")
     p_ext.add_argument("path", help="Path to the extension directory (skill dir or MCP server).")
     p_ext.add_argument("--kind", choices=["skill", "mcp"], help="Force the extension kind (default: auto-detect).")
-    p_ext.add_argument("--repo", help="Repo checkout whose .umbra/admission.yaml supplies the allowed_skills/allowed_mcp allowlist.")
+    p_ext.add_argument("--repo", help="Repo checkout whose .signetry/admission.yaml supplies the allowed_skills/allowed_mcp allowlist.")
     p_ext.add_argument("--allow-quarantined", action="store_true", help="Admit even if documentation carries manipulation findings (explicit human override).")
     p_ext.add_argument("--asbom", action="store_true", help="Emit a CycloneDX-aligned ASBOM for the extension instead of the verdict.")
     p_ext.add_argument("--org", help="Org name to stamp on the ASBOM metadata.")
@@ -535,9 +535,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_guard.add_argument("--hook-output", action="store_true", help="Emit Claude Code PreToolUse decision JSON (deny blocks; exit 0).")
     p_guard.set_defaults(func=cmd_guard)
 
-    p_init = sub.add_parser("init", help="Scaffold a starter .umbra/admission.yaml in a repo.")
+    p_init = sub.add_parser("init", help="Scaffold a starter .signetry/admission.yaml in a repo.")
     p_init.add_argument("repo", nargs="?", default=".", help="Repo directory to write into (default: current dir).")
-    p_init.add_argument("--force", action="store_true", help="Overwrite an existing .umbra/admission.yaml.")
+    p_init.add_argument("--force", action="store_true", help="Overwrite an existing .signetry/admission.yaml.")
     p_init.set_defaults(func=cmd_init)
 
     p_comp = sub.add_parser("completion", help="Print a shell completion script (bash | zsh | fish).")

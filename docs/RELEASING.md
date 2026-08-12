@@ -1,10 +1,10 @@
-# Releasing umbra-core
+# Releasing signetry-core
 
-umbra-core is **source-available** (All Rights Reserved) and is **not published to
+signetry-core is **source-available** (All Rights Reserved) and is **not published to
 PyPI** — it is distributed and installed **from source by tag**:
 
 ```bash
-pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
 Pushing a version tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml),
@@ -37,6 +37,6 @@ uvx twine check dist/*
 
 ## Versioning
 
-Semantic versioning. Until `1.0.0` the public API (the `umbra_core` top-level
-exports, the `umbra` CLI, and the `run_admission` signature) may change between
+Semantic versioning. Until `1.0.0` the public API (the `signetry_core` top-level
+exports, the `signetry` CLI, and the `run_admission` signature) may change between
 minor versions; changes are noted in the release.

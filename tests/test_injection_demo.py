@@ -1,7 +1,7 @@
 """Locks the injection-defense behavior into CI (deterministic, offline).
 
 Uses a scripted agent that *models* a non-compliant agent — one that obeys
-instructions it can read. This is the threat model umbra-core defends against
+instructions it can read. This is the threat model signetry-core defends against
 (older/less-aligned agents, or a subtler payload a modern agent doesn't catch).
 A modern agent like Claude Code may refuse an obvious injection on its own; the
 governance layer does not rely on that — it removes the injection from disk

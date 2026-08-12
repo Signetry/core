@@ -1,7 +1,7 @@
 """Executable Change Contract — the machine-enforced boundary for agent work.
 
-``.umbra/nightshift.md`` is prose guidance for the agent. This module adds the
-*enforced* half: a machine-readable ``.umbra/admission.yaml`` that declares what
+``.signetry/nightshift.md`` is prose guidance for the agent. This module adds the
+*enforced* half: a machine-readable ``.signetry/admission.yaml`` that declares what
 a change is allowed to touch, and a deterministic evaluator that checks a real
 changeset against it — **outside the model**. A prompt is not a control; this is.
 
@@ -16,7 +16,7 @@ Design invariants:
 - Fail-closed on scope: an explicit ``forbidden_paths`` match is always a
   violation; ``allowed_paths`` (when set) is an allowlist — anything outside it
   is a violation.
-- Safe default: when a repo ships no ``.umbra/admission.yaml``, a conservative
+- Safe default: when a repo ships no ``.signetry/admission.yaml``, a conservative
   default contract applies (dependency-manifest scope, small diff budget) so the
   feature is meaningful even without per-repo configuration.
 - Never widens authority: the contract can only *restrict* what Umbra does. It
@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 # Where a repo declares its executable contract (sits beside the prose policy).
-CONTRACT_REL = ".umbra/admission.yaml"
+CONTRACT_REL = ".signetry/admission.yaml"
 _CONTRACT_MAX_BYTES = 16_000
 
 # A conservative default when a repo ships no admission.yaml. Dependency-manifest
@@ -103,7 +103,7 @@ class Contract:
     denied_bash: tuple[str, ...] = ()
     allowed_mcp: tuple[str, ...] = ()
     allowed_skills: tuple[str, ...] = ()
-    source: str = "default"  # "repo" when loaded from .umbra/admission.yaml, else "default"
+    source: str = "default"  # "repo" when loaded from .signetry/admission.yaml, else "default"
     # Policy ownership / change-control provenance. Optional in the file; absent →
     # the policy is treated as UNSIGNED (fail-safe: surfaced, never silently trusted).
     policy_owner: str = ""
@@ -312,14 +312,14 @@ def default_contract() -> Contract:
 
 
 def load_contract(repo_path: Path | str | None) -> Contract:
-    """Load ``.umbra/admission.yaml`` from a checkout, else the default contract.
+    """Load ``.signetry/admission.yaml`` from a checkout, else the default contract.
 
     Never raises: a malformed or missing file yields the safe default so the
     admission machinery always has an enforceable contract to work with."""
     if repo_path is None:
         return default_contract()
     try:
-        path = Path(repo_path) / ".umbra" / "admission.yaml"
+        path = Path(repo_path) / ".signetry" / "admission.yaml"
         if path.is_file():
             text = path.read_text(errors="replace")[:_CONTRACT_MAX_BYTES]
             parsed = _parse_admission_text(text)

@@ -1,9 +1,9 @@
-name: Umbra auto-fix (branch-only PR with receipt)
+name: Signetry auto-fix (branch-only PR with receipt)
 
 # Governed auto-remediation: scan for vulnerabilities, have a live executor draft a
-# bounded fix per finding under the Umbra admission pipeline, and open a BRANCH-ONLY
+# bounded fix per finding under the Signetry admission pipeline, and open a BRANCH-ONLY
 # pull request for each fix that earns branch-PR (L2) authority — with the signed
-# receipt attached. Umbra NEVER merges; a human reviews and merges the PR.
+# receipt attached. Signetry NEVER merges; a human reviews and merges the PR.
 #
 # Trigger manually (or on a schedule). Requires:
 #   - OPENAI_API_KEY or a logged-in Codex, or ANTHROPIC_API_KEY for Claude Code, as
@@ -65,10 +65,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Umbra
-        # umbra-core is source-available (All Rights Reserved) and not on PyPI —
+      - name: Install Signetry
+        # signetry-core is source-available (All Rights Reserved) and not on PyPI —
         # install it from the source repo by tag.
-        run: pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
+        run: pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
 
       - name: Install the executor CLI
         env:
@@ -80,7 +80,7 @@ jobs:
           CODEX_MODEL_IN: ${{ github.event.inputs.codex_model }}
         run: |
           # The executor that DRAFTS fixes is a separate CLI (claude / codex), not
-          # part of umbra-core. Install the one selected so its `available()` probe
+          # part of signetry-core. Install the one selected so its `available()` probe
           # passes and it can actually propose a change (else fusion caps at analyze).
           set -euo pipefail
           [ -n "${OPENAI_API_KEY:-}" ] && echo "::add-mask::$OPENAI_API_KEY"
@@ -131,27 +131,27 @@ jobs:
           # Bring-your-own-key: the executor's credential is read from THIS repo's
           # own secret and used only to let the agent draft the patch. It is scoped
           # to this step alone (the PR-opening step below does not see it), never
-          # written to git, and Umbra redacts credential shapes from the diff/receipt
-          # before anything is serialised. Umbra never pushes/merges with it.
+          # written to git, and Signetry redacts credential shapes from the diff/receipt
+          # before anything is serialised. Signetry never pushes/merges with it.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # Optional gateway base URLs (e.g. IBM ICA). Blank = the native provider.
           OPENAI_BASE_URL: ${{ github.event.inputs.openai_base_url }}
           ANTHROPIC_BASE_URL: ${{ github.event.inputs.anthropic_base_url }}
           # Request an entitled model on the gateway (e.g. IBM ICA: gpt-5.5-gus / claude-opus-4-8).
-          UMBRA_CODEX_MODEL: ${{ github.event.inputs.codex_model }}
-          UMBRA_CLAUDE_MODEL: ${{ github.event.inputs.claude_model }}
+          SIGNETRY_CODEX_MODEL: ${{ github.event.inputs.codex_model }}
+          SIGNETRY_CLAUDE_MODEL: ${{ github.event.inputs.claude_model }}
           # The executors are fail-closed: they only run when explicitly enabled.
-          UMBRA_ENABLE_CLAUDE_CODE: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'claude-code' && 'true' || 'false' }}
-          UMBRA_ENABLE_CODEX_CLI: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'codex-cli' && 'true' || 'false' }}
+          SIGNETRY_ENABLE_CLAUDE_CODE: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'claude-code' && 'true' || 'false' }}
+          SIGNETRY_ENABLE_CODEX_CLI: ${{ (github.event.inputs.fix_agent || 'codex-cli') == 'codex-cli' && 'true' || 'false' }}
           # On CI runners the OS sandbox (bubblewrap/Landlock) often can't initialize,
           # so `codex exec --sandbox workspace-write` fails. Drafting happens in a
-          # disposable checkout with NO push/merge credentials, and Umbra's admission
+          # disposable checkout with NO push/merge credentials, and Signetry's admission
           # pipeline governs the result regardless — so full-access drafting here is
           # safe and is the mode that works on the runner.
-          UMBRA_CODEX_SANDBOX: "danger-full-access"
+          SIGNETRY_CODEX_SANDBOX: "danger-full-access"
         run: |
-          OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
+          OUT="${RUNNER_TEMP:-/tmp}/signetry"; mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
           # Belt-and-suspenders: register the values with the runner's log masker so
           # they can never surface in logs even if a tool echoed them.
@@ -159,14 +159,14 @@ jobs:
           [ -n "$ANTHROPIC_API_KEY" ] && echo "::add-mask::$ANTHROPIC_API_KEY"
           # Scan the repo and, for each finding, draft a bounded fix via the live
           # agent under the admission pipeline. --json emits {findings} then {fixes}.
-          umbra --json scan . \
+          signetry --json scan . \
             --fix --fix-agent "${{ github.event.inputs.fix_agent || 'codex-cli' }}" \
             --max-fixes 5 > "$OUT/scan-and-fixes.json" || true
           echo "wrote $OUT/scan-and-fixes.json"
 
       - name: Fail closed if any credential shape leaked into the output
         run: |
-          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/umbra}"
+          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/signetry}"
           # Defense-in-depth: the engine redacts secrets from diffs/receipts, but if a
           # recognisable credential shape ever appears in the artifact, abort before it
           # can reach a PR. (Matches provider key prefixes + PEM private-key blocks.)
@@ -180,7 +180,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/umbra}"
+          OUT="${OUT:-${RUNNER_TEMP:-/tmp}/signetry}"
           python - "$OUT/scan-and-fixes.json" <<'PY'
           import json, os, subprocess, sys, hashlib, pathlib
 
@@ -213,36 +213,36 @@ jobs:
               finding = f["finding"]
               rid = finding.get("rule_id", "fix")
               slug = hashlib.sha1((rid + finding.get("file","")).encode()).hexdigest()[:8]
-              branch = f"umbra/fix-{finding.get('category','issue')}-{slug}"
+              branch = f"signetry/fix-{finding.get('category','issue')}-{slug}"
               subprocess.run(["git", "checkout", "-B", branch], check=True)
-              # Apply the governed diff (recomputed by Umbra from the final tree).
+              # Apply the governed diff (recomputed by Signetry from the final tree).
               diff = f["diff"]
-              p = pathlib.Path("umbra.patch"); p.write_text(diff)
-              subprocess.run(["git", "apply", "umbra.patch"], check=False)
+              p = pathlib.Path("signetry.patch"); p.write_text(diff)
+              subprocess.run(["git", "apply", "signetry.patch"], check=False)
               p.unlink(missing_ok=True)
               # Write the signed receipt into the PR for auditors.
               receipt = f.get("receipt") or {}
-              rp = pathlib.Path(".umbra-receipt.json"); rp.write_text(json.dumps(receipt, indent=2))
+              rp = pathlib.Path(".signetry-receipt.json"); rp.write_text(json.dumps(receipt, indent=2))
               subprocess.run(["git", "add", "-A"], check=True)
-              subprocess.run(["git", "-c", "user.name=umbra[bot]",
-                              "-c", "user.email=umbra@users.noreply.github.com",
+              subprocess.run(["git", "-c", "user.name=signetry[bot]",
+                              "-c", "user.email=signetry@users.noreply.github.com",
                               "commit", "-m",
                               f"fix({finding.get('category')}): {finding.get('title','')}\n\n"
-                              f"Umbra admission L{f.get('authority_level')} — {f.get('outcome','')}\n"
+                              f"Signetry admission L{f.get('authority_level')} — {f.get('outcome','')}\n"
                               f"auto_merge: never (human merges)"], check=False)
               subprocess.run(["git", "push", "-f", "origin", branch], check=False)
               body = (
-                  f"### Umbra governed fix — {finding.get('category')} ({finding.get('cwe','')})\n\n"
+                  f"### Signetry governed fix — {finding.get('category')} ({finding.get('cwe','')})\n\n"
                   f"- File: `{finding.get('file')}:{finding.get('line')}`\n"
                   f"- Authority earned: **L{f.get('authority_level')} ({f.get('authority')})**\n"
                   f"- Receipt: `{receipt.get('canonical_hash','(unsigned)')}`\n"
                   f"- `auto_merge`: **never** — a human reviews and merges.\n\n"
                   f"> {f.get('outcome','')}\n\n"
-                  f"The signed receipt is committed as `.umbra-receipt.json` and can be "
-                  f"verified offline with `umbra verify .umbra-receipt.json`."
+                  f"The signed receipt is committed as `.signetry-receipt.json` and can be "
+                  f"verified offline with `signetry verify .signetry-receipt.json`."
               )
               subprocess.run(["gh", "pr", "create", "--head", branch,
-                              "--title", f"Umbra fix: {finding.get('title','security fix')}",
+                              "--title", f"Signetry fix: {finding.get('title','security fix')}",
                               "--body", body], check=False)
               subprocess.run(["git", "checkout", "-"], check=False)
               print(f"opened branch-only PR for {branch}")
@@ -251,6 +251,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: umbra-autofix
+          name: signetry-autofix
           path: ${{ env.OUT }}/scan-and-fixes.json
           if-no-files-found: ignore

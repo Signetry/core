@@ -7,8 +7,8 @@ capping earned authority at ≤ L1 for human review.
 """
 from __future__ import annotations
 
-from umbra_core import masked_recheck, verify_change
-from umbra_core.pipeline import ContractResult
+from signetry_core import masked_recheck, verify_change
+from signetry_core.pipeline import ContractResult
 
 
 def _passing_contract_result(files):

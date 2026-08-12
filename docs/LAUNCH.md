@@ -1,6 +1,6 @@
 # Launch post
 
-Copy-paste-ready announcement copy for umbra-core / the Umbra Admission action.
+Copy-paste-ready announcement copy for signetry-core / the Umbra Admission action.
 Live links:
 - **Marketplace:** https://github.com/marketplace/actions/umbra-admission
 - Source (install from here; not on PyPI): https://github.com/Signetry/core
@@ -34,7 +34,7 @@ provenance. Make it a required status check and nothing merges without a receipt
 `auto_merge` is always false — a human merges.
 
 Agent-agnostic; **source-available** (All Rights Reserved — not open source),
-installed from source (`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`).
+installed from source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"`).
 On the GitHub Marketplace:
 https://github.com/marketplace/actions/umbra-admission
 
@@ -60,7 +60,7 @@ governs Claude Code, Codex, Cursor, Copilot, Devin, or a human, identically.
 
 For every pull request it runs a deterministic pipeline:
 
-- **Executable contract** (`.umbra/admission.yaml`) bounds allowed/forbidden
+- **Executable contract** (`.signetry/admission.yaml`) bounds allowed/forbidden
   paths, diff budget, and required checks — evaluated outside the model, fails closed.
 - **Trust boundary** redacts flagged manipulation *on disk before the agent runs*
   — it can't read what isn't there.
@@ -80,7 +80,7 @@ merges.
 
 **Try it:**
 ```yaml
-# .github/workflows/umbra.yml
+# .github/workflows/signetry.yml
 on: { pull_request: }
 permissions: { contents: read, pull-requests: write }
 jobs:
@@ -96,8 +96,8 @@ jobs:
 Live demo — a permitted change passes, a forbidden `deploy.yml` edit is blocked:
 https://github.com/bkd-dotcom/umbra-demo-repo/pulls
 
-Also usable as a CLI (`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`
-→ `umbra admit`), a git pre-push hook, an MCP server, or a Python library.
+Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"`
+→ `signetry admit`), a git pre-push hook, an MCP server, or a Python library.
 Source-available (All Rights Reserved — not open source).
 
 Core: https://github.com/Signetry/core

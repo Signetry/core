@@ -5,7 +5,7 @@ A ``Finding`` is a single detected vulnerability, produced by any engine layer
 The record is deliberately flat and JSON-serialisable so it can travel through the
 admission pipeline, into a signed receipt, and out to CLI/SARIF/eval unchanged.
 
-Design rules (mirroring the rest of umbra-core):
+Design rules (mirroring the rest of signetry-core):
 - Frozen dataclasses; ``to_public()`` returns a plain dict.
 - No secret VALUES are ever stored — only kind/line/category.
 - ``source`` records which layer produced the finding so provenance is honest.

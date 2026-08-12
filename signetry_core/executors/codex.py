@@ -1,7 +1,7 @@
 """Codex CLI executor — adapts ``codex exec`` to the Executor protocol.
 
 Ported from Umbra's original ``codex_client.py`` and reshaped to the
-agent-agnostic :class:`~umbra_core.executors.base.Executor` interface. Codex is
+agent-agnostic :class:`~signetry_core.executors.base.Executor` interface. Codex is
 run against a disposable checkout with a hard no-push/no-merge instruction and
 no GitHub write credentials.
 """
@@ -26,7 +26,7 @@ from ._shared import (
     unified_diff,
 )
 
-logger = logging.getLogger("umbra.executor.codex")
+logger = logging.getLogger("signetry.executor.codex")
 
 # Only these values are ever passed to codex exec's -m / -c flags, so an
 # arbitrary caller can never inject config. luna=fastest, terra=balanced, sol=deepest.
@@ -44,14 +44,14 @@ class CodexExecutor:
         reasoning_effort: str | None = None,
     ) -> None:
         self.runner = runner
-        self.model = self._resolve_model(model if model is not None else os.getenv("UMBRA_CODEX_MODEL"))
+        self.model = self._resolve_model(model if model is not None else os.getenv("SIGNETRY_CODEX_MODEL"))
         self.reasoning_effort = self._resolve_effort(
-            reasoning_effort if reasoning_effort is not None else os.getenv("UMBRA_CODEX_REASONING_EFFORT")
+            reasoning_effort if reasoning_effort is not None else os.getenv("SIGNETRY_CODEX_REASONING_EFFORT")
         )
 
     # --- capability ---------------------------------------------------------
     def available(self) -> bool:
-        if os.getenv("UMBRA_ENABLE_CODEX_CLI", "false").lower() != "true":
+        if os.getenv("SIGNETRY_ENABLE_CODEX_CLI", "false").lower() != "true":
             return False
         return self._cli_version() is not None
 
@@ -104,7 +104,7 @@ class CodexExecutor:
         if not self.available():
             return ExecutionResult.disabled(
                 prompt, self.name,
-                "Codex CLI is disabled. Set UMBRA_ENABLE_CODEX_CLI=true and authenticate with `codex login`.",
+                "Codex CLI is disabled. Set SIGNETRY_ENABLE_CODEX_CLI=true and authenticate with `codex login`.",
             )
         if repo_path is None or not repo_path.is_dir():
             raise RuntimeError("A checked-out repository is required for CodexExecutor.propose()")
@@ -115,18 +115,18 @@ class CodexExecutor:
             return "read-only"
         # Default to Codex's own workspace sandbox. In environments where the OS
         # sandbox cannot initialize (e.g. a CI runner with clamped user namespaces),
-        # the operator may select a mode that works there via UMBRA_CODEX_SANDBOX.
+        # the operator may select a mode that works there via SIGNETRY_CODEX_SANDBOX.
         # This is safe in that context because the executor only DRAFTS a change in
         # a disposable checkout with no push/merge credentials, and Umbra's admission
         # pipeline (contract, verifier, sandboxed required checks) governs the result
         # regardless of how the draft was produced.
-        override = os.getenv("UMBRA_CODEX_SANDBOX", "").strip()
+        override = os.getenv("SIGNETRY_CODEX_SANDBOX", "").strip()
         if override in ("read-only", "workspace-write", "danger-full-access"):
             return override
         return "workspace-write"
 
     def _run_cli(self, prompt: str, repo_path: Path, *, read_only: bool) -> ExecutionResult:
-        with tempfile.TemporaryDirectory(prefix="umbra-codex-") as temp_dir:
+        with tempfile.TemporaryDirectory(prefix="signetry-codex-") as temp_dir:
             final_message = Path(temp_dir) / "final-message.txt"
             sandbox = self._sandbox(read_only)
             model_args = ["-m", self.model] if self.model else []

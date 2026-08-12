@@ -1,6 +1,6 @@
 # Security
 
-umbra-core is a security tool; we hold its own security to a high bar. The full
+signetry-core is a security tool; we hold its own security to a high bar. The full
 policy (supported versions, **private** vulnerability reporting) is in
 [`SECURITY.md`](https://github.com/Signetry/core/security/policy).
 
@@ -11,7 +11,7 @@ Do **not** open a public issue. Use private reporting:
 
 ## Honest scope
 
-Read this before relying on umbra-core for a guarantee.
+Read this before relying on signetry-core for a guarantee.
 
 - **What it enforces.** A fail-closed executable contract, an independent verifier
   the patch-writer can't self-approve, earned authority from evidence, and an
@@ -24,10 +24,10 @@ Read this before relying on umbra-core for a guarantee.
 - **Check isolation is best-effort by platform.** The achieved tier
   (`sandboxed` / `network-isolated` / `host-restricted`) is recorded truthfully in
   every receipt. A code-executing check that runs un-sandboxed caps authority at
-  L1; set `UMBRA_REQUIRE_SANDBOX=true` to fail closed.
+  L1; set `SIGNETRY_REQUIRE_SANDBOX=true` to fail closed.
 - **Receipt trust requires a real key.** The dev-fallback key's seed is public;
   such receipts are flagged `key_ephemeral` and `verify_receipt` refuses them
-  unless a key is pinned. Set a production `UMBRA_SIGNING_KEY`.
+  unless a key is pinned. Set a production `SIGNETRY_SIGNING_KEY`.
 - **Not a replacement for code review** — it's the governance layer between the
   agent and the human.
 

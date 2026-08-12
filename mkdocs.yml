@@ -1,6 +1,6 @@
 site_name: signetry
 site_description: A change-control plane for coding agents — seal every agent's PR with proof.
-site_url: https://bkd-dotcom.github.io/umbra-core/
+site_url: https://bkd-dotcom.github.io/signetry-core/
 repo_url: https://github.com/Signetry/core
 repo_name: Signetry/core
 edit_uri: edit/main/docs/site/

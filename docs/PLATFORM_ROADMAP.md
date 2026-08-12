@@ -23,7 +23,7 @@ match — and proving both with numbers a skeptic can reproduce.
 
 | Scanner | Recall | False positives | Cost | Determinism |
 |---|---|---|---|---|
-| **umbra-core** | **100%** (33/33) | **0** | free/offline | deterministic |
+| **signetry-core** | **100%** (33/33) | **0** | free/offline | deterministic |
 | claude-code-security-review (Opus 4.8) | 88% (29/33) | 0 | $/scan | drifts between runs |
 | openai-codex-security | not run (quota) | — | $/scan | — |
 
@@ -59,13 +59,13 @@ decoys for false-positive measurement, every case with cited provenance.
 
 ## Entry points (parity with how Claude/Codex are invoked)
 
-- `umbra scan <path>` — scan a local checkout.
-- `umbra scan <git-url>` — shallow-clone to a disposable checkout and scan (like a
+- `signetry scan <path>` — scan a local checkout.
+- `signetry scan <git-url>` — shallow-clone to a disposable checkout and scan (like a
   hosted scanner); `origin` is removed so it can never be pushed to.
-- `umbra scan ... --sarif -o out.sarif` — **SARIF 2.1.0**, the format GitHub code
+- `signetry scan ... --sarif -o out.sarif` — **SARIF 2.1.0**, the format GitHub code
   scanning / VS Code / dashboards consume — a drop-in swap for the competitors.
-- `umbra scan ... --json` / text — machine or human output.
-- `umbra scan ... --fail-on high` — non-zero exit to gate CI.
+- `signetry scan ... --json` / text — machine or human output.
+- `signetry scan ... --fail-on high` — non-zero exit to gate CI.
 
 ## Where Umbra already OUTPERFORMS
 
@@ -96,7 +96,7 @@ decoys for false-positive measurement, every case with cited provenance.
 ## What makes Umbra a COMPLETE platform (roadmap)
 
 Detection is one plane. A complete platform that beats them on *every* baseline
-adds the planes the scanners don't have (most already exist in umbra-core):
+adds the planes the scanners don't have (most already exist in signetry-core):
 
 1. **Detection plane** (this work) — layered SAST: deterministic floor + Semgrep +
    LLM triage; SARIF/JSON; local + remote scan. → **Extend languages & taint.**
@@ -128,7 +128,7 @@ All highest-leverage steps from the prior revision are now DONE:
 2. ~~Interprocedural taint for Python~~ — DONE (`crossfile.py`); HARD-21 closed.
 3. ~~Add more server languages~~ — DONE. Go/Java/Ruby/PHP/C# via direct rules
    (`multilang.py`) **and** multi-variable taint tracking (`lang_taint.py`).
-4. ~~Fusion~~ — DONE. `umbra scan --fix` turns each finding into a bounded
+4. ~~Fusion~~ — DONE. `signetry scan --fix` turns each finding into a bounded
    remediation mission, runs it through `run_admission`, and attaches a
    receipt-ready governed verdict (never merges).
 5. ~~Publish the benchmark~~ — DONE. `docs/BENCHMARK.md` is committed and a release
@@ -138,7 +138,7 @@ All highest-leverage steps from the prior revision are now DONE:
 
 | Scanner | Recall | False positives |
 |---|---|---|
-| **umbra-core** | **100%** (37/37) | **0** |
+| **signetry-core** | **100%** (37/37) | **0** |
 | claude-code-security-review (Opus 4.8) | 89% (33/37) | 0 |
 
 ### Remaining honest limitations
@@ -155,17 +155,17 @@ All highest-leverage steps from the prior revision are now DONE:
 - ~~Real per-language AST~~ — DONE as an optional tree-sitter backend
   (`treesitter_backend.py`): higher-precision parsing when the optional packages
   are installed, gracefully reported as unavailable otherwise (like Semgrep).
-- ~~Fusion with a live executor + auto branch-only fix PRs~~ — DONE. `umbra scan
+- ~~Fusion with a live executor + auto branch-only fix PRs~~ — DONE. `signetry scan
   --fix --fix-agent <codex-cli|claude-code>` drafts a bounded fix via a live agent,
   runs it through admission, seals an Ed25519 receipt, and marks branch-PR-ready
-  (L2) proposals. The committed `umbra-autofix.yml` GitHub Action opens a
+  (L2) proposals. The committed `signetry-autofix.yml` GitHub Action opens a
   BRANCH-ONLY PR per L2 fix with the signed receipt attached — never merges.
 
 ### Latest measured leadership (52-case corpus, 7 languages, cross-file all langs)
 
 | Scanner | Recall | False positives |
 |---|---|---|
-| **umbra-core** | **100%** (42/42) | **0** |
+| **signetry-core** | **100%** (42/42) | **0** |
 | claude-code-security-review (Opus 4.8) | 90% (38/42) | 0 |
 
 Committed and regenerated on every release (`docs/BENCHMARK.md`, gated on 100% /
@@ -176,6 +176,6 @@ Committed and regenerated on every release (`docs/BENCHMARK.md`, gated on 100% /
   PHP, Ruby, C#) now have interprocedural source→call→sink across files, with SAFE
   cross-file decoys (constant arg, prepared-statement callee) passing at 0 FP.
 - Deeper interprocedural chains (>1 call hop) and taint through container types.
-- Live auto-fix PRs are wired end-to-end (`umbra scan --fix --fix-agent`,
-  `umbra-autofix.yml`); operator setup is `docs/AUTOFIX_SETUP.md`. These are the
+- Live auto-fix PRs are wired end-to-end (`signetry scan --fix --fix-agent`,
+  `signetry-autofix.yml`); operator setup is `docs/AUTOFIX_SETUP.md`. These are the
   LLM triage layer's / live-executor's domain where the deterministic tier stops.

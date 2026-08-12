@@ -1,4 +1,4 @@
-"""umbra-core — an agent-agnostic change-control plane for coding agents."""
+"""signetry-core — an agent-agnostic change-control plane for coding agents."""
 from .executors.base import ExecutionResult, Executor
 from .executors.claude_code import ClaudeCodeExecutor
 from .executors.codex import CodexExecutor
@@ -63,7 +63,7 @@ from .pipeline import (
 try:
     from importlib.metadata import version as _pkg_version
 
-    __version__ = _pkg_version("umbra-core")
+    __version__ = _pkg_version("signetry-core")
 except Exception:  # noqa: BLE001 - source checkout without installed metadata
     __version__ = "0.0.0+local"
 

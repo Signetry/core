@@ -1,16 +1,16 @@
 version: 1
 task_type: library-change
-# umbra-core governs its own pull requests with this contract. It bounds what an
+# signetry-core governs its own pull requests with this contract. It bounds what an
 # agent's change may touch and requires the suite to pass to earn branch-PR
 # authority. Scope is generous (this is a library repo) but fails closed on the
 # things an untrusted change must never touch.
 allowed_paths:
-  - "umbra_core/**"
+  - "signetry_core/**"
   - "tests/**"
   - "demos/**"
   - "integrations/**"
   - "docs/**"
-  - ".umbra/**"
+  - ".signetry/**"
   - "*.md"
   - "pyproject.toml"
   - "Makefile"

@@ -71,7 +71,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --pr "$PR" \
             --required-check "$REQ" \
-            --protected ".github/workflows/*,.github/actions/**,pyproject.toml,umbra_core/pipeline/receipt.py,umbra_core/pipeline/gates.py,umbra_core/pipeline/verifier.py,umbra_core/pipeline/contract.py,umbra_core/pipeline/trust_boundary.py" \
+            --protected ".github/workflows/*,.github/actions/**,pyproject.toml,signetry_core/pipeline/receipt.py,signetry_core/pipeline/gates.py,signetry_core/pipeline/verifier.py,signetry_core/pipeline/contract.py,signetry_core/pipeline/trust_boundary.py" \
             --comment-out "$OUT/comment.md" \
             --json-out "$OUT/review.json"
           exit 0   # advisory: never fail the PR from this job

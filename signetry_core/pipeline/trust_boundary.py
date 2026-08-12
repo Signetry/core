@@ -290,10 +290,10 @@ _ESCALATE_CATEGORIES = frozenset({"obfuscation", "hidden_directive", "encoded_di
 def _quarantine_mode() -> str:
     """``full`` quarantines the entire untrusted file whenever ANY finding exists;
     ``line`` (default) redacts only flagged lines but still escalates to full-file
-    when a hidden/encoded carrier is detected. Set ``UMBRA_QUARANTINE_MODE=full``
+    when a hidden/encoded carrier is detected. Set ``SIGNETRY_QUARANTINE_MODE=full``
     for the strongest posture (detection completeness stops mattering)."""
     import os
-    return "full" if os.getenv("UMBRA_QUARANTINE_MODE", "line").strip().lower() == "full" else "line"
+    return "full" if os.getenv("SIGNETRY_QUARANTINE_MODE", "line").strip().lower() == "full" else "line"
 
 
 def sanitize_text(text: str, source: str) -> tuple[str, int]:
@@ -301,7 +301,7 @@ def sanitize_text(text: str, source: str) -> tuple[str, int]:
     redacted lines. The sanitized text is what Umbra hands the agent as context.
 
     In ``line`` mode (default) flagged lines are replaced with a marker. The whole
-    file is quarantined instead when (a) ``UMBRA_QUARANTINE_MODE=full`` or (b) a
+    file is quarantined instead when (a) ``SIGNETRY_QUARANTINE_MODE=full`` or (b) a
     hidden/obfuscated/encoded carrier was found — because once a file is actively
     hiding content, per-line redaction can't be trusted."""
     if not text:

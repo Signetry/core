@@ -1,9 +1,9 @@
 # Live auto-fix PRs — setup
 
-The `umbra-autofix.yml` workflow scans a repo, has a **live executor** (Codex or
+The `signetry-autofix.yml` workflow scans a repo, has a **live executor** (Codex or
 Claude Code) draft a bounded fix per finding under the Umbra admission pipeline,
 and opens a **branch-only pull request** for each fix that earns branch-PR (L2)
-authority — with the Ed25519-signed receipt committed as `.umbra-receipt.json`.
+authority — with the Ed25519-signed receipt committed as `.signetry-receipt.json`.
 Umbra **never merges**; a human reviews and merges the PR.
 
 This page is the one-time setup to wire the executor credential.
@@ -34,7 +34,7 @@ scope, verified) with a signed receipt — see the demo PRs on
 > GitHub Actions* against the ICA **beta** gateway can fail even when a one-shot
 > call and a local run succeed (a Responses-API/tool-use quirk of the beta proxy,
 > not of Umbra). If you hit this, run `--fix-agent claude-code` with the Anthropic
-> gateway inputs, or run the fusion locally (`umbra scan --fix`) where it is proven
+> gateway inputs, or run the fusion locally (`signetry scan --fix`) where it is proven
 > to reach L2 + receipt + branch-only PR.
 
 ## Bring your own key — the security model
@@ -112,7 +112,7 @@ approve pull requests"** (the latter lets the built-in token open PRs).
 
 ## 3. Choose the executor + cadence
 
-`umbra-autofix.yml` runs on manual dispatch and a weekly schedule. Pick the agent
+`signetry-autofix.yml` runs on manual dispatch and a weekly schedule. Pick the agent
 when dispatching, or edit the default:
 
 ```yaml
@@ -133,7 +133,7 @@ on:
 
   ```bash
   export OPENAI_API_KEY=...            # or ANTHROPIC_API_KEY for claude-code
-  umbra --json scan . --fix --fix-agent codex-cli --max-fixes 5 > out.json
+  signetry --json scan . --fix --fix-agent codex-cli --max-fixes 5 > out.json
   ```
 
   The output is the findings report followed by a `{"fixes": [...]}` object; each
@@ -149,7 +149,7 @@ on:
 - Only **L2 (branch-PR-ready)** fixes with a real diff become PRs. L0/L1 are
   reported but **not** opened as PRs.
 - Every PR body shows the earned authority and the receipt hash; the receipt is
-  committed so an auditor can run `umbra verify .umbra-receipt.json` offline.
+  committed so an auditor can run `signetry verify .signetry-receipt.json` offline.
 - `auto_merge` is **always false**. Umbra opens branch-only PRs; a human merges.
 
 ## Costs & limits
@@ -163,7 +163,7 @@ on:
 ## Troubleshooting
 
 - **No PRs opened:** either no findings earned L2 (report-only), or the executor
-  wasn't available. Check the `umbra-autofix` artifact (`scan-and-fixes.json`) —
+  wasn't available. Check the `signetry-autofix` artifact (`scan-and-fixes.json`) —
   each fix's `authority_level`/`outcome` explains why.
 - **"resource not accessible by integration":** enable *Allow GitHub Actions to
   create and approve pull requests* (step 2).

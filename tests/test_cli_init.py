@@ -1,14 +1,14 @@
-"""Tests for the developer-experience CLI commands: `umbra init` + `umbra completion`."""
+"""Tests for the developer-experience CLI commands: `signetry init` + `signetry completion`."""
 from __future__ import annotations
 
-from umbra_core import load_contract
-from umbra_core.cli import main as cli_main
+from signetry_core import load_contract
+from signetry_core.cli import main as cli_main
 
 
 def test_init_scaffolds_a_loadable_contract(tmp_path, capsys):
     rc = cli_main(["init", str(tmp_path)])
     assert rc == 0
-    dest = tmp_path / ".umbra" / "admission.yaml"
+    dest = tmp_path / ".signetry" / "admission.yaml"
     assert dest.is_file()
     out = capsys.readouterr().out
     assert "wrote" in out and str(dest) in out
@@ -30,7 +30,7 @@ def test_init_refuses_overwrite_without_force(tmp_path):
 
 
 def test_init_force_overwrites(tmp_path):
-    dest = tmp_path / ".umbra" / "admission.yaml"
+    dest = tmp_path / ".signetry" / "admission.yaml"
     dest.parent.mkdir(parents=True)
     dest.write_text("version: 1\n")
     assert cli_main(["init", str(tmp_path), "--force"]) == 0
@@ -40,11 +40,11 @@ def test_init_force_overwrites(tmp_path):
 def test_init_defaults_to_cwd(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     assert cli_main(["init"]) == 0
-    assert (tmp_path / ".umbra" / "admission.yaml").is_file()
+    assert (tmp_path / ".signetry" / "admission.yaml").is_file()
 
 
 def test_completion_emits_for_each_shell(capsys):
-    for shell, marker in (("bash", "complete -"), ("zsh", "compdef"), ("fish", "complete -c umbra")):
+    for shell, marker in (("bash", "complete -"), ("zsh", "compdef"), ("fish", "complete -c signetry")):
         assert cli_main(["completion", shell]) == 0
         out = capsys.readouterr().out
         assert marker in out

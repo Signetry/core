@@ -31,7 +31,7 @@ jobs:
 
       - name: Verify the scan entry point (SARIF + fail-on gating)
         run: |
-          # Prove `umbra scan` works end-to-end on a known-vulnerable fixture:
+          # Prove `signetry scan` works end-to-end on a known-vulnerable fixture:
           # it must find the planted issues, emit valid SARIF, and exit non-zero
           # under --fail-on high (so it can gate CI).
           mkdir -p "${RUNNER_TEMP:-/tmp}/scanfix"
@@ -44,10 +44,10 @@ jobs:
               os.system("tool " + cmd)
               return "ok"
           PY
-          uv run umbra scan "${RUNNER_TEMP:-/tmp}/scanfix" --sarif -o "${RUNNER_TEMP:-/tmp}/out.sarif"
+          uv run signetry scan "${RUNNER_TEMP:-/tmp}/scanfix" --sarif -o "${RUNNER_TEMP:-/tmp}/out.sarif"
           uv run python -c "import json; d=json.load(open('${RUNNER_TEMP:-/tmp}/out.sarif')); assert d['version']=='2.1.0'; assert d['runs'][0]['results'], 'no findings'; print('SARIF OK:', len(d['runs'][0]['results']), 'results')"
           # fail-on high must exit 1 on this fixture
-          if uv run umbra scan "${RUNNER_TEMP:-/tmp}/scanfix" --fail-on high; then
+          if uv run signetry scan "${RUNNER_TEMP:-/tmp}/scanfix" --fail-on high; then
             echo "expected non-zero exit under --fail-on high"; exit 1
           else
             echo "fail-on gating works (exited non-zero as expected)"
@@ -56,10 +56,10 @@ jobs:
       - name: Verify prompt-injection defense (ungoverned vs governed)
         run: uv run python demos/injection/demo.py
 
-  # Dogfood: umbra-core governs its own pull requests. Runs the admission
-  # pipeline on the PR's change (against .umbra/admission.yaml) and fails the
+  # Dogfood: signetry-core governs its own pull requests. Runs the admission
+  # pipeline on the PR's change (against .signetry/admission.yaml) and fails the
   # check unless it earns at least Analyze (L1). This is the same governance
-  # any repo gets from the Umbra Admission action.
+  # any repo gets from the Signetry Admission action.
   self-admission:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -81,24 +81,24 @@ jobs:
           git fetch --no-tags origin "$BASE_SHA" || true
           git reset --soft "$BASE_SHA" 2>/dev/null && git restore --staged . 2>/dev/null || true
 
-      - name: Umbra self-admission
+      - name: Signetry self-admission
         run: |
           # Write outputs outside the repo tree so they don't appear in the diff.
-          OUT="${RUNNER_TEMP:-/tmp}/umbra"; mkdir -p "$OUT"
+          OUT="${RUNNER_TEMP:-/tmp}/signetry"; mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
-          uv run umbra --json admit . \
+          uv run signetry --json admit . \
             --agent none \
-            --mission "Governed change to umbra-core; must stay within the repo contract and pass the suite." \
+            --mission "Governed change to signetry-core; must stay within the repo contract and pass the suite." \
             --label "Signetry/core" \
             --min-authority 1 \
-            --receipt-out "$OUT/umbra-receipt.json" | tee "$OUT/umbra-report.json"
+            --receipt-out "$OUT/signetry-receipt.json" | tee "$OUT/signetry-report.json"
 
       - name: Upload receipt
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: umbra-self-receipt
+          name: signetry-self-receipt
           path: |
-            ${{ env.OUT }}/umbra-receipt.json
-            ${{ env.OUT }}/umbra-report.json
+            ${{ env.OUT }}/signetry-receipt.json
+            ${{ env.OUT }}/signetry-report.json
           if-no-files-found: ignore

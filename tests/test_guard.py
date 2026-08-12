@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import subprocess
 
-from umbra_core import GuardDecision, guard
+from signetry_core import GuardDecision, guard
 
 
 def _repo(tmp_path, yaml_text):
-    (tmp_path / ".umbra").mkdir()
-    (tmp_path / ".umbra" / "admission.yaml").write_text(yaml_text)
+    (tmp_path / ".signetry").mkdir()
+    (tmp_path / ".signetry" / "admission.yaml").write_text(yaml_text)
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     return tmp_path
 
@@ -86,7 +86,7 @@ def test_cli_guard_hook_output_denies(tmp_path, capsys):
     import json
     import sys
 
-    from umbra_core.cli import main as cli_main
+    from signetry_core.cli import main as cli_main
     _repo(tmp_path, _YAML)
     # Simulate Claude Code passing tool JSON on stdin.
     payload = json.dumps({"tool_name": "Write", "tool_input": {"file_path": str(tmp_path / "app.pem")}})
@@ -103,7 +103,7 @@ def test_cli_guard_hook_output_denies(tmp_path, capsys):
 
 
 def test_cli_guard_allow_exit_code(tmp_path):
-    from umbra_core.cli import main as cli_main
+    from signetry_core.cli import main as cli_main
     _repo(tmp_path, _YAML)
     assert cli_main(["guard", "--repo", str(tmp_path), "--path", "src/ok.py"]) == 0
     assert cli_main(["guard", "--repo", str(tmp_path), "--path", "secret.pem"]) == 1

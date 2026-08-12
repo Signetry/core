@@ -1,10 +1,10 @@
-# Umbra Admission — governs EVERY pull request, no matter which agent opened it
+# Signetry Admission — governs EVERY pull request, no matter which agent opened it
 # (Claude Code, Codex, Cursor, Copilot, Devin, or a human).
 #
-# Drop this file at .github/workflows/umbra.yml in any repository.
-# Then, optionally, make "Umbra Admission" a required status check in branch
+# Drop this file at .github/workflows/signetry.yml in any repository.
+# Then, optionally, make "Signetry Admission" a required status check in branch
 # protection so nothing merges without an admission receipt.
-name: Umbra Admission
+name: Signetry Admission
 
 on:
   pull_request:
@@ -23,9 +23,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0   # full history so the base commit is reachable for the diff
 
-      - name: Umbra Admission
+      - name: Signetry Admission
         uses: Signetry/action@v1
         with:
           min-authority: "1"          # require at least Analyze; set "2" to require branch-PR
           # agent: "claude-code"       # optionally run a real agent; needs its auth as a secret
-          signing-key: ${{ secrets.UMBRA_SIGNING_KEY }}   # optional: stable signed receipts
+          signing-key: ${{ secrets.SIGNETRY_SIGNING_KEY }}   # optional: stable signed receipts

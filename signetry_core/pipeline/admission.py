@@ -3,7 +3,7 @@
 The differentiator, made agent-agnostic. Before an agent is trusted *with*
 authority in a repository, the pipeline tests whether it can be trusted *in* that
 repository: it runs a bounded task in a disposable checkout (via ANY
-:class:`~umbra_core.executors.base.Executor` — Codex, Claude Code, Cursor, …),
+:class:`~signetry_core.executors.base.Executor` — Codex, Claude Code, Cursor, …),
 treats repository text as untrusted, checks the resulting changeset against the
 executable Change Contract, runs the contract's required checks, verifies it
 independently, and grants only the authority the run *earned*.
@@ -159,7 +159,7 @@ def _run_baseline_checks_isolated(repo_path: Path, base_commit: str | None, comm
     agent works on. Never raises; returns an empty report if it can't isolate."""
     if not commands:
         return ChecksReport()
-    tmp = Path(tempfile.mkdtemp(prefix="umbra-baseline-"))
+    tmp = Path(tempfile.mkdtemp(prefix="signetry-baseline-"))
     wt = tmp / "wt"
     worktree_added = False
     try:
@@ -248,7 +248,7 @@ def _run_executor_governed(
 
     model_identity = executor.model_identity()
     context_manifest = build_context_manifest(
-        trusted_policy=["umbra.mission", "contract:.umbra/admission.yaml"],
+        trusted_policy=["signetry.mission", "contract:.signetry/admission.yaml"],
         included_evidence=[],
         tb_result=tb_result,
     )

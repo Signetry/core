@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from umbra_core import (
+from signetry_core import (
     InMemoryLogStore,
     InMemoryPassportStore,
     PassportError,
@@ -20,7 +20,7 @@ from umbra_core import (
     to_slsa_provenance,
     verify_inclusion,
 )
-from umbra_core.pipeline.provenance import SLSA_PREDICATE_TYPE, STATEMENT_TYPE
+from signetry_core.pipeline.provenance import SLSA_PREDICATE_TYPE, STATEMENT_TYPE
 
 
 def _report_dict(level=2, authority="branch_pr"):
@@ -136,12 +136,12 @@ def test_slsa_provenance_shape_and_builder_encodes_agent():
     assert stmt["subject"][0]["digest"]["sha256"] == "d" * 64
     # builder id encodes the executor so a verifier sees which agent produced it
     assert stmt["predicate"]["runDetails"]["builder"]["id"].endswith("#claude-code")
-    # umbra evidence extension carries earned authority + invariants
-    umbra = stmt["predicate"]["umbra"]
-    assert umbra["authority_level"] == 2
-    assert umbra["auto_merge"] is False
-    assert umbra["human_review_required"] is True
-    assert umbra["signature"] == env["signature"]
+    # signetry evidence extension carries earned authority + invariants
+    signetry = stmt["predicate"]["signetry"]
+    assert signetry["authority_level"] == 2
+    assert signetry["auto_merge"] is False
+    assert signetry["human_review_required"] is True
+    assert signetry["signature"] == env["signature"]
 
 
 def test_slsa_byproduct_binds_receipt_hash():

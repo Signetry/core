@@ -54,7 +54,7 @@ def _reasons(report: dict[str, Any]) -> list[str]:
 
 def render_pr_comment(payload: dict[str, Any]) -> str:
     """Render the canonical GitHub PR-comment markdown from a ``{report, receipt}``
-    payload (the shape emitted by ``umbra --json admit``)."""
+    payload (the shape emitted by ``signetry --json admit``)."""
     report = payload.get("report") or payload  # tolerate a bare report
     envelope = payload.get("receipt") or {}
     receipt = envelope.get("receipt") or {}

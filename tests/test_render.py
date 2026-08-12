@@ -1,7 +1,7 @@
 """Tests for the canonical PR-comment renderer (Admission Decision Pack → markdown)."""
 from __future__ import annotations
 
-from umbra_core.pipeline import render_pr_comment
+from signetry_core.pipeline import render_pr_comment
 
 
 def _payload(level, **overrides):

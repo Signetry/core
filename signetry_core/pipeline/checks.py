@@ -2,7 +2,7 @@
 
 The Change Contract can declare ``required_checks`` (e.g. ``npm test``). Declaring
 them is not enough: this module actually *runs* them and gates authority on the
-result. But a repository is untrusted, and its ``.umbra/admission.yaml`` could
+result. But a repository is untrusted, and its ``.signetry/admission.yaml`` could
 declare an arbitrary command — so execution is constrained on three axes and the
 *enforcement level actually achieved* is recorded honestly (never overclaimed):
 
@@ -62,7 +62,7 @@ _ALLOWED_PROFILES: tuple[re.Pattern[str], ...] = (
 # Env-var name fragments whose values must never reach a check subprocess.
 _SECRET_FRAGMENTS = ("OPENAI", "ANTHROPIC", "CLAUDE", "CODEX", "GEMINI", "MISTRAL",
                      "COHERE", "HUGGINGFACE", "HF_TOKEN", "GITHUB", "GH_TOKEN",
-                     "UMBRA_FERNET", "UMBRA_SIGNING", "SESSION_SECRET",
+                     "SIGNETRY_FERNET", "SIGNETRY_SIGNING", "SESSION_SECRET",
                      "RESEND", "GOOGLE", "TOKEN", "SECRET", "PASSWORD", "PASSWD",
                      "API_KEY", "APIKEY", "AWS", "GCP", "AZURE", "CREDENTIAL", "PRIVATE_KEY")
 
@@ -86,10 +86,10 @@ def _is_code_executing(cmd: str) -> bool:
 
 
 def _require_sandbox() -> bool:
-    """When ``UMBRA_REQUIRE_SANDBOX`` is truthy, code-executing checks are refused
+    """When ``SIGNETRY_REQUIRE_SANDBOX`` is truthy, code-executing checks are refused
     (blocked) unless a real filesystem/network sandbox is available — fail closed
     instead of degrading to host-restricted."""
-    return os.getenv("UMBRA_REQUIRE_SANDBOX", "").strip().lower() in {"1", "true", "yes"}
+    return os.getenv("SIGNETRY_REQUIRE_SANDBOX", "").strip().lower() in {"1", "true", "yes"}
 
 
 def _output_hash(text: str) -> str:
@@ -268,7 +268,7 @@ def run_required_checks(repo_path: Path | str, commands: list[str]) -> ChecksRep
         if _require_sandbox() and _is_code_executing(cmd) and enforcement != "sandboxed":
             report.results.append(CheckResult(
                 cmd, "blocked", None, None,
-                f"UMBRA_REQUIRE_SANDBOX is set and no filesystem/network sandbox is available "
+                f"SIGNETRY_REQUIRE_SANDBOX is set and no filesystem/network sandbox is available "
                 f"(enforcement: {enforcement}); refusing to run repo-supplied build code.",
             ))
             every_ok = False
@@ -289,7 +289,7 @@ def run_required_checks(repo_path: Path | str, commands: list[str]) -> ChecksRep
         # Flag when repo-supplied build code executed outside a real sandbox.
         if _is_code_executing(cmd) and enforcement not in ("sandboxed",):
             report.unsandboxed_code_execution = True
-            logging.getLogger("umbra.checks").warning(
+            logging.getLogger("signetry.checks").warning(
                 "Check %r executes repo-supplied build code but ran under %r (no fs/net "
                 "sandbox). Authority will be capped at L1.", cmd, enforcement,
             )

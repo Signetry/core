@@ -1,11 +1,11 @@
-# Integrating umbra-core everywhere
+# Integrating signetry-core everywhere
 
-umbra-core governs coding agents from wherever their change tries to reach your
+signetry-core governs coding agents from wherever their change tries to reach your
 repository. It is **agent-agnostic** — the same `run_admission()` core drives
 every surface — so you install the checkpoint once and it governs Claude Code,
 Codex, Cursor, Copilot, Devin, or a human, identically.
 
-> Design principle: umbra-core sits **above** the agent, never inside it. An
+> Design principle: signetry-core sits **above** the agent, never inside it. An
 > agent cannot approve its own authority, so putting the governance layer *in*
 > the agent would defeat the purpose. Every surface below is a checkpoint the
 > agent's change must pass through.
@@ -14,12 +14,12 @@ Codex, Cursor, Copilot, Devin, or a human, identically.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
 ```python
 from pathlib import Path
-from umbra_core import get_executor, run_admission, build_receipt, verify_receipt
+from signetry_core import get_executor, run_admission, build_receipt, verify_receipt
 
 agent = get_executor("claude-code")           # or "codex-cli"
 report = run_admission(Path("checkout"), "acme/app",
@@ -30,27 +30,27 @@ print(report.authority_level, report.outcome)  # e.g. 2 branch_pr
 ## 2. CLI + git hook (governs the agent on the developer's machine)
 
 ```bash
-umbra admit . --mission "bump left-pad to its fixed version" --agent claude-code
-umbra verify receipt.json
-umbra provenance receipt.json          # -> in-toto/SLSA statement
-umbra brake acme app --store passports.json --reason "incident-42"
+signetry admit . --mission "bump left-pad to its fixed version" --agent claude-code
+signetry verify receipt.json
+signetry provenance receipt.json          # -> in-toto/SLSA statement
+signetry brake acme app --store passports.json --reason "incident-42"
 ```
 
-`umbra admit` exits non-zero unless the change earns branch-PR authority (tune
+`signetry admit` exits non-zero unless the change earns branch-PR authority (tune
 with `--min-authority`), so it gates a **pre-push hook**:
 
 ```bash
 # install the hook in any repo
 git config core.hooksPath integrations/git-hooks
 # then a push runs admission first:
-UMBRA_MISSION="review pending change" git push
-UMBRA_SKIP=1 git push        # bypass once
+SIGNETRY_MISSION="review pending change" git push
+SIGNETRY_SKIP=1 git push        # bypass once
 ```
 
 ## 3. GitHub App / Action (the highest-reach checkpoint — governs ANY agent's PR)
 
 Drop `integrations/github-action/example-workflow.yml` at
-`.github/workflows/umbra.yml` in any repo:
+`.github/workflows/signetry.yml` in any repo:
 
 ```yaml
 on:
@@ -64,7 +64,7 @@ jobs:
       - uses: Signetry/action@v1
         with:
           min-authority: "1"
-          signing-key: ${{ secrets.UMBRA_SIGNING_KEY }}
+          signing-key: ${{ secrets.SIGNETRY_SIGNING_KEY }}
 ```
 
 Every PR — no matter which agent opened it — gets an admission run, a verdict
@@ -75,17 +75,17 @@ status check* in branch protection and nothing merges without a receipt.
 ## 4. MCP server (agents call governance themselves)
 
 ```bash
-pip install "umbra-core[mcp] @ git+https://github.com/Signetry/core@v0.5.4"
-python -m umbra_core.mcp_server            # stdio transport
+pip install "signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.5.4"
+python -m signetry_core.mcp_server            # stdio transport
 ```
 
 Register the command with an MCP client (Claude Code, Cursor). The agent can
-then call `umbra_admit`, `umbra_verify`, and `umbra_provenance` to run its own
+then call `signetry_admit`, `signetry_verify`, and `signetry_provenance` to run its own
 change through the deterministic pipeline *before* proposing it — the verdict is
 still produced outside the model.
 
-**Scope the server:** set `UMBRA_MCP_ROOTS` (os.pathsep-separated absolute
-directories) so `umbra_admit` only operates under your workspaces. Without it the
+**Scope the server:** set `SIGNETRY_MCP_ROOTS` (os.pathsep-separated absolute
+directories) so `signetry_admit` only operates under your workspaces. Without it the
 server accepts any path and logs a warning — an agent could otherwise point it at
 an arbitrary host directory.
 

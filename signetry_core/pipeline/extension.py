@@ -84,7 +84,7 @@ class AdmittedExtension:
 
     def to_public(self) -> dict[str, Any]:
         return {
-            "kind_of": "umbra.admitted-extension",
+            "kind_of": "signetry.admitted-extension",
             "name": self.name,
             "kind": self.kind,
             "version": self.version,
@@ -292,7 +292,7 @@ def asbom(extensions: list[AdmittedExtension], *, org: str | None = None) -> dic
     """Emit a CycloneDX-aligned bill of materials of admitted extensions.
 
     Each extension becomes a CycloneDX ``component`` carrying its exact-bytes
-    ``extension_hash`` as a SHA-256 hash and an ``umbra`` property block recording
+    ``extension_hash`` as a SHA-256 hash and a ``signetry`` property block recording
     the admission verdict + quarantine count for org inventory/audit.
     """
     components: list[dict[str, Any]] = []
@@ -302,14 +302,14 @@ def asbom(extensions: list[AdmittedExtension], *, org: str | None = None) -> dic
             "type": "application" if ext.kind == "mcp" else "library",
             "name": ext.name,
             "version": ext.version,
-            "bom-ref": f"umbra-extension:{ext.kind}:{ext.name}@{ext.version}",
+            "bom-ref": f"signetry-extension:{ext.kind}:{ext.name}@{ext.version}",
             "hashes": [{"alg": "SHA-256", "content": raw}],
             "properties": [
-                {"name": "umbra:kind", "value": ext.kind},
-                {"name": "umbra:verdict", "value": ext.verdict},
-                {"name": "umbra:quarantined_findings", "value": str(len(ext.quarantine_findings))},
-                {"name": "umbra:file_count", "value": str(len(ext.files))},
-                *([{"name": "umbra:mcp_tools", "value": ",".join(ext.mcp_tools)}] if ext.mcp_tools else []),
+                {"name": "signetry:kind", "value": ext.kind},
+                {"name": "signetry:verdict", "value": ext.verdict},
+                {"name": "signetry:quarantined_findings", "value": str(len(ext.quarantine_findings))},
+                {"name": "signetry:file_count", "value": str(len(ext.files))},
+                *([{"name": "signetry:mcp_tools", "value": ",".join(ext.mcp_tools)}] if ext.mcp_tools else []),
             ],
         })
     return {
@@ -317,7 +317,7 @@ def asbom(extensions: list[AdmittedExtension], *, org: str | None = None) -> dic
         "specVersion": CYCLONEDX_SPEC,
         "metadata": {
             "timestamp": datetime.now(UTC).isoformat(),
-            "tools": [{"vendor": "Umbra", "name": "umbra-core", "components": []}],
+            "tools": [{"vendor": "Umbra", "name": "signetry-core", "components": []}],
             **({"component": {"type": "application", "name": org}} if org else {}),
         },
         "components": components,

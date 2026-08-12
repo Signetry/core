@@ -3,7 +3,7 @@
 Mirrors the false-positive-filtering approach of claude-code-security-review: a
 model reviews the deterministic/semgrep findings in context and (a) marks likely
 false positives and (b) adds an exploit scenario. It is **advisory only** and
-obeys umbra-core's governing asymmetry:
+obeys signetry-core's governing asymmetry:
 
 - It can LOWER a finding's confidence or DROP it as a false positive.
 - It can ANNOTATE a finding with an exploit scenario.

@@ -1,35 +1,51 @@
 # Changelog
 
-All notable changes to **umbra-core** are documented here. The format follows
+All notable changes to **signetry-core** are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
+
+## [Unreleased]
+
+### Changed — project rename: `umbra-core` → `signetry-core` (BREAKING, no fallback)
+
+- **Distribution/package:** `umbra-core` → `signetry-core`.
+- **Import package:** `umbra_core` → `signetry_core` (all `import`/`from` paths updated).
+- **CLI command:** `umbra` → `signetry` (the `[project.scripts]` entry is now
+  `signetry = "signetry_core.cli:main"`; all help text and docs updated).
+- **Environment variables:** every `UMBRA_*` → `SIGNETRY_*` (e.g. `UMBRA_SIGNING_KEY`
+  → `SIGNETRY_SIGNING_KEY`, `UMBRA_ENABLE_CODEX_CLI` → `SIGNETRY_ENABLE_CODEX_CLI`).
+- **Config directory:** `.umbra/` → `.signetry/` (e.g. `.signetry/admission.yaml`).
+- Receipt/provenance identifiers and MCP tool names were renamed to the `signetry`
+  namespace (`signetry.remediation-receipt`, provenance `predicate.signetry`,
+  `signetry:*` extension properties, `signetry_admit`/`signetry_verify`/
+  `signetry_provenance`). This is a hard rename with **no backward-compat aliases**.
 
 ## [0.5.4] — 2026-08-03
 
 ### Changed — source-available distribution (no PyPI)
 
-- umbra-core is **source-available** (All Rights Reserved) and is **no longer
+- signetry-core is **source-available** (All Rights Reserved) and is **no longer
   published to PyPI** — all prior PyPI releases were yanked. Install from source:
-  `pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`.
-- `install.sh` installs from the git tag (`UMBRA_VERSION` overrides), not PyPI.
+  `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"`.
+- `install.sh` installs from the git tag (`SIGNETRY_VERSION` overrides), not PyPI.
 - `release.yml` no longer publishes to PyPI; it builds/tests and cuts a GitHub
   Release with the git-source install command.
 - Docs (SECURITY, INTEGRATIONS, RELEASING, ORG_MIGRATION, docs/site, LAUNCH),
   the bundled git hook, the MCP server hints, and the integrations action install
-  umbra-core from source. No functional/library API change from `0.5.3`.
+  signetry-core from source. No functional/library API change from `0.5.3`.
 
 ## [0.5.3] — 2026-07-30
 
 ### Fixed — Codex sandbox on CI runners
 
-- `CodexExecutor` honors `UMBRA_CODEX_SANDBOX` (`read-only` | `workspace-write` |
+- `CodexExecutor` honors `SIGNETRY_CODEX_SANDBOX` (`read-only` | `workspace-write` |
   `danger-full-access`) so a run can select a sandbox mode that initializes on the
   host. On CI runners the OS sandbox (bubblewrap/Landlock) often cannot start, which
   made `codex exec` fail; the operator can now choose full-access drafting there.
   Safe because the executor only DRAFTS in a disposable checkout with no push/merge
   credentials, and Umbra's admission pipeline governs the result regardless.
-- The auto-fix workflow sets `UMBRA_CODEX_SANDBOX=danger-full-access` for CI.
+- The auto-fix workflow sets `SIGNETRY_CODEX_SANDBOX=danger-full-access` for CI.
 
 ## [0.5.2] — 2026-07-30
 
@@ -41,7 +57,7 @@ change between minor versions.
 - The auto-fix workflow gained `openai_base_url` / `codex_model` /
   `anthropic_base_url` / `claude_model` inputs so a run can use a gateway with the
   caller's own key (bring-your-own-key), configuring Codex via an isolated
-  `CODEX_HOME` provider and Claude via `ANTHROPIC_BASE_URL` + `UMBRA_CLAUDE_MODEL`.
+  `CODEX_HOME` provider and Claude via `ANTHROPIC_BASE_URL` + `SIGNETRY_CLAUDE_MODEL`.
 
 Verified live on IBM ICA: Codex (`gpt-5.5-gus`) and Claude (`claude-opus-4-8`) each
 draft a fix that earns L2 through the admission pipeline.
@@ -65,7 +81,7 @@ draft a fix that earns L2 through the admission pipeline.
 
 ### Added — detection engine + governed fix fusion
 
-- **Layered SAST detection engine** (`umbra_core.pipeline.findings`): a
+- **Layered SAST detection engine** (`signetry_core.pipeline.findings`): a
   deterministic, offline floor (Python AST taint + regex) across the OWASP set —
   SQLi, command/code injection, unsafe deserialization, path traversal, XSS, weak
   crypto, insecure randomness, SSRF, SSTI, JWT-none, Django raw SQL, NoSQL, XXE,
@@ -76,27 +92,27 @@ draft a fix that earns L2 through the admission pipeline.
   and parameterised-query-aware (zero-FP oriented).
 - **Optional layers, non-fatal when absent**: Semgrep, tree-sitter AST, and LLM
   triage (advisory only — never strengthens or self-approves).
-- **SARIF 2.1.0 export** and disposable **remote-repo clone** (`umbra scan <url>`).
-- **Fusion**: `umbra scan --fix --fix-agent <codex-cli|claude-code>` turns each
+- **SARIF 2.1.0 export** and disposable **remote-repo clone** (`signetry scan <url>`).
+- **Fusion**: `signetry scan --fix --fix-agent <codex-cli|claude-code>` turns each
   finding into a bounded remediation mission, runs it through the admission
-  pipeline, and seals an Ed25519 receipt; `umbra-autofix.yml` opens branch-only fix
+  pipeline, and seals an Ed25519 receipt; `signetry-autofix.yml` opens branch-only fix
   PRs (never merges). Setup: `docs/AUTOFIX_SETUP.md`.
-- **CLI**: `umbra scan` with `--json`/`--sarif`/`--output`, `--fail-on`, and the
+- **CLI**: `signetry scan` with `--json`/`--sarif`/`--output`, `--fail-on`, and the
   opt-in `--semgrep`/`--treesitter` layers.
 
 Benchmark (see Signetry/eval): 52-case public corpus across 7 languages —
-umbra-core **100% recall / 0 false positives** vs claude-code-security-review
+signetry-core **100% recall / 0 false positives** vs claude-code-security-review
 (Opus 4.8) 90%.
 
 ## [0.4.0] — 2026-07-26
 
 ### Added — CLI developer experience
 
-- **`umbra init`** scaffolds a conservative starter `.umbra/admission.yaml` (loads
+- **`signetry init`** scaffolds a conservative starter `.signetry/admission.yaml` (loads
   cleanly through the real contract loader; refuses to overwrite without `--force`),
   so a new user is one command from a governed change.
-- **`umbra completion <bash|zsh|fish>`** prints a shell completion script for the
-  subcommands (dependency-free; `eval "$(umbra completion zsh)"`).
+- **`signetry completion <bash|zsh|fish>`** prints a shell completion script for the
+  subcommands (dependency-free; `eval "$(signetry completion zsh)"`).
 - **`install.sh`** — a `curl … | sh` one-line installer (uv → pipx → pip, isolated
   and fail-closed) and a **Homebrew tap** (`brew install bkd-dotcom/umbra/umbra`).
 - Docs site: a **Capabilities & Proof** page (capability graph, plan binding,
@@ -124,7 +140,7 @@ umbra-core **100% recall / 0 false positives** vs claude-code-security-review
 - **`asbom`** emits a **CycloneDX 1.5-aligned** Agent Software Bill of Materials of
   admitted extensions (SHA-256 hashes + `umbra:verdict` / quarantine properties)
   for org inventory.
-- New CLI: **`umbra admit-extension <dir>`** (`--kind`, `--repo` for the allowlist,
+- New CLI: **`signetry admit-extension <dir>`** (`--kind`, `--repo` for the allowlist,
   `--allow-quarantined`, `--asbom`, `--org`; exits non-zero on deny). New API:
   `admit_extension`, `inspect_extension`, `asbom`, `AdmittedExtension`,
   `ExtensionFile`.
@@ -143,7 +159,7 @@ umbra-core **100% recall / 0 false positives** vs claude-code-security-review
     the Merkle transparency log.
 - Each gate reports `pass` / `fail` / `unproven` with a reason — never a green on
   missing evidence. `build_receipt` now attaches a `gates` summary to the envelope.
-- New CLI: **`umbra gates <receipt.json>`** (exits non-zero unless all gates pass,
+- New CLI: **`signetry gates <receipt.json>`** (exits non-zero unless all gates pass,
   so it can gate CI; `--json` for machine output). New API: `evaluate_gates`,
   `Gate`, `GateSummary`.
 
@@ -155,12 +171,12 @@ umbra-core **100% recall / 0 false positives** vs claude-code-security-review
   invent a stronger claim than the receipt. Table (Executor · Contract · Trust
   boundary · Checks · Verifier · Proof gates · Receipt · Auto-merge), machine-
   readable reason codes, and the L2/L1/L0 conditional line.
-- New CLI: **`umbra comment <report.json>`** (reads the `admit --json` payload from
+- New CLI: **`signetry comment <report.json>`** (reads the `admit --json` payload from
   a file or stdin). New API: `render_pr_comment`.
 
 ### Added — capability graph (contract v2)
 
-- **Capability-graph contract fields** (`.umbra/admission.yaml`, all optional and
+- **Capability-graph contract fields** (`.signetry/admission.yaml`, all optional and
   additive; a contract that declares none behaves exactly as before):
   - `allowed_tools` — allowlist of agent tool/command names; a tool off the list
     is denied.
@@ -201,21 +217,21 @@ umbra-core **100% recall / 0 false positives** vs claude-code-security-review
 
 ### Fixed
 
-- `umbra_core.__version__` was hardcoded to `"0.1.0"` and had drifted from the
+- `signetry_core.__version__` was hardcoded to `"0.1.0"` and had drifted from the
   real package version. It now reads from installed package metadata
   (`importlib.metadata`), so it always matches the released version. Functional
   behavior was unaffected in prior releases (only the reported version string was
-  stale); this makes `import umbra_core; umbra_core.__version__` correct.
+  stale); this makes `import signetry_core; signetry_core.__version__` correct.
 
 ## [0.2.0] — 2026-07-22
 
 ### Added — real-time guard (for editor/agent plugins)
 
-- **`umbra guard`** — a fast, deterministic pre-action check for editor/agent
+- **`signetry guard`** — a fast, deterministic pre-action check for editor/agent
   hooks. Given one proposed file path and/or shell command, it allows or denies
-  against the repo's `.umbra/admission.yaml` — instantly, no model, no network.
+  against the repo's `.signetry/admission.yaml` — instantly, no model, no network.
 - Python API: `guard(repo_path, path=..., command=...) -> GuardDecision`.
-- `umbra guard --stdin-json --hook-output` emits Claude Code `PreToolUse`
+- `signetry guard --stdin-json --hook-output` emits Claude Code `PreToolUse`
   decision JSON, so a Claude Code plugin hook can **block** an out-of-scope or
   forbidden edit/command *before it happens* — governance from inside the editor,
   run by deterministic code (not the model).
@@ -245,12 +261,12 @@ No functional or security changes to the library since 0.1.3.
   comments, role-prompt fences (`<|system|>`), and long base64 blobs that decode
   to imperatives.
 - **Full-file quarantine.** When a hidden/obfuscated/encoded carrier is found (or
-  `UMBRA_QUARANTINE_MODE=full`), the entire untrusted instruction file is withheld
+  `SIGNETRY_QUARANTINE_MODE=full`), the entire untrusted instruction file is withheld
   from the agent — detection completeness stops mattering.
 - **Optional semantic classifier** via `register_semantic_classifier(fn)` — an
   LLM-backed second opinion, off by default, with failures isolated so they never
   break admission.
-- **`UMBRA_REQUIRE_SANDBOX`** strict mode: code-executing checks (`npm/pip
+- **`SIGNETRY_REQUIRE_SANDBOX`** strict mode: code-executing checks (`npm/pip
   install`, `go/cargo build`) are *blocked* (fail closed) unless a real sandbox is
   available, instead of degrading to host-restricted.
 
@@ -266,7 +282,7 @@ No functional or security changes to the library since 0.1.3.
 - **Un-sandboxed code execution caps authority at L1.** A code-executing check
   that ran without a filesystem/network sandbox can no longer earn branch-PR
   authority; a loud warning is logged.
-- **MCP path scoping** via `UMBRA_MCP_ROOTS` — `umbra_admit` refuses paths outside
+- **MCP path scoping** via `SIGNETRY_MCP_ROOTS` — `umbra_admit` refuses paths outside
   the allowlisted workspaces.
 - **Baseline isolation via `git archive`** (respects `.gitignore`, no symlink
   follow, filters traversal members) instead of `copytree`.
@@ -316,7 +332,7 @@ No functional or security changes to the library since 0.1.3.
 - **Earned-authority passport** + Emergency Brake (`gate_pr`, `revoke`).
 - **SLSA / in-toto provenance** (`to_slsa_provenance`).
 - **Append-only Merkle transparency log**.
-- **CLI** (`umbra admit/verify/brake/provenance`), **MCP server**, git pre-push
+- **CLI** (`signetry admit/verify/brake/provenance`), **MCP server**, git pre-push
   hook, and a GitHub Action.
 
 > Note: `0.1.0`–`0.1.2` are superseded by `0.1.3`. See [SECURITY.md](SECURITY.md).

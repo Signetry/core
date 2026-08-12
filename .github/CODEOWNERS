@@ -5,11 +5,11 @@
 *                           @bkd-dotcom
 
 # Security-critical pipeline — the governance guarantees live here.
-/umbra_core/pipeline/       @bkd-dotcom
-/umbra_core/executors/      @bkd-dotcom
+/signetry_core/pipeline/       @bkd-dotcom
+/signetry_core/executors/      @bkd-dotcom
 
 # Release, CI, and security policy.
 /.github/workflows/         @bkd-dotcom
 /pyproject.toml             @bkd-dotcom
 /SECURITY.md                @bkd-dotcom
-/.umbra/                    @bkd-dotcom
+/.signetry/                    @bkd-dotcom

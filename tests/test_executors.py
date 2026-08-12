@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from umbra_core import (
+from signetry_core import (
     ClaudeCodeExecutor,
     CodexExecutor,
     ExecutionResult,
@@ -78,8 +78,8 @@ def test_registry_unknown_raises():
 
 
 def test_resolve_available_none_when_disabled(monkeypatch):
-    monkeypatch.delenv("UMBRA_ENABLE_CODEX_CLI", raising=False)
-    monkeypatch.delenv("UMBRA_ENABLE_CLAUDE_CODE", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CLAUDE_CODE", raising=False)
     # NullExecutor is always available but must NEVER be auto-selected.
     assert resolve_available(runner=FakeRunner({})) is None
 
@@ -99,7 +99,7 @@ def test_null_executor_makes_no_change_and_is_protocol():
 # --- availability gating ----------------------------------------------------
 
 def test_codex_unavailable_without_flag(monkeypatch):
-    monkeypatch.delenv("UMBRA_ENABLE_CODEX_CLI", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
     assert CodexExecutor(runner=FakeRunner({})).available() is False
 
 
@@ -125,11 +125,11 @@ def test_codex_model_gateway_rejects_unsafe_name(monkeypatch):
 
 def test_codex_sandbox_default_and_override(monkeypatch):
     ex = CodexExecutor()
-    monkeypatch.delenv("UMBRA_CODEX_SANDBOX", raising=False)
+    monkeypatch.delenv("SIGNETRY_CODEX_SANDBOX", raising=False)
     assert ex._sandbox(read_only=True) == "read-only"
     assert ex._sandbox(read_only=False) == "workspace-write"
     # Operator override for CI runners where the OS sandbox can't initialize.
-    monkeypatch.setenv("UMBRA_CODEX_SANDBOX", "danger-full-access")
+    monkeypatch.setenv("SIGNETRY_CODEX_SANDBOX", "danger-full-access")
     assert ex._sandbox(read_only=False) == "danger-full-access"
     # read-only path is unaffected by the override.
     assert ex._sandbox(read_only=True) == "read-only"
@@ -137,23 +137,23 @@ def test_codex_sandbox_default_and_override(monkeypatch):
 
 def test_codex_sandbox_override_rejects_invalid(monkeypatch):
     ex = CodexExecutor()
-    monkeypatch.setenv("UMBRA_CODEX_SANDBOX", "bogus; rm -rf /")
+    monkeypatch.setenv("SIGNETRY_CODEX_SANDBOX", "bogus; rm -rf /")
     assert ex._sandbox(read_only=False) == "workspace-write"  # falls back to safe default
 
 
 def test_codex_available_with_flag_and_version(monkeypatch):
-    monkeypatch.setenv("UMBRA_ENABLE_CODEX_CLI", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CODEX_CLI", "true")
     runner = FakeRunner({"codex:--version": FakeCompleted(stdout="codex 0.9.0")})
     assert CodexExecutor(runner=runner).available() is True
 
 
 def test_claude_unavailable_without_flag(monkeypatch):
-    monkeypatch.delenv("UMBRA_ENABLE_CLAUDE_CODE", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CLAUDE_CODE", raising=False)
     assert ClaudeCodeExecutor(runner=FakeRunner({})).available() is False
 
 
 def test_claude_available_with_flag_and_version(monkeypatch):
-    monkeypatch.setenv("UMBRA_ENABLE_CLAUDE_CODE", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CLAUDE_CODE", "true")
     runner = FakeRunner({"claude:--version": FakeCompleted(stdout="2.1.215 (Claude Code)")})
     assert ClaudeCodeExecutor(runner=runner).available() is True
 
@@ -161,7 +161,7 @@ def test_claude_available_with_flag_and_version(monkeypatch):
 # --- propose: disabled result ----------------------------------------------
 
 def test_disabled_result_is_honest(monkeypatch, git_repo):
-    monkeypatch.delenv("UMBRA_ENABLE_CODEX_CLI", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
     res = CodexExecutor(runner=FakeRunner({})).propose("fix it", git_repo)
     assert res.executor == "codex-cli-disabled"
     assert res.diff == ""
@@ -171,7 +171,7 @@ def test_disabled_result_is_honest(monkeypatch, git_repo):
 # --- propose: successful run captures diff from git -------------------------
 
 def test_codex_propose_captures_diff(monkeypatch, git_repo):
-    monkeypatch.setenv("UMBRA_ENABLE_CODEX_CLI", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CODEX_CLI", "true")
     runner = FakeRunner(
         {
             "codex:--version": FakeCompleted(stdout="codex 0.9.0"),
@@ -189,7 +189,7 @@ def test_codex_propose_captures_diff(monkeypatch, git_repo):
 
 
 def test_claude_propose_captures_diff_and_parses_json(monkeypatch, git_repo):
-    monkeypatch.setenv("UMBRA_ENABLE_CLAUDE_CODE", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CLAUDE_CODE", "true")
     runner = FakeRunner(
         {
             "claude:--version": FakeCompleted(stdout="2.1.215 (Claude Code)"),
@@ -213,7 +213,7 @@ def test_claude_propose_captures_diff_and_parses_json(monkeypatch, git_repo):
 # --- propose: failure is never dressed up as success ------------------------
 
 def test_failed_run_reports_unavailable(monkeypatch, git_repo):
-    monkeypatch.setenv("UMBRA_ENABLE_CLAUDE_CODE", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CLAUDE_CODE", "true")
     runner = FakeRunner(
         {
             "claude:--version": FakeCompleted(stdout="2.1.215"),
@@ -228,7 +228,7 @@ def test_failed_run_reports_unavailable(monkeypatch, git_repo):
 # --- trust boundary: claude runs with --bare (no CLAUDE.md auto-read) -------
 
 def test_claude_run_uses_bare_and_blocks_push(monkeypatch, git_repo):
-    monkeypatch.setenv("UMBRA_ENABLE_CLAUDE_CODE", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CLAUDE_CODE", "true")
     runner = FakeRunner(
         {
             "claude:--version": FakeCompleted(stdout="2.1.215"),
@@ -246,7 +246,7 @@ def test_claude_run_uses_bare_and_blocks_push(monkeypatch, git_repo):
 # --- prompt is redacted from the replayable command -------------------------
 
 def test_command_replay_redacts_prompt(monkeypatch, git_repo):
-    monkeypatch.setenv("UMBRA_ENABLE_CODEX_CLI", "true")
+    monkeypatch.setenv("SIGNETRY_ENABLE_CODEX_CLI", "true")
     runner = FakeRunner(
         {
             "codex:--version": FakeCompleted(stdout="codex 0.9.0"),

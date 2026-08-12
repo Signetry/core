@@ -39,7 +39,7 @@ def resolve_scan_target(target: str, *, depth: int = 1) -> Iterator[Path]:
         yield Path(target)
         return
 
-    tmp = Path(tempfile.mkdtemp(prefix="umbra-scan-"))
+    tmp = Path(tempfile.mkdtemp(prefix="signetry-scan-"))
     dest = tmp / "repo"
     try:
         proc = subprocess.run(

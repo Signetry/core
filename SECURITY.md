@@ -1,11 +1,11 @@
 # Security Policy
 
-umbra-core is a security tool, so we hold its own security to a high bar.
+signetry-core is a security tool, so we hold its own security to a high bar.
 
 ## Supported versions
 
 Fixes land on the latest tagged release of the
-[source repo](https://github.com/Signetry/core/releases) (umbra-core is
+[source repo](https://github.com/Signetry/core/releases) (signetry-core is
 source-available and installed from source — not published to PyPI). Always run the
 latest.
 
@@ -19,8 +19,8 @@ latest.
 dev-key verification trust, and — in the companion GitHub Action `< v0.1.3` — a
 workflow script-injection sink). `0.5.1+` adds bring-your-own-key credential
 redaction for `--fix`. Pin the Action to `@v1` (which moves forward) or
-`@v0.1.3+`, and install `umbra-core` from source at `@v0.5.3` or later
-(`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`).
+`@v0.1.3+`, and install `signetry-core` from source at `@v0.5.3` or later
+(`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"`).
 
 ## Reporting a vulnerability
 
@@ -30,14 +30,14 @@ Use GitHub's private vulnerability reporting:
 **https://github.com/Signetry/core/security/advisories/new**
 
 Include, where possible: affected version, a minimal reproduction (a crafted
-`.umbra/admission.yaml`, repo layout, or receipt), the impact (e.g. scope bypass,
+`.signetry/admission.yaml`, repo layout, or receipt), the impact (e.g. scope bypass,
 authority escalation, receipt forgery, secret exposure), and any suggested fix.
 We aim to acknowledge within a few days and to fix confirmed issues promptly, then
 credit reporters who wish to be named.
 
 ## Threat model & honest scope
 
-Read this before relying on umbra-core for a security guarantee.
+Read this before relying on signetry-core for a security guarantee.
 
 - **What it enforces.** An executable contract (allowed/forbidden paths, diff
   budget, required checks) evaluated *outside the model* and fail-closed; an
@@ -54,25 +54,25 @@ Read this before relying on umbra-core for a security guarantee.
   (`unshare -rn`), or `host-restricted` (allowlist + secret-stripped env only).
   The achieved tier is recorded truthfully in every receipt. A code-executing
   check that runs un-sandboxed caps authority at L1; set
-  `UMBRA_REQUIRE_SANDBOX=true` to fail closed instead.
-- **Receipt trust requires a real key.** With no `UMBRA_SIGNING_KEY`, signing uses
+  `SIGNETRY_REQUIRE_SANDBOX=true` to fail closed instead.
+- **Receipt trust requires a real key.** With no `SIGNETRY_SIGNING_KEY`, signing uses
   a deterministic **dev-fallback key whose seed is public in the source tree** —
   such a receipt proves nothing to a third party and is flagged `key_ephemeral`.
   `verify_receipt` refuses the dev key unless an explicit `expected_public_key` is
-  pinned. **Set a production `UMBRA_SIGNING_KEY` and publish/pin its public key.**
-- **Not a replacement for code review.** umbra-core is the governance layer
+  pinned. **Set a production `SIGNETRY_SIGNING_KEY` and publish/pin its public key.**
+- **Not a replacement for code review.** signetry-core is the governance layer
   between the agent and the human; a human still merges. `auto_merge` is always
   false.
 
-### Detection scan + governed auto-fix (`umbra scan` / `umbra scan --fix`)
+### Detection scan + governed auto-fix (`signetry scan` / `signetry scan --fix`)
 
-`umbra scan` is a read-only static analysis over the source (deterministic AST +
+`signetry scan` is a read-only static analysis over the source (deterministic AST +
 regex; optional Semgrep/tree-sitter/LLM-triage layers). It performs **no code
 execution** on the scanned repo, needs no credentials by default, and runs offline.
 The optional LLM-triage layer is *advisory only*: it can drop or annotate findings,
 never add or strengthen one.
 
-`umbra scan --fix` is the only path that runs a **live agent** (Codex / Claude
+`signetry scan --fix` is the only path that runs a **live agent** (Codex / Claude
 Code / …) with a **real API key** against repository code, so it has the largest
 attack surface. Its safety rests on three properties, all enforced by the mechanism:
 
@@ -87,7 +87,7 @@ attack surface. Its safety rests on three properties, all enforced by the mechan
   (required-check subprocesses get an *allowlist* env — API keys can't reach them by
   construction). Because the checkout is disposable and cannot push, the agent's
   filesystem sandbox is defense-in-depth, not the boundary; on a CI runner where the
-  OS sandbox can't initialise you may set `UMBRA_CODEX_SANDBOX=danger-full-access`
+  OS sandbox can't initialise you may set `SIGNETRY_CODEX_SANDBOX=danger-full-access`
   for drafting *only* — the real containment is the disposable checkout plus the
   admission pipeline that governs the result.
 - **The draft earns authority from evidence, not from the agent.** Whatever the
@@ -101,15 +101,15 @@ attack surface. Its safety rests on three properties, all enforced by the mechan
 code: only point it at repositories you're willing to have an agent read. The
 untrusted-instruction quarantine reduces prompt-injection-via-repo-text, but a
 sufficiently adversarial repo is out of scope — scan such repos read-only
-(`umbra scan`, no `--fix`).
+(`signetry scan`, no `--fix`).
 
 ## Hardening recommendations for operators
 
-- Set a managed `UMBRA_SIGNING_KEY` (base64 of ≥32 random bytes) and pin its
+- Set a managed `SIGNETRY_SIGNING_KEY` (base64 of ≥32 random bytes) and pin its
   public key in whatever verifies receipts.
 - Run checks on Linux with bubblewrap available (the Action installs it) so the
-  tier is `sandboxed`; use `UMBRA_REQUIRE_SANDBOX=true` for fail-closed CI.
-- Own and version your `.umbra/admission.yaml` (`policy_owner` / `policy_version`).
+  tier is `sandboxed`; use `SIGNETRY_REQUIRE_SANDBOX=true` for fail-closed CI.
+- Own and version your `.signetry/admission.yaml` (`policy_owner` / `policy_version`).
 - Make the admission status check **required** in branch protection, and enable
   it for administrators too, so nothing merges without a receipt.
 
@@ -123,10 +123,10 @@ sufficiently adversarial repo is out of scope — scan such repos read-only
   branch protection on `main`; the fix PR still requires a human.
 - **Bound the blast radius in the contract.** Set tight `allowed_paths` /
   `forbidden_paths` and a small `diff_budget` so an over-eager draft is capped at
-  L1 rather than opening a PR. Keep `.github/**` and `.umbra/**` forbidden.
-- **Cap cost and volume.** Use `--max-fixes` (start at 3–5). Detection (`umbra
+  L1 rather than opening a PR. Keep `.github/**` and `.signetry/**` forbidden.
+- **Cap cost and volume.** Use `--max-fixes` (start at 3–5). Detection (`signetry
   scan`) is free/offline; only `--fix` spends model calls.
-- **Prefer report-only for untrusted code.** Run `umbra scan` (no `--fix`) on
+- **Prefer report-only for untrusted code.** Run `signetry scan` (no `--fix`) on
   repositories you don't fully trust; only enable `--fix` where you'd let an agent
   edit the code anyway.
 - **Rotate on exposure.** If a key was ever pasted outside a secret store, rotate
