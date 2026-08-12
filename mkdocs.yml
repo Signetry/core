@@ -1,5 +1,5 @@
-site_name: provenark
-site_description: A change-control plane for coding agents — earned authority, sealed in a signed receipt.
+site_name: signetry
+site_description: A change-control plane for coding agents — seal every agent's PR with proof.
 site_url: https://bkd-dotcom.github.io/umbra-core/
 repo_url: https://github.com/Signetry/core
 repo_name: Signetry/core

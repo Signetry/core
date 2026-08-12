@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="signetry">
+  <defs>
+    <linearGradient id="wax" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9D8DF1"/><stop offset="1" stop-color="#6E56CF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="56" fill="url(#wax)"/>
+  <circle cx="64" cy="64" r="46" fill="none" stroke="#ECE7DA" stroke-opacity="0.35" stroke-width="3"/>
+  <g fill="none" stroke="#ECE7DA" stroke-opacity="1" stroke-width="10"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 48 C80 38 68 36 60 40 C50 45 52 58 64 60"/>
+    <path d="M64 60 C78 63 80 74 70 80 L58 74 L48 84"/>
+  </g>
+</svg>
