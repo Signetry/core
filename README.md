@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="docs/assets/brand/mark.svg" alt="provenark" width="96" height="96"/>
+  <img src="docs/assets/brand/mark.svg" alt="signetry" width="96" height="96"/>
 </p>
 
-<h1 align="center">provenark</h1>
+<h1 align="center">signetry</h1>
 
-<p align="center"><em>earned authority for every agent change — sealed in a signed receipt</em></p>
+<p align="center"><em>Seal every agent's PR with proof — earned authority in a signed receipt.</em></p>
 
 <p align="center"><sub>package/CLI: <code>umbra-core</code> · <code>umbra</code> (rename in progress)</sub></p>
 

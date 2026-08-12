@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/brand/mark-transparent.svg" alt="provenark" width="88" height="88"/>
+  <img src="assets/brand/mark-transparent.svg" alt="signetry" width="88" height="88"/>
 </p>
 
-# provenark
+# signetry
 
 **A change-control plane for coding agents.**
 
