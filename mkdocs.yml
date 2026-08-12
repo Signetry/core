@@ -1,8 +1,8 @@
 site_name: provenark
 site_description: A change-control plane for coding agents — earned authority, sealed in a signed receipt.
 site_url: https://bkd-dotcom.github.io/umbra-core/
-repo_url: https://github.com/bkd-dotcom/umbra-core
-repo_name: bkd-dotcom/umbra-core
+repo_url: https://github.com/Signetry/core
+repo_name: Signetry/core
 edit_uri: edit/main/docs/site/
 docs_dir: docs/site
 

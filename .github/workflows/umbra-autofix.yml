@@ -68,7 +68,7 @@ jobs:
       - name: Install Umbra
         # umbra-core is source-available (All Rights Reserved) and not on PyPI —
         # install it from the source repo by tag.
-        run: pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
+        run: pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
 
       - name: Install the executor CLI
         env:

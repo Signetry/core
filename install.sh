@@ -2,7 +2,7 @@
 #
 # Umbra CLI installer.  Usage:
 #
-#   curl -fsSL https://raw.githubusercontent.com/bkd-dotcom/umbra-core/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/Signetry/core/main/install.sh | sh
 #
 # Installs the `umbra` CLI (umbra-core) from its **source repo** using the best
 # tool available, preferring an isolated install so it never clobbers your project
@@ -20,7 +20,7 @@ set -eu
 
 # optional: UMBRA_VERSION=0.5.3 sh install.sh  (defaults to the latest hardened tag)
 VERSION="${UMBRA_VERSION:-0.5.4}"
-SPEC="umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v${VERSION}"
+SPEC="umbra-core @ git+https://github.com/Signetry/core@v${VERSION}"
 
 say() { printf '  %s\n' "$1"; }
 have() { command -v "$1" >/dev/null 2>&1; }

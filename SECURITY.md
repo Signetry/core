@@ -5,7 +5,7 @@ umbra-core is a security tool, so we hold its own security to a high bar.
 ## Supported versions
 
 Fixes land on the latest tagged release of the
-[source repo](https://github.com/bkd-dotcom/umbra-core/releases) (umbra-core is
+[source repo](https://github.com/Signetry/core/releases) (umbra-core is
 source-available and installed from source — not published to PyPI). Always run the
 latest.
 
@@ -20,14 +20,14 @@ dev-key verification trust, and — in the companion GitHub Action `< v0.1.3` �
 workflow script-injection sink). `0.5.1+` adds bring-your-own-key credential
 redaction for `--fix`. Pin the Action to `@v1` (which moves forward) or
 `@v0.1.3+`, and install `umbra-core` from source at `@v0.5.3` or later
-(`pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"`).
+(`pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"`).
 
 ## Reporting a vulnerability
 
 **Please do not open a public issue for security reports.**
 
 Use GitHub's private vulnerability reporting:
-**https://github.com/bkd-dotcom/umbra-core/security/advisories/new**
+**https://github.com/Signetry/core/security/advisories/new**
 
 Include, where possible: affected version, a minimal reproduction (a crafted
 `.umbra/admission.yaml`, repo layout, or receipt), the impact (e.g. scope bypass,

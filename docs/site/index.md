@@ -33,10 +33,10 @@ false — a human merges.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "umbra-core @ git+https://github.com/bkd-dotcom/umbra-core@v0.5.4"
+pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
 ```
 
-- Source (install from here): <https://github.com/bkd-dotcom/umbra-core>
+- Source (install from here): <https://github.com/Signetry/core>
 - Action (Marketplace): <https://github.com/marketplace/actions/umbra-admission>
 
 ## License & contributing
@@ -49,6 +49,6 @@ Contributions are welcome under a **Contributor License Agreement**: you can
 contribute and you'll be **credited** (in `CONTRIBUTORS.md`, the Git history, and
 release notes), but you gain no right to use, sell, or rebrand the project — the
 owner retains all rights. See
-[CONTRIBUTING.md](https://github.com/bkd-dotcom/umbra-core/blob/main/CONTRIBUTING.md),
-the [CLA](https://github.com/bkd-dotcom/umbra-core/blob/main/CLA.md), and the
-[good-first-issues board](https://github.com/bkd-dotcom/umbra-umbrella/issues/10).
+[CONTRIBUTING.md](https://github.com/Signetry/core/blob/main/CONTRIBUTING.md),
+the [CLA](https://github.com/Signetry/core/blob/main/CLA.md), and the
+[good-first-issues board](https://github.com/Signetry/signetry/issues/10).

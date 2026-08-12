@@ -367,7 +367,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
 # A commented starter contract written by `umbra init`. Conservative by default:
 # dependency-manifest scope, small diff budget, deploy/CI/secrets off-limits.
 _STARTER_CONTRACT = """# Umbra executable change contract — the machine-enforced boundary for agent work.
-# Docs: https://github.com/bkd-dotcom/umbra-umbrella  ·  edited by humans, versioned in git.
+# Docs: https://github.com/Signetry/signetry  ·  edited by humans, versioned in git.
 version: 2
 task_type: dependency-remediation
 
