@@ -1,4 +1,4 @@
-"""Tests for the layered detection engine (umbra_core.pipeline.findings).
+"""Tests for the layered detection engine (signetry_core.pipeline.findings).
 
 Covers three properties that matter for parity with LLM scanners:
 1. DETECTION: the deterministic floor finds the OWASP-class vulns the competitors
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from umbra_core.pipeline.findings import (
+from signetry_core.pipeline.findings import (
     Finding,
     Severity,
     Source,
@@ -23,7 +23,7 @@ from umbra_core.pipeline.findings import (
     to_sarif,
     triage_findings,
 )
-from umbra_core.pipeline.findings.fetch import _looks_like_url
+from signetry_core.pipeline.findings.fetch import _looks_like_url
 
 # --- fixtures ---------------------------------------------------------------
 
@@ -337,7 +337,7 @@ def test_sarif_export_is_valid_shape(tmp_path):
     doc = to_sarif(report, tool_version="1.2.3")
     assert doc["version"] == "2.1.0"
     run = doc["runs"][0]
-    assert run["tool"]["driver"]["name"] == "umbra-core"
+    assert run["tool"]["driver"]["name"] == "signetry-core"
     assert run["tool"]["driver"]["version"] == "1.2.3"
     assert len(run["results"]) == len(report.findings)
     # every result references a rule and a location
@@ -534,7 +534,7 @@ def _git_repo(tmp_path, files: dict[str, str]):
 
 
 def test_fusion_proposes_governed_fix(tmp_path):
-    from umbra_core.pipeline.findings import propose_fix, scan_repository
+    from signetry_core.pipeline.findings import propose_fix, scan_repository
 
     _git_repo(tmp_path, {"app.py": (
         "import os, flask\napp = flask.Flask(__name__)\n"
@@ -554,7 +554,7 @@ def test_fusion_proposes_governed_fix(tmp_path):
 
 
 def test_fusion_seals_a_receipt(tmp_path):
-    from umbra_core.pipeline.findings import propose_fix, scan_repository
+    from signetry_core.pipeline.findings import propose_fix, scan_repository
 
     _git_repo(tmp_path, {"app.py": (
         "import os, flask\napp = flask.Flask(__name__)\n"
@@ -572,7 +572,7 @@ def test_fusion_seals_a_receipt(tmp_path):
 
 
 def test_fusion_agent_none_is_deterministic(tmp_path):
-    from umbra_core.pipeline.findings import propose_fix, scan_repository
+    from signetry_core.pipeline.findings import propose_fix, scan_repository
 
     _git_repo(tmp_path, {"app.py": (
         "import os, flask\n@app.route('/r')\ndef r():\n"
@@ -589,7 +589,7 @@ def test_fusion_agent_none_is_deterministic(tmp_path):
 
 
 def test_redaction_scrubs_credential_shapes():
-    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+    from signetry_core.pipeline.findings.secret_redaction import redact_secrets
 
     cases = [
         ('api_key = "sk-live-abc123def456ghi789jkl"', "sk-"),
@@ -604,7 +604,7 @@ def test_redaction_scrubs_credential_shapes():
 
 
 def test_redaction_leaves_normal_code_untouched():
-    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+    from signetry_core.pipeline.findings.secret_redaction import redact_secrets
 
     for src in ("x = y + 1", "def query(uid): return db.execute(sql, uid)",
                 "url = 'https://api.example.com/v1'"):
@@ -612,7 +612,7 @@ def test_redaction_leaves_normal_code_untouched():
 
 
 def test_redaction_handles_none():
-    from umbra_core.pipeline.findings.secret_redaction import redact_secrets
+    from signetry_core.pipeline.findings.secret_redaction import redact_secrets
     assert redact_secrets(None) is None
     assert redact_secrets("") == ""
 
@@ -620,7 +620,7 @@ def test_redaction_handles_none():
 def test_check_env_is_allowlist_no_api_keys_leak(monkeypatch):
     """The required-check subprocess env is an allowlist — no executor key can reach
     it by construction, regardless of what is set in the parent environment."""
-    from umbra_core.pipeline.checks import _scrubbed_env
+    from signetry_core.pipeline.checks import _scrubbed_env
 
     monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-not-leak")
@@ -633,8 +633,8 @@ def test_check_env_is_allowlist_no_api_keys_leak(monkeypatch):
 
 
 def test_fusion_mission_is_bounded_to_finding():
-    from umbra_core.pipeline.findings import Finding, Severity, mission_for_finding
-    from umbra_core.pipeline.findings.model import Source
+    from signetry_core.pipeline.findings import Finding, Severity, mission_for_finding
+    from signetry_core.pipeline.findings.model import Source
 
     f = Finding("py.sql_injection", "sql_injection", Severity.HIGH, "db.py", 12,
                 "t", "d", "Use parameterised queries.", 0.9, Source.DETERMINISTIC, "CWE-89")
@@ -644,7 +644,7 @@ def test_fusion_mission_is_bounded_to_finding():
 
 
 def test_fusion_orders_by_severity(tmp_path):
-    from umbra_core.pipeline.findings import propose_fixes, scan_repository
+    from signetry_core.pipeline.findings import propose_fixes, scan_repository
 
     _git_repo(tmp_path, {"app.py": (
         "import os, hashlib, flask\napp = flask.Flask(__name__)\n"
@@ -665,7 +665,7 @@ def test_fusion_orders_by_severity(tmp_path):
 
 
 def _scan_files(tmp_path, files: dict[str, str]):
-    from umbra_core.pipeline.findings import scan_repository
+    from signetry_core.pipeline.findings import scan_repository
     for rel, content in files.items():
         p = tmp_path / rel
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -728,7 +728,7 @@ def test_crossfile_csharp(tmp_path):
 
 def test_crossfile_lang_constant_arg_no_fp(tmp_path):
     # Caller passes a constant into a parameterised callee → no cross-file finding.
-    from umbra_core.pipeline.findings.lang_crossfile import analyze_repo_taint_multilang
+    from signetry_core.pipeline.findings.lang_crossfile import analyze_repo_taint_multilang
     files = {
         "main.go": 'package main\nfunc boot(db *DB) {\n    lookup(db, "healthcheck")\n}\n',
         "repo.go": ('package main\nfunc lookup(db *DB, name string) {\n'
@@ -744,7 +744,7 @@ def test_crossfile_lang_constant_arg_no_fp(tmp_path):
 def test_treesitter_graceful_when_absent(tmp_path):
     # With use_treesitter=True, the scan must not error whether or not the optional
     # packages are installed; the layer is recorded honestly.
-    from umbra_core.pipeline.findings import scan_repository
+    from signetry_core.pipeline.findings import scan_repository
     (tmp_path / "a.go").write_text('package main\nfunc h(db *DB, r *R) {\n'
                                    '    db.Query("SELECT " + r.URL.Query().Get("id"))\n}\n')
     report = scan_repository(tmp_path, use_treesitter=True)

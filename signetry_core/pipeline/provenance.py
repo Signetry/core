@@ -17,7 +17,7 @@ Mapping (honest, lossless where the vocabularies align):
 
 This is a *representation*; the Ed25519 signature over the canonical receipt
 remains the tamper-evidence. Where SLSA has no field for a concept (earned
-authority, quarantine count), it is carried under an ``umbra`` extension key
+authority, quarantine count), it is carried under a ``signetry`` extension key
 namespaced to avoid colliding with the standard predicate.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ from typing import Any
 # Predicate type URIs (SLSA Provenance v1 / in-toto Statement v1).
 STATEMENT_TYPE = "https://in-toto.io/Statement/v1"
 SLSA_PREDICATE_TYPE = "https://slsa.dev/provenance/v1"
-UMBRA_BUILD_TYPE = "https://umbra.engineer/admission/v1"
+SIGNETRY_BUILD_TYPE = "https://umbra.engineer/admission/v1"
 
 
 def _digest_from_hash(sha_hash: str | None) -> dict[str, str]:
@@ -43,7 +43,7 @@ def to_slsa_provenance(envelope: dict[str, Any]) -> dict[str, Any]:
     """Convert a signed receipt envelope into an in-toto Statement + SLSA predicate.
 
     ``envelope`` is the dict returned by
-    :func:`umbra_core.pipeline.receipt.build_receipt`.
+    :func:`signetry_core.pipeline.receipt.build_receipt`.
     """
     receipt = envelope.get("receipt") or {}
     repo = receipt.get("repo") or "unknown"
@@ -70,7 +70,7 @@ def to_slsa_provenance(envelope: dict[str, Any]) -> dict[str, Any]:
         ],
         "predicate": {
             "buildDefinition": {
-                "buildType": UMBRA_BUILD_TYPE,
+                "buildType": SIGNETRY_BUILD_TYPE,
                 "externalParameters": {
                     "repository": repo,
                     "mission_task_type": receipt.get("task_type"),
@@ -92,8 +92,8 @@ def to_slsa_provenance(envelope: dict[str, Any]) -> dict[str, Any]:
                 "builder": {
                     # The builder identity encodes the governing pipeline AND the
                     # agent that ran, so a verifier sees who produced the artifact.
-                    "id": f"{UMBRA_BUILD_TYPE}#{executor}",
-                    "version": {"umbra-core": receipt.get("version", 1)},
+                    "id": f"{SIGNETRY_BUILD_TYPE}#{executor}",
+                    "version": {"signetry-core": receipt.get("version", 1)},
                 },
                 "metadata": {
                     "invocationId": envelope.get("canonical_hash"),
@@ -101,15 +101,15 @@ def to_slsa_provenance(envelope: dict[str, Any]) -> dict[str, Any]:
                 },
                 "byproducts": [
                     {
-                        "name": "umbra-remediation-receipt",
-                        "mediaType": "application/vnd.umbra.receipt+json",
+                        "name": "signetry-remediation-receipt",
+                        "mediaType": "application/vnd.signetry.receipt+json",
                         "digest": _digest_from_hash(envelope.get("canonical_hash")),
                     }
                 ],
             },
-            # Umbra-specific evidence that SLSA has no native field for. Namespaced
+            # Signetry-specific evidence that SLSA has no native field for. Namespaced
             # so it never collides with the standard predicate vocabulary.
-            "umbra": {
+            "signetry": {
                 "authority_level": receipt.get("authority_level"),
                 "authority": receipt.get("authority"),
                 "outcome": receipt.get("outcome"),

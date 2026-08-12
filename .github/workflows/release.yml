@@ -2,9 +2,9 @@ name: Release
 
 # Cuts a GitHub Release when a version tag is pushed (e.g. v0.5.3).
 #
-# umbra-core is SOURCE-AVAILABLE (All Rights Reserved) and is NOT published to
+# signetry-core is SOURCE-AVAILABLE (All Rights Reserved) and is NOT published to
 # PyPI — it is installed from source by tag:
-#   pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.3"
+#   pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.3"
 # The former PyPI Trusted-Publishing job was removed on the source-available
 # lockdown (all PyPI releases were yanked). This workflow only builds/tests and
 # attaches the built artifacts to a GitHub Release for convenience.
@@ -91,7 +91,7 @@ jobs:
           echo "" >> notes.md
           echo "Source-available (All Rights Reserved); install from source:" >> notes.md
           echo '```' >> notes.md
-          echo "pip install \"umbra-core @ git+https://github.com/Signetry/core@${GITHUB_REF_NAME}\"" >> notes.md
+          echo "pip install \"signetry-core @ git+https://github.com/Signetry/core@${GITHUB_REF_NAME}\"" >> notes.md
           echo '```' >> notes.md
           echo "Notes for ${GITHUB_REF_NAME}:"; cat notes.md
 
@@ -100,7 +100,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            --title "umbra-core ${GITHUB_REF_NAME}" \
+            --title "signetry-core ${GITHUB_REF_NAME}" \
             --notes-file notes.md \
             --verify-tag \
             dist/* \

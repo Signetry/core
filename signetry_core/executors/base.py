@@ -1,6 +1,6 @@
 """The agent-agnostic executor interface.
 
-The central idea of umbra-core: a coding agent (Codex, Claude Code, Cursor, …)
+The central idea of signetry-core: a coding agent (Codex, Claude Code, Cursor, …)
 is an *untrusted engine*. It proposes a change inside a disposable checkout; it
 never pushes, commits, or merges, and it can never approve its own authority.
 

@@ -3,7 +3,7 @@
 Full admission (`run_admission`) governs a completed changeset. A guard is the
 *pre-action* check an editor hook (e.g. Claude Code's ``PreToolUse``) calls before
 the agent writes a file or runs a command: given ONE proposed path or command,
-decide allow/deny against the repository's ``.umbra/admission.yaml`` — instantly,
+decide allow/deny against the repository's ``.signetry/admission.yaml`` — instantly,
 deterministically, with no model and no network.
 
 This lets Umbra govern an agent from *inside* the editor without the agent
@@ -92,10 +92,10 @@ def guard_path(path: str, contract: Contract, repo_root: Path) -> GuardDecision:
         return GuardDecision(False, f"Path is outside the repository or malformed: {path!r}", path=path)
     # Forbidden (case-insensitive) always wins.
     if _matches_any(rel, contract.forbidden_paths, case_insensitive=True):
-        return GuardDecision(False, f"'{rel}' matches a forbidden path in .umbra/admission.yaml", path=rel)
+        return GuardDecision(False, f"'{rel}' matches a forbidden path in .signetry/admission.yaml", path=rel)
     # Allowlist (when set): must be inside it.
     if contract.allowed_paths and not _matches_any(rel, contract.allowed_paths):
-        return GuardDecision(False, f"'{rel}' is outside the allowed scope in .umbra/admission.yaml", path=rel)
+        return GuardDecision(False, f"'{rel}' is outside the allowed scope in .signetry/admission.yaml", path=rel)
     return GuardDecision(True, f"'{rel}' is within the contract's scope", path=rel)
 
 
@@ -112,12 +112,12 @@ def guard_command(command: str, contract: Contract, repo_root: Path) -> GuardDec
     for raw in contract.denied_bash:
         try:
             if re.search(raw, cmd):
-                return GuardDecision(False, f"Command matches a repo-forbidden pattern ({raw!r}) in .umbra/admission.yaml", command=cmd)
+                return GuardDecision(False, f"Command matches a repo-forbidden pattern ({raw!r}) in .signetry/admission.yaml", command=cmd)
         except re.error:
             # A malformed repo pattern fails closed on exact substring match rather
             # than being silently ignored (never a widening).
             if raw and raw in cmd:
-                return GuardDecision(False, f"Command matches a repo-forbidden literal ({raw!r}) in .umbra/admission.yaml", command=cmd)
+                return GuardDecision(False, f"Command matches a repo-forbidden literal ({raw!r}) in .signetry/admission.yaml", command=cmd)
     # Any file the command writes must satisfy the contract.
     for pat in _WRITE_TARGETS:
         for m in pat.finditer(cmd):
@@ -145,8 +145,8 @@ def _guard_allowlist(value: str, allow: tuple[str, ...], *, kind: str) -> GuardD
     for entry in allow:
         e = entry.casefold()
         if low == e or fnmatch.fnmatchcase(low, e):
-            return GuardDecision(True, f"'{ident}' is on the {kind} allowlist in .umbra/admission.yaml", **{field: ident})
-    return GuardDecision(False, f"'{ident}' is not on the {kind} allowlist in .umbra/admission.yaml", **{field: ident})
+            return GuardDecision(True, f"'{ident}' is on the {kind} allowlist in .signetry/admission.yaml", **{field: ident})
+    return GuardDecision(False, f"'{ident}' is not on the {kind} allowlist in .signetry/admission.yaml", **{field: ident})
 
 
 def guard_tool(tool: str, contract: Contract) -> GuardDecision:

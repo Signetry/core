@@ -1,6 +1,6 @@
 """Claude Code executor — adapts the ``claude`` CLI to the Executor protocol.
 
-This is the proof that umbra-core is agent-agnostic: Claude Code is governed by
+This is the proof that signetry-core is agent-agnostic: Claude Code is governed by
 the *same* admission pipeline as Codex. It runs headless (``-p``) inside a
 disposable checkout with:
 
@@ -32,7 +32,7 @@ from ._shared import (
     unified_diff,
 )
 
-logger = logging.getLogger("umbra.executor.claude")
+logger = logging.getLogger("signetry.executor.claude")
 
 # Tools that would let the agent push, merge, or otherwise self-grant authority.
 # Refused at the CLI layer so a governed run can only ever propose a change.
@@ -72,11 +72,11 @@ class ClaudeCodeExecutor:
         self.runner = runner
         # Free-form alias/full name (e.g. "opus", "sonnet"); passed only via
         # --model. No allowlist coupling to a specific vendor catalog.
-        self.model = (model if model is not None else os.getenv("UMBRA_CLAUDE_MODEL") or "").strip() or None
+        self.model = (model if model is not None else os.getenv("SIGNETRY_CLAUDE_MODEL") or "").strip() or None
 
     # --- capability ---------------------------------------------------------
     def available(self) -> bool:
-        if os.getenv("UMBRA_ENABLE_CLAUDE_CODE", "false").lower() != "true":
+        if os.getenv("SIGNETRY_ENABLE_CLAUDE_CODE", "false").lower() != "true":
             return False
         return self._cli_version() is not None
 
@@ -107,7 +107,7 @@ class ClaudeCodeExecutor:
         if not self.available():
             return ExecutionResult.disabled(
                 prompt, self.name,
-                "Claude Code is disabled. Set UMBRA_ENABLE_CLAUDE_CODE=true and authenticate the `claude` CLI.",
+                "Claude Code is disabled. Set SIGNETRY_ENABLE_CLAUDE_CODE=true and authenticate the `claude` CLI.",
             )
         if repo_path is None or not repo_path.is_dir():
             raise RuntimeError("A checked-out repository is required for ClaudeCodeExecutor.propose()")

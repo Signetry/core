@@ -1,6 +1,6 @@
 """The governed admission pipeline: contract -> trust boundary -> checks ->
 verifier -> earned authority -> signed receipt. Agent-agnostic — driven by any
-:class:`~umbra_core.executors.base.Executor`."""
+:class:`~signetry_core.executors.base.Executor`."""
 from .admission import (
     AUTHORITY,
     AUTHORITY_LABEL,

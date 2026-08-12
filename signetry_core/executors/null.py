@@ -5,7 +5,7 @@ and opened a PR; the change is the diff between the base and the PR head. The
 NullExecutor makes no edits — it lets the admission pipeline evaluate whatever is
 already present in the checkout against the contract, checks, and verifier.
 
-This is how umbra-core governs *any* agent's PR without re-running the agent: the
+This is how signetry-core governs *any* agent's PR without re-running the agent: the
 agent's work is already on disk, and the pipeline judges it on the evidence.
 """
 from __future__ import annotations

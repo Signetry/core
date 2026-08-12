@@ -1,7 +1,7 @@
 """Tests for the PlanCapabilitySet binding (CaMeL / DRIFT out-of-band control)."""
 from __future__ import annotations
 
-from umbra_core.pipeline import (
+from signetry_core.pipeline import (
     Contract,
     derive_plan,
     evaluate_plan_adherence,

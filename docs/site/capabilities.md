@@ -21,9 +21,9 @@ Capabilities can only **restrict**; they never grant `auto_merge` or widen
 authority. The guard enforces them deterministically:
 
 ```bash
-umbra guard --repo . --tool WebFetch          # deny if not in allowed_tools
-umbra guard --repo . --mcp github:push        # deny if not in allowed_mcp
-umbra guard --repo . --command "docker run …" # deny if it matches denied_bash
+signetry guard --repo . --tool WebFetch          # deny if not in allowed_tools
+signetry guard --repo . --mcp github:push        # deny if not in allowed_mcp
+signetry guard --repo . --command "docker run …" # deny if it matches denied_bash
 ```
 
 ## Plan capability binding (CaMeL / DRIFT)
@@ -50,7 +50,7 @@ Two independent paths judge every change:
 
 ## Proof gates — G1 / G2 / G3
 
-`umbra gates <receipt.json>` distills a signed receipt into three honest verdicts
+`signetry gates <receipt.json>` distills a signed receipt into three honest verdicts
 (each `pass` / `fail` / `unproven` — never green on missing evidence):
 
 | Gate | Question | Passes when |
@@ -59,7 +59,7 @@ Two independent paths judge every change:
 | **G2** Behavioral authenticity | Did the checks/sandbox actually run? | Required checks ran under real isolation (`sandboxed` / `network-isolated`) and passed. A `host-restricted` run is honestly `unproven`. |
 | **G3** Interaction auditability | Is the history tamper-evident? | Signed with a non-ephemeral key; strengthened when the receipt is in the Merkle transparency log. |
 
-`umbra gates` exits non-zero unless all gates pass, so it can gate CI.
+`signetry gates` exits non-zero unless all gates pass, so it can gate CI.
 
 ## Extension admission (skill / MCP supply chain)
 
@@ -67,8 +67,8 @@ An agent's authority also flows through the extensions it loads. `admit_extensio
 governs a *skill* directory or an *MCP* server as a first-class object:
 
 ```bash
-umbra admit-extension ./my-skill --repo .        # applies the contract allowlist
-umbra admit-extension ./my-mcp-server --asbom     # emit a CycloneDX ASBOM
+signetry admit-extension ./my-skill --repo .        # applies the contract allowlist
+signetry admit-extension ./my-mcp-server --asbom     # emit a CycloneDX ASBOM
 ```
 
 - **Fingerprint** — every file is content-hashed into a stable `extension_hash`; a
@@ -87,4 +87,4 @@ were reviewed.
 
 Every surface — CLI, API, MCP, the GitHub Action, the hosted console — returns the
 same **Admission Decision Pack**, and the PR comment is rendered from it by
-`umbra comment`, so no surface can invent a stronger claim than the receipt.
+`signetry comment`, so no surface can invent a stronger claim than the receipt.

@@ -2,7 +2,7 @@
 
 This is the TRUSTWORTHY layer: pure static analysis, no model, no network. It
 covers the OWASP-class vulnerabilities that LLM scanners (codex-security /
-claude-code-security-review) detect, so umbra-core reaches detection parity
+claude-code-security-review) detect, so signetry-core reaches detection parity
 without depending on a paid model or a network round-trip.
 
 Two complementary strategies:

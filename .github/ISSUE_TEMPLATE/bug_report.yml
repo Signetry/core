@@ -11,15 +11,15 @@ body:
   - type: input
     id: version
     attributes:
-      label: umbra-core version
-      placeholder: "0.1.3 (pip show umbra-core)"
+      label: signetry-core version
+      placeholder: "0.1.3 (pip show signetry-core)"
     validations:
       required: true
   - type: dropdown
     id: surface
     attributes:
       label: Surface
-      options: [Python API (run_admission), CLI (umbra ...), GitHub Action, MCP server, Other]
+      options: [Python API (run_admission), CLI (signetry ...), GitHub Action, MCP server, Other]
     validations:
       required: true
   - type: textarea
@@ -33,7 +33,7 @@ body:
     id: repro
     attributes:
       label: Reproduction
-      description: A minimal repro — the `.umbra/admission.yaml`, changed files, command, and output/receipt.
+      description: A minimal repro — the `.signetry/admission.yaml`, changed files, command, and output/receipt.
       render: shell
     validations:
       required: true

@@ -14,7 +14,7 @@ on transfer. Do them in this order to avoid downtime:
 | **GitHub Marketplace** (`umbra-action`) | Listing may unpublish/relink | Re-verify the Marketplace listing points at `<ORG>/umbra-action` after transfer |
 | **Claude Code plugin review** (`umbra-plugins`) | Pending submission references the old path | Only transfer once the review has resolved; update `marketplace.json` links |
 
-> Note: umbra-core is **source-available and not published to PyPI** (installed from
+> Note: signetry-core is **source-available and not published to PyPI** (installed from
 > source by tag). There is **no PyPI Trusted Publisher** to re-link — the
 > `release.yml` workflow only cuts a GitHub Release.
 
@@ -32,14 +32,14 @@ covered by that redirect.
 
 ```bash
 ORG="<your-org>"     # e.g. umbra-sec
-for r in umbra-core umbra-action umbra-plugins umbra-demo-repo; do
+for r in signetry-core umbra-action umbra-plugins umbra-demo-repo; do
   gh api -X POST "repos/bkd-dotcom/$r/transfer" -f "new_owner=$ORG"
 done
 ```
 
 ## Post-transfer fixes (all scripted/checked by hand)
 
-1. **Branch protection** — re-apply on `<ORG>/umbra-core` `main`
+1. **Branch protection** — re-apply on `<ORG>/signetry-core` `main`
    (`.github` protection JSON) and enable `enforce_admins`.
 2. **CODEOWNERS** — change `@bkd-dotcom` → `@<ORG>/maintainers` (after creating a
    `maintainers` team) in both repos.
@@ -51,7 +51,7 @@ done
    references (READMEs, workflows, `action.yml`, install.sh) to the new owner.
 4. **Action pin** — `uses: Signetry/action@v1` → `uses: <ORG>/umbra-action@v1`
    (the redirect keeps the old one working, but update docs for correctness).
-5. **Docs site** — GitHub Pages / custom domain on `<ORG>/umbra-core`.
+5. **Docs site** — GitHub Pages / custom domain on `<ORG>/signetry-core`.
 6. **Marketplace** — confirm the `umbra-action` listing shows the new owner.
 7. **Re-run a release** — tag a patch (e.g. `v0.5.4`) to confirm the GitHub Release
    automation works under the org (no PyPI publish — source-available/git-install).

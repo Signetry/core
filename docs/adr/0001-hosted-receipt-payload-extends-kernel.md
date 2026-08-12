@@ -3,12 +3,12 @@
 - **Status:** Accepted
 - **Date:** 2026-07-29
 - **Deciders:** platform maintainers
-- **Applies to:** `umbra-core` (kernel receipt format) and the hosted `umbra`
+- **Applies to:** `signetry-core` (kernel receipt format) and the hosted `umbra`
   backend (`backend/receipt.py`)
 
 ## Context
 
-`umbra-core` defines the canonical **Remediation Receipt**: a signed
+`signetry-core` defines the canonical **Remediation Receipt**: a signed
 (`Ed25519`), canonicalized record of one governed change — kind
 `umbra.remediation-receipt`. The hosted platform (`umbra` / umbra.engineer)
 produces receipts for the same purpose but through an app-specific pipeline that
@@ -17,7 +17,7 @@ CLI configuration that ran.
 
 As of 2026-07 the hosted backend **single-sources its signing crypto from the
 kernel** (canonical hashing, Ed25519 sign/verify, key derivation from
-`UMBRA_SIGNING_KEY`) — see `backend/receipt.py`. What is *not* shared is the
+`SIGNETRY_SIGNING_KEY`) — see `backend/receipt.py`. What is *not* shared is the
 **receipt payload assembly** (`build_receipt`). The two payloads differ:
 
 | Field | Kernel | Hosted | Meaning |
@@ -39,7 +39,7 @@ assemblers.
   evidence (`advisory_hash`, `codex_config`).
 - The kernel keeps its `build_receipt` free of app concerns (an editor/CI
   integration has no OSV advisory or Codex config to bind).
-- Both remain `kind: "umbra.remediation-receipt"` and are verified by the same
+- Both remain `kind: "signetry.remediation-receipt"` and are verified by the same
   `verify_receipt` / pinned-key check.
 
 ## Why not unify
@@ -75,6 +75,6 @@ change with no governance benefit:
 
 ## References
 
-- `umbra_core/pipeline/receipt.py` — kernel `build_receipt` / `verify_receipt`.
+- `signetry_core/pipeline/receipt.py` — kernel `build_receipt` / `verify_receipt`.
 - Hosted `backend/receipt.py` — app payload assembly + the delegation note.
 - [`umbra-umbrella` ARCHITECTURE](https://github.com/Signetry/signetry/blob/main/ARCHITECTURE.md) — platform overview.

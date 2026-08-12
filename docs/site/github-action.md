@@ -24,7 +24,7 @@ jobs:
       - uses: Signetry/action@v1
         with:
           min-authority: "1"                   # 0 observe · 1 analyze · 2 branch-PR
-          signing-key: ${{ secrets.UMBRA_SIGNING_KEY }}   # optional: stable receipts
+          signing-key: ${{ secrets.SIGNETRY_SIGNING_KEY }}   # optional: stable receipts
 ```
 
 Make **"Umbra Admission"** a *required status check* in branch protection (enable
@@ -39,12 +39,12 @@ it for administrators too) and nothing merges without a receipt.
 | `agent` | `""` | Force `codex-cli`/`claude-code` to re-run; blank governs the existing diff. |
 | `signing-key` | `""` | Base64 Ed25519 key (32+ bytes) for stable receipts. |
 | `require-sandbox` | `false` | Fail closed if code-executing checks can't run sandboxed. |
-| `umbra-version` | latest | Pin a specific `umbra-core` source **tag** (e.g. `0.5.4`). Installed from the source repo — not PyPI. |
+| `umbra-version` | latest | Pin a specific `signetry-core` source **tag** (e.g. `0.5.4`). Installed from the source repo — not PyPI. |
 | `python-version` | `3.12` | Python to run on. |
 
 ## Behavior
 
-The action stages the PR's change as a working-tree diff, runs `umbra admit`,
+The action stages the PR's change as a working-tree diff, runs `signetry admit`,
 posts the verdict as a PR comment, uploads the signed receipt as an artifact, and
 fails the check below the required authority. On Linux it installs bubblewrap so
 checks run **sandboxed** by default (the achieved tier is recorded in the receipt).

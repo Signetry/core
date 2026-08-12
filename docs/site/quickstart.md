@@ -4,14 +4,14 @@
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "umbra-core @ git+https://github.com/Signetry/core@v0.5.4"
-umbra completion zsh >> ~/.zshrc   # optional: shell completion (bash | zsh | fish)
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
+signetry completion zsh >> ~/.zshrc   # optional: shell completion (bash | zsh | fish)
 ```
 
 ## Scaffold a contract
 
 ```bash
-umbra init            # writes a conservative starter .umbra/admission.yaml
+signetry init            # writes a conservative starter .signetry/admission.yaml
 ```
 
 Edit the scope it generates, then govern a change. (Without any contract a
@@ -21,7 +21,7 @@ conservative default applies.)
 
 ```python
 from pathlib import Path
-from umbra_core import get_executor, run_admission, build_receipt, verify_receipt, public_key_b64
+from signetry_core import get_executor, run_admission, build_receipt, verify_receipt, public_key_b64
 
 agent = get_executor("claude-code")          # or "codex-cli", or "none" for an existing diff
 report = run_admission(
@@ -41,7 +41,7 @@ envelope = build_receipt(
     authority=report.authority, executor=report.executor, diff=report.diff,
     checks=report.checks, model_identity=report.model_identity, outcome=report.outcome,
 )
-# Verify against a PINNED key. In production set UMBRA_SIGNING_KEY and pin the
+# Verify against a PINNED key. In production set SIGNETRY_SIGNING_KEY and pin the
 # published key; the dev-fallback key is refused unless pinned explicitly.
 assert verify_receipt(envelope, expected_public_key=public_key_b64())["verified"]
 ```
@@ -49,21 +49,21 @@ assert verify_receipt(envelope, expected_public_key=public_key_b64())["verified"
 ## Govern from the CLI
 
 ```bash
-umbra admit . --agent none --mission "review the pending change" --min-authority 1
-umbra verify receipt.json --public-key <base64-pubkey>
-umbra gates receipt.json           # G1/G2/G3 proof-gate summary (non-zero unless all pass)
-umbra comment report.json          # canonical PR-comment markdown from the pack
-umbra provenance receipt.json      # in-toto / SLSA statement
-umbra admit-extension ./my-skill   # govern a skill / MCP extension (+ --asbom)
-umbra brake acme app --store passports.json --reason "incident-42"
+signetry admit . --agent none --mission "review the pending change" --min-authority 1
+signetry verify receipt.json --public-key <base64-pubkey>
+signetry gates receipt.json           # G1/G2/G3 proof-gate summary (non-zero unless all pass)
+signetry comment report.json          # canonical PR-comment markdown from the pack
+signetry provenance receipt.json      # in-toto / SLSA statement
+signetry admit-extension ./my-skill   # govern a skill / MCP extension (+ --asbom)
+signetry brake acme app --store passports.json --reason "incident-42"
 ```
 
-`umbra admit` exits non-zero unless the change earns at least `--min-authority`,
+`signetry admit` exits non-zero unless the change earns at least `--min-authority`,
 so it gates a git pre-push hook or CI.
 
 ## Declare a contract
 
-Add `.umbra/admission.yaml` to the repo:
+Add `.signetry/admission.yaml` to the repo:
 
 ```yaml
 version: 2

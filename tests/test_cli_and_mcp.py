@@ -8,15 +8,15 @@ from pathlib import Path
 from typing import Any
 
 
-from umbra_core.cli import main as cli_main
-from umbra_core.executors.base import ExecutionResult
-from umbra_core.mcp_server import _provenance, _verify
+from signetry_core.cli import main as cli_main
+from signetry_core.executors.base import ExecutionResult
+from signetry_core.mcp_server import _provenance, _verify
 
 _DEMO_DIR = Path(__file__).resolve().parents[1] / "demos" / "injection"
 sys.path.insert(0, str(_DEMO_DIR))
 from demo import InjectableAgent, MISSION, _fresh_checkout  # noqa: E402
 
-from umbra_core import build_receipt, run_admission  # noqa: E402
+from signetry_core import build_receipt, run_admission  # noqa: E402
 
 
 def _make_receipt(tmp_path: Path) -> Path:
@@ -43,7 +43,7 @@ def _make_receipt(tmp_path: Path) -> Path:
 # --- CLI: verify / provenance / brake (no live agent needed) ----------------
 
 def test_cli_verify_ok(tmp_path, capsys):
-    from umbra_core import public_key_b64
+    from signetry_core import public_key_b64
     receipt = _make_receipt(tmp_path)
     rc = cli_main(["verify", str(receipt), "--public-key", public_key_b64()])
     assert rc == 0
@@ -59,7 +59,7 @@ def test_cli_verify_refuses_dev_key_without_pin(tmp_path, capsys):
 
 
 def test_cli_verify_tampered_fails(tmp_path, capsys):
-    from umbra_core import public_key_b64
+    from signetry_core import public_key_b64
     receipt = _make_receipt(tmp_path)
     env = json.loads(receipt.read_text())
     env["receipt"]["authority_level"] = 99  # tamper
@@ -88,8 +88,8 @@ def test_cli_brake_writes_store(tmp_path):
 
 
 def test_cli_admit_no_agent_returns_error(tmp_path, monkeypatch):
-    monkeypatch.delenv("UMBRA_ENABLE_CODEX_CLI", raising=False)
-    monkeypatch.delenv("UMBRA_ENABLE_CLAUDE_CODE", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CLAUDE_CODE", raising=False)
     (tmp_path / ".git").mkdir()  # looks like a repo dir
     rc = cli_main(["admit", str(tmp_path), "--mission", "x"])
     assert rc == 2  # no agent available
@@ -99,7 +99,7 @@ def test_cli_admit_no_agent_returns_error(tmp_path, monkeypatch):
 
 def test_cli_admit_end_to_end_via_registry(tmp_path, monkeypatch, capsys):
     # Register a fake agent into the registry so `admit --agent` works offline.
-    import umbra_core.executors.registry as reg
+    import signetry_core.executors.registry as reg
 
     class OKAgent:
         name = "fake-cli-agent"
@@ -114,13 +114,13 @@ def test_cli_admit_end_to_end_via_registry(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setitem(reg._REGISTRY, "fake-cli-agent", lambda runner: OKAgent())
     monkeypatch.setattr(
-        "umbra_core.cli.get_executor",
+        "signetry_core.cli.get_executor",
         lambda name, *a, **k: OKAgent() if name == "fake-cli-agent" else reg.get_executor(name),
     )
 
     # Build a minimal governed repo.
-    (tmp_path / ".umbra").mkdir()
-    (tmp_path / ".umbra" / "admission.yaml").write_text(
+    (tmp_path / ".signetry").mkdir()
+    (tmp_path / ".signetry" / "admission.yaml").write_text(
         'version: 1\nallowed_paths:\n  - package.json\nrequired_checks:\n  - "true"\n'
     )
     (tmp_path / "package.json").write_text('{"dependencies":{"left-pad":"1.0.0"}}\n')
@@ -144,7 +144,7 @@ def test_cli_admit_end_to_end_via_registry(tmp_path, monkeypatch, capsys):
 # --- MCP tool functions -----------------------------------------------------
 
 def test_mcp_verify_and_provenance(tmp_path):
-    from umbra_core import public_key_b64
+    from signetry_core import public_key_b64
     receipt = _make_receipt(tmp_path)
     env_text = receipt.read_text()
     assert _verify(env_text, public_key_b64())["verified"] is True
@@ -159,23 +159,23 @@ def test_mcp_verify_bad_json():
 
 
 def test_mcp_admit_refuses_path_outside_roots(tmp_path, monkeypatch):
-    from umbra_core.mcp_server import _admit
+    from signetry_core.mcp_server import _admit
     allowed = tmp_path / "allowed"
     allowed.mkdir()
     outside = tmp_path / "outside"
     outside.mkdir()
-    monkeypatch.setenv("UMBRA_MCP_ROOTS", str(allowed))
+    monkeypatch.setenv("SIGNETRY_MCP_ROOTS", str(allowed))
     res = _admit(str(outside), "mission")
     assert "error" in res
     assert "outside the allowed roots" in res["error"]
 
 
 def test_slsa_stamps_ephemeral_key_as_untrustworthy(tmp_path):
-    from umbra_core import to_slsa_provenance
+    from signetry_core import to_slsa_provenance
     receipt = _make_receipt(tmp_path)
     env = json.loads(receipt.read_text())
     stmt = to_slsa_provenance(env)
-    umbra = stmt["predicate"]["umbra"]
+    signetry = stmt["predicate"]["signetry"]
     # The demo receipt is dev-key signed → must be flagged as not-trustworthy provenance.
-    assert umbra["key_ephemeral"] is True
-    assert umbra["provenance_trustworthy"] is False
+    assert signetry["key_ephemeral"] is True
+    assert signetry["provenance_trustworthy"] is False

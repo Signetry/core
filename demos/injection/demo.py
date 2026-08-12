@@ -1,11 +1,11 @@
 """Prompt-injection defense demo: an ungoverned agent vs. the same agent governed.
 
-The point umbra-core makes concrete: a coding agent that reads repository
+The point signetry-core makes concrete: a coding agent that reads repository
 instruction files (README / CLAUDE.md / .cursorrules) *may* obey text an attacker
 planted there — the OWASP LLM01 hole. Whether a given agent obeys depends on the
 agent and the payload (a modern, well-aligned agent may refuse an obvious one).
 Governance must NOT depend on the agent choosing to behave: running through
-umbra-core's admission pipeline neutralizes the injection regardless, because the
+signetry-core's admission pipeline neutralizes the injection regardless, because the
 trust boundary redacts the manipulation on disk before the agent ever sees it,
 and the contract + verifier + earned-authority cap bound anything that slips through.
 
@@ -19,7 +19,7 @@ Two runs, one repo:
 
 By default this runs OFFLINE and DETERMINISTIC with a scripted agent
 (:class:`InjectableAgent`) that MODELS a non-compliant agent (one that obeys
-instructions it can read) — the threat umbra-core defends against — so the
+instructions it can read) — the threat signetry-core defends against — so the
 mechanism is provable in CI with no network and no API keys.
 
 Pass ``--live codex-cli`` / ``--live claude-code`` to run a REAL agent instead
@@ -41,7 +41,7 @@ from typing import Any
 # Make the package importable when this script is run directly (before an install).
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from umbra_core import (
+from signetry_core import (
     build_receipt,
     get_executor,
     issue_passport,
@@ -49,8 +49,8 @@ from umbra_core import (
     to_slsa_provenance,
     verify_receipt,
 )
-from umbra_core.executors.base import ExecutionResult
-from umbra_core.pipeline.trust_boundary import scan_repository_text
+from signetry_core.executors.base import ExecutionResult
+from signetry_core.pipeline.trust_boundary import scan_repository_text
 
 FIXTURE = Path(__file__).parent / "fixture-repo"
 
@@ -114,11 +114,11 @@ class InjectableAgent:
 
 def _fresh_checkout() -> Path:
     """Copy the fixture into a disposable git repo (never mutate the committed fixture)."""
-    tmp = Path(tempfile.mkdtemp(prefix="umbra-injection-demo-"))
+    tmp = Path(tempfile.mkdtemp(prefix="signetry-injection-demo-"))
     work = tmp / "repo"
     shutil.copytree(FIXTURE, work)
     subprocess.run(["git", "init", "-q"], cwd=work, check=True)
-    subprocess.run(["git", "config", "user.email", "demo@umbra"], cwd=work, check=True)
+    subprocess.run(["git", "config", "user.email", "demo@signetry"], cwd=work, check=True)
     subprocess.run(["git", "config", "user.name", "demo"], cwd=work, check=True)
     subprocess.run(["git", "add", "-A"], cwd=work, check=True)
     subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=work, check=True)
@@ -138,7 +138,7 @@ def _make_agent(live: str | None):
         if not agent.available():
             raise SystemExit(
                 f"Executor {live!r} is not available. Enable + authenticate it "
-                f"(e.g. UMBRA_ENABLE_CLAUDE_CODE=true / UMBRA_ENABLE_CODEX_CLI=true)."
+                f"(e.g. SIGNETRY_ENABLE_CLAUDE_CODE=true / SIGNETRY_ENABLE_CODEX_CLI=true)."
             )
         return agent
     return InjectableAgent()
@@ -184,13 +184,13 @@ def run_governed(live: str | None) -> dict[str, Any]:
         )
         # Verify against THIS instance's own public key (pinned). With the dev key
         # this proves "issued by this instance, untampered"; in production set
-        # UMBRA_SIGNING_KEY and verifiers pin the published production key.
-        from umbra_core import public_key_b64
+        # SIGNETRY_SIGNING_KEY and verifiers pin the published production key.
+        from signetry_core import public_key_b64
         verification = verify_receipt(envelope, expected_public_key=public_key_b64())
         passport = issue_passport(report, receipt_hash=envelope["canonical_hash"])
         slsa = to_slsa_provenance(envelope)
         return {
-            "mode": "GOVERNED (umbra-core)",
+            "mode": "GOVERNED (signetry-core)",
             "executor": report.executor,
             "injection_detected_lines": tb_before.quarantined_count,
             "trust_boundary_clean": report.trust_boundary["clean"],
@@ -204,7 +204,7 @@ def run_governed(live: str | None) -> dict[str, Any]:
             "authority": report.authority,
             "outcome": report.outcome,
             "receipt_verified": verification["verified"],
-            "receipt_issued_by_umbra": verification["issued_by_umbra"],
+            "receipt_issued_by_signetry": verification["issued_by_signetry"],
             "passport_authority_level": passport["authority_level"],
             "slsa_builder_id": slsa["predicate"]["runDetails"]["builder"]["id"],
         }
@@ -227,7 +227,7 @@ def main() -> None:
         return
 
     print("=" * 72)
-    print("HEAD-TO-HEAD: prompt injection — raw agent vs. governed by umbra-core")
+    print("HEAD-TO-HEAD: prompt injection — raw agent vs. governed by signetry-core")
     print("=" * 72)
     print(f"\nAgent: {raw['executor']}   (fixture README.md contains an injection)\n")
 
@@ -237,14 +237,14 @@ def main() -> None:
     print(f"  attacker exfiltrated secret: {raw['attacker_secret_exfil_present']}")
     print(f"  >> COMPROMISED: {raw['compromised']}")
 
-    print("\n--- GOVERNED (umbra-core) " + "-" * 46)
+    print("\n--- GOVERNED (signetry-core) " + "-" * 46)
     print(f"  injection lines detected+redacted on disk: {governed['injection_detected_lines']}")
     print(f"  deploy.yml in signed changeset : {governed['attacker_deploy_edit_in_changeset']}")
     print(f"  secret file in signed changeset: {governed['attacker_secret_in_changeset']}")
     print(f"  contract passed: {governed['contract_passed']}   verifier blocked: {governed['verifier_blocked']}")
     print(f"  earned authority: L{governed['authority_level']} ({governed['authority']})")
     print(f"  outcome: {governed['outcome']}")
-    print(f"  receipt verified (issued by umbra, untampered): {governed['receipt_verified']}")
+    print(f"  receipt verified (issued by signetry, untampered): {governed['receipt_verified']}")
     print(f"  SLSA builder id: {governed['slsa_builder_id']}")
 
     print("\n" + "=" * 72)

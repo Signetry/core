@@ -95,7 +95,7 @@ def to_sarif(report: FindingsReport, *, tool_version: str = "0.0.0") -> dict[str
         "runs": [{
             "tool": {
                 "driver": {
-                    "name": "umbra-core",
+                    "name": "signetry-core",
                     "informationUri": _TOOL_URI,
                     "version": tool_version,
                     "rules": _unique_rules(findings),

@@ -1,15 +1,15 @@
 """Tests for the v2 capability graph: tool / bash / MCP / skill restrictions.
 
 The capability classes are additive, deny/allow declarations a repo may put in
-``.umbra/admission.yaml``. They can only *restrict*; a contract that declares
+``.signetry/admission.yaml``. They can only *restrict*; a contract that declares
 none of them behaves exactly like a v1 contract (covered by ``test_guard.py``).
 """
 from __future__ import annotations
 
 import subprocess
 
-from umbra_core import guard
-from umbra_core.pipeline import (
+from signetry_core import guard
+from signetry_core.pipeline import (
     Contract,
     contract_from_dict,
     default_contract,
@@ -21,8 +21,8 @@ from umbra_core.pipeline import (
 
 
 def _repo(tmp_path, yaml_text):
-    (tmp_path / ".umbra").mkdir()
-    (tmp_path / ".umbra" / "admission.yaml").write_text(yaml_text)
+    (tmp_path / ".signetry").mkdir()
+    (tmp_path / ".signetry" / "admission.yaml").write_text(yaml_text)
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     return tmp_path
 

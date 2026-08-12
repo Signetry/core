@@ -5,7 +5,7 @@
 Every change is judged by one deterministic pipeline, identical for every agent —
 so the verdict depends only on the evidence a run produced, not on which agent ran.
 
-1. **Executable contract** (`.umbra/admission.yaml`) — allowed/forbidden paths,
+1. **Executable contract** (`.signetry/admission.yaml`) — allowed/forbidden paths,
    diff budget, required checks. Evaluated *outside the model*, fails closed.
    Forbidden paths match case-insensitively; malformed/traversal paths are refused.
 2. **Trust boundary** — untrusted instruction files (README, `CLAUDE.md`,
@@ -29,7 +29,7 @@ so the verdict depends only on the evidence a run produced, not on which agent r
 | 2 | branch_pr | Clean, in scope, checks passed, independently verified → may prepare a branch-only PR |
 
 `auto_merge` is false at every level. A code-executing check that ran without a
-real sandbox caps authority at L1 (or is blocked with `UMBRA_REQUIRE_SANDBOX`).
+real sandbox caps authority at L1 (or is blocked with `SIGNETRY_REQUIRE_SANDBOX`).
 
 ## Receipts & provenance
 
@@ -44,7 +44,7 @@ so it proves *who* issued it, not merely that some key signed it.
   any rewrite of history.
 
 !!! warning "Signing keys"
-    With no `UMBRA_SIGNING_KEY`, a deterministic dev-fallback key is used — its
+    With no `SIGNETRY_SIGNING_KEY`, a deterministic dev-fallback key is used — its
     seed is public, so such receipts prove nothing to a third party and are
     flagged `key_ephemeral`. Set a production key and pin its public key.
 

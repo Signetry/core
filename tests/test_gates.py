@@ -1,7 +1,7 @@
 """Tests for the G1/G2/G3 proof-gate summary."""
 from __future__ import annotations
 
-from umbra_core import evaluate_gates
+from signetry_core import evaluate_gates
 
 
 def _envelope(receipt=None, *, key_ephemeral=False, signature="sig", canonical_hash="sha256:abc"):

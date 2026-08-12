@@ -1,4 +1,4 @@
-"""Detection engine — layered SAST for umbra-core.
+"""Detection engine — layered SAST for signetry-core.
 
 Public surface:
 - ``scan_repository(path, ...)`` — walk a repo, run the layers, return a report.

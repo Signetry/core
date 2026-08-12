@@ -151,7 +151,7 @@ def _g3(envelope: dict[str, Any], log_inclusion: dict[str, Any] | None) -> Gate:
         return Gate("G3", "Interaction auditability", "unproven",
                     "Is the history tamper-evident?",
                     "Signed with the dev-fallback key (its seed is public), so this is not trustworthy "
-                    "provenance. Set a production UMBRA_SIGNING_KEY.", evidence)
+                    "provenance. Set a production SIGNETRY_SIGNING_KEY.", evidence)
     reason = "Signed with a managed key over the canonical receipt."
     if logged:
         reason += f" Entered into the append-only transparency log (root {evidence['transparency_log']['root'][:12]}…)."
@@ -164,7 +164,7 @@ def evaluate_gates(envelope: dict[str, Any], *, log_inclusion: dict[str, Any] | 
 
     ``envelope`` is the dict returned by :func:`build_receipt`. ``log_inclusion``
     is the optional result of appending the receipt to a
-    :class:`~umbra_core.pipeline.transparency.TransparencyLog` (used to strengthen
+    :class:`~signetry_core.pipeline.transparency.TransparencyLog` (used to strengthen
     G3). Deterministic and offline — never asserts a gate on missing evidence.
     """
     receipt = envelope.get("receipt") or {}
