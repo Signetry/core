@@ -7,29 +7,15 @@ change between minor versions.
 
 ## [0.6.0] — 2026-08-12
 
-### Changed — renamed to signetry-core (BREAKING)
+### Naming
 
-- Platform renamed to **Signetry**. The kernel is now **signetry-core** (import
-  `signetry_core`, CLI `signetry`). Environment variables `UMBRA_*` → `SIGNETRY_*`,
-  config directory `.umbra/` → `.signetry/`, and receipt/provenance schema
-  identifiers moved to the `signetry` namespace. No backward-compatible fallbacks.
+- The kernel is distributed as **signetry-core** (import package `signetry_core`,
+  CLI `signetry`). Environment variables use the `SIGNETRY_*` prefix, the config
+  directory is `.signetry/` (e.g. `.signetry/admission.yaml`), and receipt/provenance
+  identifiers live in the `signetry` namespace (`signetry.remediation-receipt`,
+  provenance `predicate.signetry`, `signetry:*` extension properties,
+  `signetry_admit` / `signetry_verify` / `signetry_provenance`).
 - Install: `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`.
-
-## [Unreleased]
-
-### Changed — project rename: `umbra-core` → `signetry-core` (BREAKING, no fallback)
-
-- **Distribution/package:** `umbra-core` → `signetry-core`.
-- **Import package:** `umbra_core` → `signetry_core` (all `import`/`from` paths updated).
-- **CLI command:** `umbra` → `signetry` (the `[project.scripts]` entry is now
-  `signetry = "signetry_core.cli:main"`; all help text and docs updated).
-- **Environment variables:** every `UMBRA_*` → `SIGNETRY_*` (e.g. `UMBRA_SIGNING_KEY`
-  → `SIGNETRY_SIGNING_KEY`, `UMBRA_ENABLE_CODEX_CLI` → `SIGNETRY_ENABLE_CODEX_CLI`).
-- **Config directory:** `.umbra/` → `.signetry/` (e.g. `.signetry/admission.yaml`).
-- Receipt/provenance identifiers and MCP tool names were renamed to the `signetry`
-  namespace (`signetry.remediation-receipt`, provenance `predicate.signetry`,
-  `signetry:*` extension properties, `signetry_admit`/`signetry_verify`/
-  `signetry_provenance`). This is a hard rename with **no backward-compat aliases**.
 
 ## [0.5.4] — 2026-08-03
 
@@ -54,7 +40,7 @@ change between minor versions.
   host. On CI runners the OS sandbox (bubblewrap/Landlock) often cannot start, which
   made `codex exec` fail; the operator can now choose full-access drafting there.
   Safe because the executor only DRAFTS in a disposable checkout with no push/merge
-  credentials, and Umbra's admission pipeline governs the result regardless.
+  credentials, and Signetry's admission pipeline governs the result regardless.
 - The auto-fix workflow sets `SIGNETRY_CODEX_SANDBOX=danger-full-access` for CI.
 
 ## [0.5.2] — 2026-07-30
@@ -124,7 +110,7 @@ signetry-core **100% recall / 0 false positives** vs claude-code-security-review
 - **`signetry completion <bash|zsh|fish>`** prints a shell completion script for the
   subcommands (dependency-free; `eval "$(signetry completion zsh)"`).
 - **`install.sh`** — a `curl … | sh` one-line installer (uv → pipx → pip, isolated
-  and fail-closed) and a **Homebrew tap** (`brew install bkd-dotcom/umbra/umbra`).
+  and fail-closed) and a **Homebrew tap** (`brew install signetry/signetry/signetry`).
 - Docs site: a **Capabilities & Proof** page (capability graph, plan binding,
   dual/masked verifier, G1/G2/G3 gates, extension admission) and a refreshed
   quickstart.
@@ -148,7 +134,7 @@ signetry-core **100% recall / 0 false positives** vs claude-code-security-review
   - **Never grants authority** — admitting an extension only records that these
     exact bytes were reviewed; it does not widen anything.
 - **`asbom`** emits a **CycloneDX 1.5-aligned** Agent Software Bill of Materials of
-  admitted extensions (SHA-256 hashes + `umbra:verdict` / quarantine properties)
+  admitted extensions (SHA-256 hashes + `signetry:verdict` / quarantine properties)
   for org inventory.
 - New CLI: **`signetry admit-extension <dir>`** (`--kind`, `--repo` for the allowlist,
   `--allow-quarantined`, `--asbom`, `--org`; exits non-zero on deny). New API:
@@ -248,7 +234,7 @@ signetry-core **100% recall / 0 false positives** vs claude-code-security-review
 - Blocks dangerous shell patterns (`curl|bash`, `rm -rf /`, reading `.env`/keys,
   `git push`, `gh secret`, …) and checks any file a command writes against scope.
 
-This is the primitive behind the Umbra editor plugins (Claude Code, Cursor,
+This is the primitive behind the Signetry editor plugins (Claude Code, Cursor,
 Codex). It is a pre-flight guard, not a replacement for full admission.
 
 ## [0.1.4] — 2026-07-22
@@ -292,7 +278,7 @@ No functional or security changes to the library since 0.1.3.
 - **Un-sandboxed code execution caps authority at L1.** A code-executing check
   that ran without a filesystem/network sandbox can no longer earn branch-PR
   authority; a loud warning is logged.
-- **MCP path scoping** via `SIGNETRY_MCP_ROOTS` — `umbra_admit` refuses paths outside
+- **MCP path scoping** via `SIGNETRY_MCP_ROOTS` — `signetry_admit` refuses paths outside
   the allowlisted workspaces.
 - **Baseline isolation via `git archive`** (respects `.gitignore`, no symlink
   follow, filters traversal members) instead of `copytree`.

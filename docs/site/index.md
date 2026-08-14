@@ -37,7 +37,7 @@ pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
 ```
 
 - Source (install from here): <https://github.com/Signetry/core>
-- Action (Marketplace): <https://github.com/marketplace/actions/umbra-admission>
+- Action (Marketplace): <https://github.com/marketplace/actions/signetry-admission>
 
 ## License & contributing
 

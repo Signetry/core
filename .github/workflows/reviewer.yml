@@ -1,6 +1,6 @@
 name: Reviewer
 
-# Advisory PR review (umbra-reviewer): surfaces architecture + security issues,
+# Advisory PR review (signetry-reviewer): surfaces architecture + security issues,
 # cross-verifies them against the deterministic self-admission check, and posts a
 # recommendation. Advisory only — it never merges and does not block the PR
 # (the self-admission + test checks remain the gates). It escalates changes to
@@ -25,9 +25,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install umbra-reviewer
+      - name: Install signetry-reviewer
         # source-available (All Rights Reserved); install from source, not PyPI.
-        run: pip install "umbra-reviewer @ git+https://github.com/Signetry/reviewer@v0.1.1"
+        run: pip install "signetry-reviewer @ git+https://github.com/Signetry/reviewer@v0.1.1"
 
       - name: Compute the PR diff
         env:
@@ -66,7 +66,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           set -uo pipefail
-          umbra-reviewer review \
+          signetry-reviewer review \
             --diff "$OUT/pr.diff" \
             --repo "$GITHUB_REPOSITORY" \
             --pr "$PR" \
@@ -83,9 +83,9 @@ jobs:
           script: |
             const fs = require('fs'); const path = require('path');
             const out = process.env.OUT || '';
-            let body = 'Umbra Reviewer: no review was produced.';
+            let body = 'Signetry Reviewer: no review was produced.';
             try { body = fs.readFileSync(path.join(out, 'comment.md'), 'utf8'); } catch (e) {}
-            const marker = '<!-- umbra-reviewer -->';
+            const marker = '<!-- signetry-reviewer -->';
             body = marker + '\n' + body;
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;

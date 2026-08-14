@@ -3,14 +3,14 @@
 - **Status:** Accepted
 - **Date:** 2026-07-29
 - **Deciders:** platform maintainers
-- **Applies to:** `signetry-core` (kernel receipt format) and the hosted `umbra`
+- **Applies to:** `signetry-core` (kernel receipt format) and the hosted `signetry`
   backend (`backend/receipt.py`)
 
 ## Context
 
 `signetry-core` defines the canonical **Remediation Receipt**: a signed
 (`Ed25519`), canonicalized record of one governed change — kind
-`signetry.remediation-receipt`. The hosted platform (`umbra` / umbra.engineer)
+`signetry.remediation-receipt`. The hosted platform (`signetry` / signetry.github.io)
 produces receipts for the same purpose but through an app-specific pipeline that
 knows about things the kernel deliberately does not: OSV advisories and the Codex
 CLI configuration that ran.

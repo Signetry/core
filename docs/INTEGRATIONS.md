@@ -91,7 +91,7 @@ an arbitrary host directory.
 
 ## 5. Hosted API + dashboard
 
-The reference hosted deployment is [Umbra](https://umbra.engineer). To self-host,
+The reference hosted deployment is [Signetry](https://signetry.github.io). To self-host,
 wrap `run_admission` in your API framework of choice and persist passports with a
 `PassportStore` (a `JsonFilePassportStore` ships in the box; implement the
 `PassportStore` protocol for a database).
