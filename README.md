@@ -15,7 +15,7 @@
 
 
 [![CI](https://github.com/Signetry/core/actions/workflows/ci.yml/badge.svg)](https://github.com/Signetry/core/actions/workflows/ci.yml)
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Signetry%20Admission-purple?logo=github)](https://github.com/marketplace/actions/umbra-admission)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Signetry%20Admission-purple?logo=github)](https://github.com/marketplace/actions/signetry-admission)
 [![Docs](https://img.shields.io/badge/docs-signetry--core-blue)](https://binaydalai.me/signetry-core/)
 [![Source-available](https://img.shields.io/badge/source-available-informational.svg)](CLA.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/Signetry/signetry/issues/10)
@@ -69,10 +69,10 @@ pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
 | **Source install** | anything you script | `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"` |
 | **CLI + git hook** | the agent on your machine | `signetry admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `signetry scan . --sarif` · `signetry scan . --fix` |
-| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Signetry Admission](https://github.com/marketplace/actions/umbra-admission) · [`@v1`](https://github.com/Signetry/action) |
+| **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Signetry Admission](https://github.com/marketplace/actions/signetry-admission) · [`@v1`](https://github.com/Signetry/action) |
 | **MCP server** | agents that speak MCP | `python -m signetry_core.mcp_server` |
 | **Editor plugins** | Claude Code / Cursor / Codex (block edits in real time) | [Signetry/plugins](https://github.com/Signetry/plugins) |
-| **Hosted API** | any CI/agent that posts a change | see [umbra.engineer](https://umbra.engineer) |
+| **Hosted API** | any CI/agent that posts a change | see [signetry.github.io](https://signetry.github.io) |
 
 The GitHub Action is the highest-reach checkpoint: it sits at the repo, so it
 governs *any* agent that opens a PR. Make **"Signetry Admission"** a required status
@@ -344,7 +344,7 @@ uv run pytest        # hermetic — no real agent invoked, no network
 
 ## Status
 
-Early. This repo extracts the governance core of [Umbra](https://umbra.engineer)
+Early. This repo extracts the governance core of [Signetry](https://signetry.github.io)
 into an agent-agnostic package: the executor layer, the full admission pipeline
 (contract → trust boundary → checks → verifier → earned authority →
 Ed25519-signed receipt), an earned-authority passport with an Emergency Brake,

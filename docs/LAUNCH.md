@@ -2,7 +2,7 @@
 
 Copy-paste-ready announcement copy for signetry-core / the Signetry Admission action.
 Live links:
-- **Marketplace:** https://github.com/marketplace/actions/umbra-admission
+- **Marketplace:** https://github.com/marketplace/actions/signetry-admission
 - Source (install from here; not on PyPI): https://github.com/Signetry/core
 - Action: https://github.com/Signetry/action
 - Demo (see the PRs): https://github.com/Signetry/autofix-demo/pulls
@@ -36,7 +36,7 @@ provenance. Make it a required status check and nothing merges without a receipt
 Agent-agnostic; **source-available** (All Rights Reserved — not open source),
 installed from source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`).
 On the GitHub Marketplace:
-https://github.com/marketplace/actions/umbra-admission
+https://github.com/marketplace/actions/signetry-admission
 
 ---
 

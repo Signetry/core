@@ -2,7 +2,7 @@
 
 **Signetry Admission** governs every pull request — from Claude Code, Codex, Cursor,
 Copilot, Devin, or a human — and attaches a signed receipt. On the
-[GitHub Marketplace](https://github.com/marketplace/actions/umbra-admission).
+[GitHub Marketplace](https://github.com/marketplace/actions/signetry-admission).
 
 ## Usage
 
