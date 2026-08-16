@@ -271,10 +271,28 @@ class _PyVisitor(ast.NodeVisitor):
                           0.85, "CWE-22")
 
         # --- SSRF: outbound request to a tainted URL ---
-        if target in ("requests.get", "requests.post", "requests.request", "requests.put",
-                      "requests.delete", "requests.head", "urllib.request.urlopen",
-                      "httpx.get", "httpx.post", "aiohttp.request") and args:
-            if self._is_tainted(args[0]):
+        ssrf_targets = (
+            "requests.get", "requests.post", "requests.put", "requests.patch",
+            "requests.delete", "requests.head", "requests.options", "requests.request",
+            "httpx.get", "httpx.post", "httpx.put", "httpx.patch",
+            "httpx.delete", "httpx.head", "httpx.options", "httpx.request",
+            "urllib.request.urlopen", "urllib.request.Request",
+            "aiohttp.request",
+        )
+        if target in ssrf_targets:
+            url_nodes: list[ast.AST] = []
+            for kw in node.keywords:
+                if kw.arg == "url":
+                    url_nodes.append(kw.value)
+            if target.endswith(".request"):
+                if len(args) >= 2:
+                    url_nodes.append(args[1])
+                elif len(args) == 1 and not url_nodes:
+                    url_nodes.append(args[0])
+            elif args:
+                url_nodes.append(args[0])
+
+            if any(self._is_tainted(u) for u in url_nodes):
                 self._add(node, "py.ssrf", "ssrf", Severity.HIGH,
                           "Server-side request to a user-controlled URL (SSRF)",
                           "An outbound HTTP request targets a user-controlled URL, allowing SSRF "

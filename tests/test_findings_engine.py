@@ -263,6 +263,71 @@ def test_detects_ssrf():
     assert "ssrf" in _cats(src)
 
 
+def test_detects_ssrf_keyword_and_positional_variants():
+    # Keyword url= in requests.get
+    src_kw = (
+        "import requests, flask\n"
+        "def f():\n"
+        "    url = flask.request.args.get('u')\n"
+        "    return requests.get(url=url).text\n"
+    )
+    assert "ssrf" in _cats(src_kw)
+
+    # requests.request with method and url keyword
+    src_req_kw = (
+        "import requests, flask\n"
+        "def f():\n"
+        "    url = flask.request.args.get('u')\n"
+        "    return requests.request('GET', url=url).text\n"
+    )
+    assert "ssrf" in _cats(src_req_kw)
+
+    # requests.request with dynamic method and positional url
+    src_req_pos = (
+        "import requests, flask\n"
+        "def f(method_var):\n"
+        "    url = flask.request.args.get('u')\n"
+        "    return requests.request(method_var, url).text\n"
+    )
+    assert "ssrf" in _cats(src_req_pos)
+
+    # aiohttp.request with positional url
+    src_aiohttp = (
+        "import aiohttp, flask\n"
+        "async def f():\n"
+        "    target = flask.request.args.get('t')\n"
+        "    return await aiohttp.request('GET', target)\n"
+    )
+    assert "ssrf" in _cats(src_aiohttp)
+
+    # urllib.request.Request with tainted input
+    src_urllib_req = (
+        "import urllib.request, flask\n"
+        "def f():\n"
+        "    dest = flask.request.args.get('dest')\n"
+        "    req = urllib.request.Request(dest)\n"
+        "    return urllib.request.urlopen(req).read()\n"
+    )
+    assert "ssrf" in _cats(src_urllib_req)
+
+
+def test_no_false_positive_on_constant_url_with_tainted_kwargs():
+    src_clean_kwargs = (
+        "import requests, flask\n"
+        "def handler():\n"
+        "    user_q = flask.request.args.get('q')\n"
+        "    user_body = flask.request.json\n"
+        "    user_form = flask.request.form\n"
+        "    tok = flask.request.headers.get('Authorization')\n"
+        "    r1 = requests.get('https://api.example.com/search', params={'q': user_q})\n"
+        "    r2 = requests.post('https://api.example.com/v1/items', json=user_body)\n"
+        "    r3 = requests.post('https://api.example.com/submit', data=user_form)\n"
+        "    r4 = requests.get('https://api.example.com/me', headers={'Authorization': tok})\n"
+        "    return r1.text\n"
+    )
+    assert "ssrf" not in _cats(src_clean_kwargs)
+
+
 def test_detects_ssti():
     src = (
         "import flask\n"
