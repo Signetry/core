@@ -86,6 +86,27 @@ _GO = LangTaintSpec(
                  "A command is built from user input and run via exec.Command/os.",
                  "Pass args separately; never build a shell string.",
                  re.compile(r"exec\.Command\s*\("), confidence=0.8),
+        # SSRF / traversal take the tainted value directly — no concat needed, so
+        # requires_concat=False: http.Get(userURL) is the whole vulnerability.
+        SinkSpec("go.taint.ssrf", "ssrf", "CWE-918",
+                 "Outbound request to a user-controlled URL (taint)",
+                 "An HTTP request targets a user-controlled URL, letting an attacker reach "
+                 "internal services and cloud metadata endpoints (SSRF).",
+                 "Allowlist the destination host; resolve it and reject loopback/link-local/private ranges.",
+                 re.compile(r"\bhttp\.(?:Get|Head|Post|PostForm)\s*\("
+                            r"|\b\w*[Cc]lient\.(?:Get|Head|Post|PostForm|Do)\s*\("
+                            r"|\bhttp\.NewRequest(?:WithContext)?\s*\("),
+                 requires_concat=False, confidence=0.8),
+        SinkSpec("go.taint.path_traversal", "path_traversal", "CWE-22",
+                 "File path built from user input (taint)",
+                 "A filesystem path derives from user input without confinement, so ../ "
+                 "escapes the intended directory.",
+                 "filepath.Clean then verify the result still has the base dir as a prefix; "
+                 "or map the input through an allowlist.",
+                 re.compile(r"\bos\.(?:Open|OpenFile|ReadFile|Create|Remove)\s*\("
+                            r"|\bioutil\.ReadFile\s*\("
+                            r"|\bhttp\.ServeFile\s*\("),
+                 requires_concat=False, confidence=0.8),
     ),
 )
 
@@ -106,6 +127,19 @@ _JAVA = LangTaintSpec(
                  "A command is built from user input and executed.",
                  "Use ProcessBuilder with an argument list; validate inputs.",
                  re.compile(r"Runtime\.getRuntime\(\)\.exec\s*\(|new\s+ProcessBuilder\s*\("), confidence=0.8),
+        SinkSpec("java.taint.path_traversal", "path_traversal", "CWE-22",
+                 "File path built from user input (taint)",
+                 "A filesystem path derives from user input without confinement, so ../ "
+                 "escapes the intended directory.",
+                 "Resolve with getCanonicalPath() and verify it stays under a base dir; "
+                 "or map the input through an allowlist.",
+                 # Allow a qualified prefix — `new java.io.FileInputStream(...)` is as
+                 # common in the wild as the imported short form.
+                 re.compile(r"new\s+(?:[\w.]*\.)?(?:RandomAccessFile|File)"
+                            r"(?:InputStream|OutputStream|Reader|Writer)?\s*\("
+                            r"|\bFiles\.(?:readAllBytes|readString|newInputStream|newBufferedReader|delete)\s*\("
+                            r"|\bPaths\.get\s*\("),
+                 requires_concat=False, confidence=0.8),
     ),
 )
 

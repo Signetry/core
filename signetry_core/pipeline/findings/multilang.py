@@ -124,6 +124,18 @@ _PHP_RULES: list[tuple] = [
      "Weak hash for a password/secret",
      "md5()/sha1() for passwords is broken.",
      "Use password_hash() (bcrypt/argon2).", 0.72),
+    # Since PHP 8 / libxml 2.9 external entities are OFF by default, so the signal
+    # is code that explicitly turns them back on — either a LIBXML_NOENT/DTDLOAD
+    # flag on a parse call, or re-enabling the entity loader outright. Keying on the
+    # flag rather than on "parses XML" keeps this at near-zero false positives.
+    ("php.xxe", "xxe", Severity.HIGH, "CWE-611",
+     re.compile(r"(?i)(?:loadXML|loadHTML|simplexml_load_string|simplexml_load_file|XMLReader::open|"
+                r"DOMDocument::load\w*)\s*\([^)]*LIBXML_(?:NOENT|DTDLOAD|DTDATTR)"
+                r"|libxml_disable_entity_loader\s*\(\s*false\s*\)"),
+     "XML parsed with external entities enabled",
+     "LIBXML_NOENT/LIBXML_DTDLOAD (or re-enabling the entity loader) turns external "
+     "entity resolution back on; XXE then reads local files and reaches internal services.",
+     "Parse without LIBXML_NOENT/LIBXML_DTDLOAD and leave entity loading disabled.", 0.8),
 ]
 
 _CSHARP_RULES: list[tuple] = [

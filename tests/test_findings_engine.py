@@ -637,6 +637,66 @@ def test_lang_taint_go_parameterized_is_safe():
     assert "sql_injection" not in _cats(src, "safe.go")
 
 
+def test_lang_taint_go_ssrf():
+    # The tainted value IS the payload here — no concatenation involved.
+    src = ('u := r.URL.Query().Get("url")\n'
+           'resp, _ := http.Get(u)\n')
+    assert "ssrf" in _cats(src, "proxy.go")
+
+    via_client = ('u := r.FormValue("url")\n'
+                  'resp, _ := client.Do(u)\n')
+    assert "ssrf" in _cats(via_client, "proxy.go")
+
+
+def test_lang_taint_go_path_traversal():
+    src = ('name := r.URL.Query().Get("f")\n'
+           'data, _ := os.ReadFile("/var/data/" + name)\n')
+    assert "path_traversal" in _cats(src, "files.go")
+
+    serve = ('p := c.Param("path")\n'
+             'http.ServeFile(w, r, p)\n')
+    assert "path_traversal" in _cats(serve, "files.go")
+
+
+def test_lang_taint_java_path_traversal():
+    # Fully-qualified `new java.io.FileInputStream(...)` must match, not just the
+    # imported short form.
+    src = ('String n = req.getParameter("f");\n'
+           'java.io.FileInputStream in = new java.io.FileInputStream("/var/data/" + n);\n')
+    assert "path_traversal" in _cats(src, "Files.java")
+
+    nio = ('String n = req.getParameter("f");\n'
+           'byte[] b = Files.readAllBytes(Paths.get("/var/data/" + n));\n')
+    assert "path_traversal" in _cats(nio, "Files.java")
+
+
+def test_multilang_php_xxe():
+    # Since PHP 8 external entities are off by default, so the signal is code that
+    # explicitly re-enables them.
+    src = '<?php $doc = new DOMDocument(); $doc->loadXML($_POST["xml"], LIBXML_NOENT | LIBXML_DTDLOAD);\n'
+    assert "xxe" in _cats(src, "parse.php")
+
+    loader = '<?php libxml_disable_entity_loader(false);\n'
+    assert "xxe" in _cats(loader, "parse.php")
+
+
+def test_new_go_java_php_rules_no_false_positives():
+    # Constant destinations/paths and a default-safe PHP parse must stay clean —
+    # the eval corpus asserts zero false positives, so these are load-bearing.
+    for src, fname in [
+        ('resp, _ := http.Get("https://api.example.com/v1")\n', "a.go"),
+        ('d, _ := os.ReadFile("/etc/app/config.yaml")\n', "b.go"),
+        ('java.io.FileInputStream in = new java.io.FileInputStream("/etc/app.conf");\n', "A.java"),
+        ('byte[] b = Files.readAllBytes(Paths.get("/etc/app.conf"));\n', "B.java"),
+        # No LIBXML_NOENT/DTDLOAD → default-safe on modern PHP.
+        ('<?php $doc = new DOMDocument(); $doc->loadXML($_POST["xml"]);\n', "c.php"),
+        ('<?php $d = simplexml_load_string($_POST["xml"]);\n', "d.php"),
+    ]:
+        cats = _cats(src, fname)
+        for c in ("ssrf", "path_traversal", "xxe"):
+            assert c not in cats, f"false positive {c} in {fname}: {src!r}"
+
+
 def test_lang_taint_sanitized_input_is_safe():
     # parseInt sanitizes → no SQLi even though it reaches a query
     src = ('int id = Integer.parseInt(req.getParameter("id"));\n'
