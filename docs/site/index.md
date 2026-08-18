@@ -33,7 +33,7 @@ false — a human merges.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
 - Source (install from here): <https://github.com/Signetry/core>
