@@ -25,6 +25,8 @@ false — a human merges.
 ## Where to start
 
 - **[Quickstart](quickstart.md)** — install and govern a change in minutes.
+- **[Scan a repo in 60 seconds](scan-quickstart.md)** — the zero-setup entry point:
+  find vulnerabilities with no contract, agent, or API key.
 - **[Concepts](concepts.md)** — the pipeline, earned authority, receipts.
 - **[GitHub Action](github-action.md)** — govern every PR (on the Marketplace).
 - **[Security](security.md)** — threat model and honest scope.
