@@ -5,12 +5,23 @@ name: Reviewer
 # recommendation. Advisory only — it never merges and does not block the PR
 # (the self-admission + test checks remain the gates). It escalates changes to
 # security-sensitive surfaces (workflows, release, packaging) to a human.
+#
+# This job runs against untrusted PR code, so it deliberately holds NO write
+# permission. On a fork PR, GitHub downgrades GITHUB_TOKEN to read-only
+# regardless of the `permissions:` block, which is why requesting
+# `pull-requests: write` here failed with "Resource not accessible by
+# integration" (403) on every outside contribution. The rendered comment is
+# handed to the trusted `Reviewer comment` workflow (reviewer-comment.yml) via
+# an artifact and posted from there.
+#
+# We deliberately do NOT use `pull_request_target`: that runs with a writable
+# token in the base repo's context, and checking out PR head code under it is a
+# remote-code-execution footgun.
 on:
   pull_request:
 
 permissions:
   contents: read
-  pull-requests: write   # post/update the advisory review comment
   checks: read           # cross-verify the self-admission check status
 
 jobs:
@@ -65,6 +76,12 @@ jobs:
           REQ: ${{ steps.check.outputs.status }}
           PR: ${{ github.event.pull_request.number }}
         run: |
+          # GitHub runs `run:` steps as `bash -e`, so a non-zero exit from the
+          # reviewer aborted the step before the trailing `exit 0` could run —
+          # which made this "advisory" job fail the PR on any Block verdict,
+          # exactly what the header says it must never do. `set +e` plus an
+          # explicit `|| true` keeps the verdict in the comment, not the check.
+          set +e
           set -uo pipefail
           signetry-reviewer review \
             --diff "$OUT/pr.diff" \
@@ -73,26 +90,34 @@ jobs:
             --required-check "$REQ" \
             --protected ".github/workflows/*,.github/actions/**,pyproject.toml,signetry_core/pipeline/receipt.py,signetry_core/pipeline/gates.py,signetry_core/pipeline/verifier.py,signetry_core/pipeline/contract.py,signetry_core/pipeline/trust_boundary.py" \
             --comment-out "$OUT/comment.md" \
-            --json-out "$OUT/review.json"
+            --json-out "$OUT/review.json" || true
           exit 0   # advisory: never fail the PR from this job
 
-      - name: Post / update the review comment
+      # Hand the rendered comment to the trusted workflow. This job cannot post
+      # it itself: it has no write permission, and on fork PRs it could not be
+      # granted one. The PR number travels in the artifact because
+      # `workflow_run.pull_requests` is empty for forks.
+      - name: Stage the review comment for the trusted poster
         if: always()
-        uses: actions/github-script@v9
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -uo pipefail
+          mkdir -p "${RUNNER_TEMP:-/tmp}/rev-out"
+          if [ -f "$OUT/comment.md" ]; then
+            cp "$OUT/comment.md" "${RUNNER_TEMP:-/tmp}/rev-out/comment.md"
+          else
+            printf 'Signetry Reviewer: no review was produced.\n' \
+              > "${RUNNER_TEMP:-/tmp}/rev-out/comment.md"
+          fi
+          # Digits only — this value is read back by the trusted workflow.
+          printf '%s' "$PR" | tr -cd '0-9' > "${RUNNER_TEMP:-/tmp}/rev-out/pr-number"
+
+      - name: Upload the review comment artifact
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const fs = require('fs'); const path = require('path');
-            const out = process.env.OUT || '';
-            let body = 'Signetry Reviewer: no review was produced.';
-            try { body = fs.readFileSync(path.join(out, 'comment.md'), 'utf8'); } catch (e) {}
-            const marker = '<!-- signetry-reviewer -->';
-            body = marker + '\n' + body;
-            const { owner, repo } = context.repo;
-            const issue_number = context.issue.number;
-            const comments = await github.rest.issues.listComments({ owner, repo, issue_number });
-            const mine = comments.data.find(c => c.body && c.body.includes(marker));
-            if (mine) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
-            }
+          name: signetry-reviewer-comment
+          path: ${{ runner.temp }}/rev-out
+          retention-days: 3
+          if-no-files-found: warn
