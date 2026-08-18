@@ -311,6 +311,23 @@ def test_detects_ssrf_keyword_and_positional_variants():
     assert "ssrf" in _cats(src_urllib_req)
 
 
+def test_urllib_request_flow_is_reported_once_at_the_sink():
+    # Request() only *builds* the request; taint propagates through the assignment
+    # so urlopen() catches the flow. Listing the constructor as a sink too reported
+    # one SSRF on two adjacent lines, which dedup (file, line, category) cannot
+    # collapse. Exactly one finding, on the urlopen line.
+    src = (
+        "import urllib.request, flask\n"
+        "def f():\n"
+        "    dest = flask.request.args.get('dest')\n"
+        "    req = urllib.request.Request(dest)\n"
+        "    return urllib.request.urlopen(req).read()\n"
+    )
+    ssrf = [f for f in scan_source("x.py", src) if f.category == "ssrf"]
+    assert len(ssrf) == 1, [(f.rule_id, f.line) for f in ssrf]
+    assert ssrf[0].line == 5
+
+
 def test_no_false_positive_on_constant_url_with_tainted_kwargs():
     src_clean_kwargs = (
         "import requests, flask\n"
