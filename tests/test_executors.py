@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from signetry_core import (
+    AiderExecutor,
     ClaudeCodeExecutor,
     CodexExecutor,
     ExecutionResult,
@@ -42,7 +43,9 @@ class FakeRunner:
         self.calls.append(list(command))
         key = f"{command[0]}:{command[1] if len(command) > 1 else ''}"
         # Simulate the agent editing a file inside the checkout on the exec/print call.
-        if self._edit_file is not None and command[0] in {"codex", "claude"} and command[1] in {"exec", "-p"}:
+        if (self._edit_file is not None
+                and command[0] in {"codex", "claude", "aider"}
+                and command[1] in {"exec", "-p", "--message"}):
             self._edit_file.write_text(self._edit_text)
         return self.responses.get(key, FakeCompleted())
 
@@ -66,9 +69,10 @@ def test_both_executors_satisfy_protocol():
 
 
 def test_registry_lists_and_resolves():
-    assert set(available_executors()) == {"codex-cli", "claude-code", "none"}
+    assert set(available_executors()) == {"codex-cli", "claude-code", "aider", "none"}
     assert isinstance(get_executor("codex-cli"), CodexExecutor)
     assert isinstance(get_executor("claude-code"), ClaudeCodeExecutor)
+    assert isinstance(get_executor("aider"), AiderExecutor)
     assert isinstance(get_executor("none"), NullExecutor)
 
 
@@ -264,3 +268,147 @@ def test_execution_result_failed_factory():
     assert res.executor == "unavailable"
     assert res.tests_passed is False
     assert "boom" in (res.error or "")
+
+
+# --- aider (#53) ------------------------------------------------------------
+
+
+def test_aider_unavailable_without_flag(monkeypatch):
+    monkeypatch.delenv("SIGNETRY_ENABLE_AIDER", raising=False)
+    runner = FakeRunner({"aider:--version": FakeCompleted(stdout="aider 0.86.1")})
+    # Fail closed: the CLI responding is not enough, the opt-in must be set too.
+    assert AiderExecutor(runner=runner).available() is False
+
+
+def test_aider_available_with_flag_and_version(monkeypatch):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner({"aider:--version": FakeCompleted(stdout="aider 0.86.1")})
+    assert AiderExecutor(runner=runner).available() is True
+
+
+def test_aider_unavailable_when_cli_missing(monkeypatch):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+
+    def boom(*_a, **_k):
+        raise OSError("aider not found")
+
+    assert AiderExecutor(runner=boom).available() is False
+
+
+def test_aider_satisfies_protocol_and_is_registered():
+    assert isinstance(AiderExecutor(), Executor)
+    assert "aider" in available_executors()
+    assert get_executor("aider").name == "aider"
+
+
+def test_aider_propose_captures_diff(monkeypatch, git_repo):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=0, stdout="Applied edit to app.py"),
+        },
+        edit_file=git_repo / "app.py",
+        edit_text="x = 2\n",
+    )
+    res = AiderExecutor(runner=runner).propose("bump x", git_repo)
+    assert res.executor == "aider"
+    assert res.tests_passed is True
+    assert "app.py" in res.files
+    assert "x = 2" in res.diff
+    assert res.model_identity["executor"] == "aider"
+
+
+def test_aider_withholds_commit_and_shell_authority(monkeypatch, git_repo):
+    """The security contract: Aider edits the tree but never commits, and cannot
+    be steered into suggesting shell commands."""
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=0, stdout="ok"),
+        }
+    )
+    AiderExecutor(runner=runner).propose("do a thing", git_repo)
+    invocation = next(c for c in runner.calls if c[1] == "--message")
+    for flag in ("--no-auto-commits", "--no-dirty-commits", "--no-suggest-shell-commands"):
+        assert flag in invocation, f"missing safety flag {flag}"
+    # No commit was created in the repo.
+    log = subprocess.run(["git", "log", "--oneline"], cwd=git_repo,
+                         capture_output=True, text=True, check=True).stdout
+    assert log.strip().count("\n") == 0
+
+
+def test_aider_read_only_uses_dry_run(monkeypatch, git_repo):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=0, stdout="ok"),
+        }
+    )
+    AiderExecutor(runner=runner).propose("explain", git_repo, read_only=True)
+    invocation = next(c for c in runner.calls if c[1] == "--message")
+    assert "--dry-run" in invocation
+
+
+def test_aider_redacts_prompt_from_command_replay(monkeypatch, git_repo):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=0, stdout="ok"),
+        }
+    )
+    res = AiderExecutor(runner=runner).propose("secret mission text", git_repo)
+    assert res.command is not None
+    assert "secret mission text" not in " ".join(res.command)
+    assert any("redacted" in part for part in res.command)
+
+
+def test_aider_failed_run_reports_unavailable(monkeypatch, git_repo):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=1, stderr="provider auth failed"),
+        }
+    )
+    res = AiderExecutor(runner=runner).propose("x", git_repo)
+    # Honesty rule: a failed run is never recorded as the executor producing output.
+    assert res.executor == "unavailable"
+    assert res.tests_passed is False
+
+
+def test_aider_disabled_result_is_honest(monkeypatch, git_repo):
+    monkeypatch.delenv("SIGNETRY_ENABLE_AIDER", raising=False)
+    res = AiderExecutor(runner=FakeRunner({})).propose("x", git_repo)
+    assert res.diff == ""
+    assert res.tests_passed is None
+    assert "SIGNETRY_ENABLE_AIDER" in res.summary
+
+
+def test_aider_model_passed_through(monkeypatch, git_repo):
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    monkeypatch.setenv("SIGNETRY_AIDER_MODEL", "gpt-5.6-terra")
+    runner = FakeRunner(
+        {
+            "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+            "aider:--message": FakeCompleted(returncode=0, stdout="ok"),
+        }
+    )
+    res = AiderExecutor(runner=runner).propose("x", git_repo)
+    invocation = next(c for c in runner.calls if c[1] == "--message")
+    assert "--model" in invocation and "gpt-5.6-terra" in invocation
+    assert res.model_identity["model_configured"] == "gpt-5.6-terra"
+    # Aider does not echo the resolved provider model, so we must not claim one.
+    assert res.model_identity["model_resolved"] == "unavailable"
+
+
+def test_aider_not_auto_selected_over_configured_preference(monkeypatch):
+    """resolve_available honors preference order; aider being registered must not
+    silently take priority."""
+    monkeypatch.delenv("SIGNETRY_ENABLE_AIDER", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
+    monkeypatch.delenv("SIGNETRY_ENABLE_CLAUDE_CODE", raising=False)
+    assert resolve_available(runner=FakeRunner({})) is None

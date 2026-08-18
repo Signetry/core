@@ -31,6 +31,7 @@ one admission pipeline and adapted behind a single interface:
 Executor (protocol)
   ├── CodexExecutor        →  codex exec  (disposable checkout, no push/merge)
   ├── ClaudeCodeExecutor   →  claude -p   (--bare: no CLAUDE.md auto-read, push/merge tools denied)
+  ├── AiderExecutor        →  aider --message  (--no-auto-commits: edits the tree, never commits)
   └── <your agent>         →  one adapter, no pipeline change
 ```
 
@@ -83,10 +84,9 @@ check and nothing merges without a signed receipt. `auto_merge` is always false.
 `signetry-core` also ships a **layered SAST detection engine**: a deterministic,
 offline floor (Python AST taint + cross-file/interprocedural taint, plus rules and
 line-based taint for Go, Java, PHP, Ruby, C#, and rules for Kotlin) covering the
-OWASP set — SQL/command/
-code injection, unsafe deserialization, path traversal, XSS, weak crypto, insecure
-randomness, SSRF, SSTI, JWT-none, NoSQL, XXE, hardcoded secrets, TLS-off, debug
-mode. Optional, non-fatal layers add Semgrep, tree-sitter AST, and advisory LLM
+OWASP set — SQL/command/code injection, unsafe deserialization, path traversal,
+XSS, weak crypto, insecure randomness, SSRF, SSTI, JWT-none, NoSQL, XXE,
+hardcoded secrets, TLS-off, debug mode. Optional, non-fatal layers add Semgrep, tree-sitter AST, and advisory LLM
 triage (which can only reduce noise — never strengthen or self-approve).
 
 ```bash
@@ -144,7 +144,7 @@ agent = resolve_available(["claude-code", "codex-cli"])
 agent = get_executor("claude-code")
 
 result = agent.propose("bump the vulnerable dependency", repo_path=checkout)
-print(result.executor)         # "claude-code" | "codex-cli" | "unavailable"
+print(result.executor)         # "claude-code" | "codex-cli" | "aider" | "unavailable"
 print(result.diff)             # recomputed from git on the final tree
 print(result.model_identity)   # honest provenance for the receipt
 ```
@@ -153,6 +153,8 @@ Enable agents via environment flags (off by default, fail-closed):
 
 - `SIGNETRY_ENABLE_CODEX_CLI=true` (+ `codex login`)
 - `SIGNETRY_ENABLE_CLAUDE_CODE=true` (+ authenticated `claude` CLI)
+- `SIGNETRY_ENABLE_AIDER=true` (+ an Aider model provider; optionally
+  `SIGNETRY_AIDER_MODEL=<model>`)
 
 ## The admission pipeline
 
