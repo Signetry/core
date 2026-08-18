@@ -76,6 +76,12 @@ jobs:
           REQ: ${{ steps.check.outputs.status }}
           PR: ${{ github.event.pull_request.number }}
         run: |
+          # GitHub runs `run:` steps as `bash -e`, so a non-zero exit from the
+          # reviewer aborted the step before the trailing `exit 0` could run —
+          # which made this "advisory" job fail the PR on any Block verdict,
+          # exactly what the header says it must never do. `set +e` plus an
+          # explicit `|| true` keeps the verdict in the comment, not the check.
+          set +e
           set -uo pipefail
           signetry-reviewer review \
             --diff "$OUT/pr.diff" \
@@ -84,7 +90,7 @@ jobs:
             --required-check "$REQ" \
             --protected ".github/workflows/*,.github/actions/**,pyproject.toml,signetry_core/pipeline/receipt.py,signetry_core/pipeline/gates.py,signetry_core/pipeline/verifier.py,signetry_core/pipeline/contract.py,signetry_core/pipeline/trust_boundary.py" \
             --comment-out "$OUT/comment.md" \
-            --json-out "$OUT/review.json"
+            --json-out "$OUT/review.json" || true
           exit 0   # advisory: never fail the PR from this job
 
       # Hand the rendered comment to the trusted workflow. This job cannot post
