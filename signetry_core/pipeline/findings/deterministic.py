@@ -225,18 +225,34 @@ class _PyVisitor(ast.NodeVisitor):
                           0.92, "CWE-78")
 
         # --- Unsafe deserialisation ---
-        if target in ("pickle.loads", "pickle.load", "cPickle.loads", "_pickle.loads"):
+        if target in ("pickle.loads", "pickle.load", "cPickle.loads", "cPickle.load",
+                      "_pickle.loads", "_pickle.load", "marshal.loads", "marshal.load",
+                      "shelve.open"):
             self._add(node, "py.insecure_deserialization", "insecure_deserialization", Severity.HIGH,
-                      "Unpickling untrusted data",
-                      "pickle.loads/load can execute arbitrary code during deserialisation.",
-                      "Never unpickle untrusted input; use JSON or a signed, verified format.",
+                      f"Insecure deserialisation via {target}()",
+                      f"{target}() can execute arbitrary code during deserialisation.",
+                      "Never deserialise untrusted input with pickle/marshal/shelve; "
+                      "use JSON or a signed, verified format.",
                       0.88 if self._is_tainted(node) else 0.8, "CWE-502")
-        if target in ("yaml.load",) and not any(kw.arg == "Loader" for kw in node.keywords):
-            self._add(node, "py.yaml_load", "insecure_deserialization", Severity.HIGH,
-                      "yaml.load without SafeLoader",
-                      "yaml.load without a safe Loader can instantiate arbitrary Python objects.",
-                      "Use yaml.safe_load or pass Loader=yaml.SafeLoader.",
-                      0.82, "CWE-502")
+        # yaml.load is safe ONLY with a safe Loader. Resolving the Loader (kwarg or
+        # 2nd positional) by its last path segment is what makes an explicitly
+        # unsafe loader — Loader=yaml.Loader — a finding rather than a pass: the
+        # previous `any(kw.arg == "Loader")` check treated *any* Loader as safe.
+        if target in ("yaml.load", "yaml.unsafe_load"):
+            loader = next((kw.value for kw in node.keywords if kw.arg == "Loader"), None)
+            if loader is None and len(args) >= 2:
+                loader = args[1]
+            safe_loader = (
+                target == "yaml.load"
+                and loader is not None
+                and _attr_chain(loader).rsplit(".", 1)[-1] in ("SafeLoader", "CSafeLoader", "BaseLoader")
+            )
+            if not safe_loader:
+                self._add(node, "py.yaml_load", "insecure_deserialization", Severity.HIGH,
+                          f"{target}() without a safe Loader",
+                          f"{target}() can instantiate arbitrary Python objects.",
+                          "Use yaml.safe_load or pass Loader=yaml.SafeLoader.",
+                          0.82, "CWE-502")
 
         # --- eval / exec code injection ---
         if target in ("eval", "exec"):
