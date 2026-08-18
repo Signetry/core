@@ -38,6 +38,11 @@ class SinkSpec:
     remediation: str
     pattern: re.Pattern[str]
     requires_concat: bool = True  # False for sinks where the value itself is the payload
+    # Optional negative guard: when this matches the sink line, the line is NOT a
+    # finding even though a tainted identifier appears on it. Used where taint on
+    # the line does not mean taint in the dangerous position (e.g. a constant URL
+    # host with a user-supplied query string is not SSRF).
+    skip_if: re.Pattern[str] | None = None
     confidence: float = 0.8
     severity: Severity = Severity.HIGH
 
@@ -96,6 +101,11 @@ _GO = LangTaintSpec(
                  re.compile(r"\bhttp\.(?:Get|Head|Post|PostForm)\s*\("
                             r"|\b\w*[Cc]lient\.(?:Get|Head|Post|PostForm|Do)\s*\("
                             r"|\bhttp\.NewRequest(?:WithContext)?\s*\("),
+                 # A literal that already covers scheme AND host pins the
+                 # destination, so a tainted query string on the same line is not
+                 # SSRF. Requiring >=1 host character before the closing quote or
+                 # path keeps `"https://" + userHost` (real SSRF) firing.
+                 skip_if=re.compile(r'"https?://[A-Za-z0-9.-]+[/"]'),
                  requires_concat=False, confidence=0.8),
         SinkSpec("go.taint.path_traversal", "path_traversal", "CWE-22",
                  "File path built from user input (taint)",
@@ -267,6 +277,8 @@ def scan_lang_taint(file: str, text: str) -> list[Finding]:
             if (sink.category == "sql_injection"
                     and _PARAM_PLACEHOLDER.search(line)
                     and not spec.concat.search(line)):
+                continue
+            if sink.skip_if is not None and sink.skip_if.search(line):
                 continue
             inline_src = bool(spec.source.search(line))
             uses_tainted = any(v in tainted for v in _idents(line, spec.ident))
