@@ -19,5 +19,4 @@ owner.
 <!-- Contributors who have signed the CLA are added here (alphabetical by GitHub
      handle). To be credited, contribute a PR and sign the CLA. -->
 
-- **ADITYA** ([@adity982](https://github.com/adity982)) — Aider executor adapter behind the Executor protocol ([#55](https://github.com/Signetry/core/pull/55), ported in [#96](https://github.com/Signetry/core/pull/96))
 - **Advait Varhade** ([@AdvaitVarhade](https://github.com/AdvaitVarhade)) — SSRF (CWE-918) detection rule for JavaScript/Node ([#73](https://github.com/Signetry/core/pull/73)); SSRF URL-argument resolution for keyword + positional calls, plus httpx/aiohttp coverage ([#89](https://github.com/Signetry/core/pull/89))
