@@ -276,7 +276,11 @@ class _PyVisitor(ast.NodeVisitor):
             "requests.delete", "requests.head", "requests.options", "requests.request",
             "httpx.get", "httpx.post", "httpx.put", "httpx.patch",
             "httpx.delete", "httpx.head", "httpx.options", "httpx.request",
-            "urllib.request.urlopen", "urllib.request.Request",
+            # Sink only. urllib.request.Request() merely *builds* a request; taint
+            # propagates through `req = Request(tainted)`, so urlopen(req) already
+            # flags the flow. Listing the constructor too reported one SSRF twice,
+            # on adjacent lines, where dedup (file, line, category) cannot collapse it.
+            "urllib.request.urlopen",
             "aiohttp.request",
         )
         if target in ssrf_targets:
