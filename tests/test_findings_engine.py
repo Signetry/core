@@ -457,6 +457,60 @@ def test_multilang_safe_php_prepared_not_flagged():
     assert "sql_injection" not in _cats(src, "safe.php")
 
 
+def test_multilang_kotlin_sql_interpolation():
+    # $var / ${var} interpolation is the dominant Kotlin injection shape; the Java
+    # rules only match "+" concatenation, so Kotlin needs its own pattern.
+    src = 'stmt.executeQuery("SELECT * FROM u WHERE name = \'$name\'")\n'
+    assert "sql_injection" in _cats(src, "Dao.kt")
+
+    braced = 'stmt.executeQuery("SELECT * FROM u WHERE name = \'${name}\'")\n'
+    assert "sql_injection" in _cats(braced, "Dao.kt")
+
+    concat = 'stmt.executeQuery("SELECT * FROM u WHERE name = \'" + name + "\'")\n'
+    assert "sql_injection" in _cats(concat, "Dao.kt")
+
+
+def test_multilang_kotlin_android_sqlite():
+    src = 'db.execSQL("DELETE FROM t WHERE id = $id")\n'
+    assert "sql_injection" in _cats(src, "Store.kt")
+
+    raw = 'db.rawQuery("SELECT * FROM t WHERE u = \'$u\'", null)\n'
+    assert "sql_injection" in _cats(raw, "Store.kt")
+
+
+def test_multilang_kotlin_command_injection():
+    src = 'Runtime.getRuntime().exec("ping $host")\n'
+    assert "command_injection" in _cats(src, "Ops.kt")
+
+    concat = 'Runtime.getRuntime().exec("ping " + host)\n'
+    assert "command_injection" in _cats(concat, "Ops.kt")
+
+    # A shell invocation is flagged even with a constant argument, matching the
+    # existing Go rule's treatment of exec.Command("sh", ...).
+    shell = 'ProcessBuilder(listOf("sh", "-c", "ls")).start()\n'
+    assert "command_injection" in _cats(shell, "Ops.kt")
+
+
+def test_multilang_kotlin_scripts_are_scanned():
+    src = 'stmt.executeQuery("SELECT * FROM u WHERE name = \'$name\'")\n'
+    assert "sql_injection" in _cats(src, "build.kts")
+
+
+def test_multilang_kotlin_safe_not_flagged():
+    # Constant query, bound parameter, constant identifier, non-shell exec with a
+    # constant array, a ProcessBuilder over a prebuilt list, and interpolation
+    # outside a sink must all stay clean.
+    for src, fname in [
+        ('stmt.executeQuery("SELECT * FROM users")\n', "a.kt"),
+        ('val p = conn.prepareStatement("SELECT * FROM u WHERE n = ?"); p.setString(1, n)\n', "b.kt"),
+        ('stmt.executeQuery(SQL_ALL_USERS)\n', "c.kt"),
+        ('Runtime.getRuntime().exec(arrayOf("ls", "-l"))\n', "d.kt"),
+        ('ProcessBuilder(cmdList).start()\n', "e.kt"),
+        ('println("SELECT * FROM u WHERE n = \'$name\'")\n', "f.kt"),
+    ]:
+        assert _cats(src, fname) == set(), f"unexpected finding in {fname}: {src!r}"
+
+
 # --- multi-variable taint flow across languages -----------------------------
 
 

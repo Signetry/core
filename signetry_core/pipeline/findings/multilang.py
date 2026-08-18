@@ -144,12 +144,35 @@ _CSHARP_RULES: list[tuple] = [
      "Use SHA256+ or a password hash (PBKDF2/bcrypt/Argon2).", 0.72),
 ]
 
+# Kotlin is JVM but its dominant injection shape is string interpolation
+# ("...$user..." / "...${user}..."), which the Java rules' concat-only patterns
+# miss entirely. Both shapes are required signals here, so a constant query or a
+# parameterised statement does not trip these.
+_KOTLIN_RULES: list[tuple] = [
+    ("kotlin.sql_injection", "sql_injection", Severity.HIGH, "CWE-89",
+     re.compile(r'(?i)\.(?:executeQuery|executeUpdate|execSQL|rawQuery|createQuery|execute)'
+                r'\s*\(\s*"[^"]*(?:\$\{?\w|"\s*\+)'),
+     "SQL built with string interpolation/concatenation",
+     "A SQL statement interpolates ($var/${var}) or concatenates a value instead of "
+     "binding a parameter.",
+     "Use a parameterised statement: prepareStatement(\"... WHERE x = ?\").setString(1, v).", 0.8),
+    ("kotlin.command_injection", "command_injection", Severity.HIGH, "CWE-78",
+     re.compile(r'Runtime\.getRuntime\(\)\.exec\s*\([^)]*(?:\$\{?\w|\+)'
+                r'|ProcessBuilder\s*\([^)]*(?:\$\{?\w|\+)'
+                r'|(?:ProcessBuilder|exec)\s*\(\s*(?:listOf\s*\(\s*)?"(?:sh|bash|zsh|cmd|cmd\.exe|/bin/sh|/bin/bash)"'),
+     "Command injection via Runtime.exec/ProcessBuilder",
+     "A command is built with interpolation/concatenation, or invoked through a shell.",
+     "Pass arguments as separate list elements; avoid a shell; validate/allowlist inputs.", 0.8),
+]
+
 _EXT_RULES: dict[str, list[tuple]] = {
     ".go": _GO_RULES,
     ".java": _JAVA_RULES,
     ".rb": _RUBY_RULES,
     ".php": _PHP_RULES,
     ".cs": _CSHARP_RULES,
+    ".kt": _KOTLIN_RULES,
+    ".kts": _KOTLIN_RULES,
 }
 
 # Language families for which this module provides coverage (used by the walker).
