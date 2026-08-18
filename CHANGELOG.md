@@ -5,6 +5,24 @@ All notable changes to **signetry-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [Unreleased]
+
+### Added — Python insecure-deserialisation coverage
+
+- `marshal.load(s)` and `shelve.open` now flagged (CWE-502) — both execute arbitrary
+  code during decoding, and neither was detected.
+- `yaml.unsafe_load` flagged, and the Loader is now **resolved** rather than merely
+  counted: the previous check treated *any* `Loader=` kwarg as safe, so an explicitly
+  unsafe `yaml.load(x, Loader=yaml.Loader)` passed silently.
+- Gaps identified by @AdvaitVarhade in #87/#91.
+
+### Fixed — a positional safe Loader was a false positive
+
+- `yaml.load(x, yaml.SafeLoader)` was flagged, because the old check only inspected
+  keyword arguments. The Loader is now read from the keyword *or* the second
+  positional argument, and matched on its last path segment so both `yaml.SafeLoader`
+  and a bare imported `SafeLoader` are recognised.
+
 ## [0.7.0] — 2026-08-18
 
 ### Added — detection breadth

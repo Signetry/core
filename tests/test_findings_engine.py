@@ -345,6 +345,50 @@ def test_no_false_positive_on_constant_url_with_tainted_kwargs():
     assert "ssrf" not in _cats(src_clean_kwargs)
 
 
+def test_detects_deserialization_marshal_shelve_and_unsafe_loader():
+    # The gaps @AdvaitVarhade identified in #91: marshal, shelve, and an explicitly
+    # unsafe yaml Loader. The last one is the important catch — the previous check
+    # treated ANY Loader= kwarg as safe, so Loader=yaml.Loader passed silently.
+    for src in (
+        "import marshal\ndef r(b):\n    return marshal.loads(b)\n",
+        "import shelve\ndef o(f):\n    return shelve.open(f)\n",
+        "import yaml\ndef p(r):\n    return yaml.load(r, Loader=yaml.Loader)\n",
+        "import yaml\ndef p(r):\n    return yaml.unsafe_load(r)\n",
+    ):
+        assert "insecure_deserialization" in _cats(src), src
+
+
+def test_deserialization_safe_loader_forms_not_flagged():
+    # Positional SafeLoader was a pre-existing FALSE POSITIVE: the old
+    # any(kw.arg == "Loader") check only looked at keywords.
+    for src in (
+        "import yaml\ndef p(r):\n    return yaml.load(r, Loader=yaml.SafeLoader)\n",
+        "import yaml\nfrom yaml import SafeLoader\ndef p(r):\n    return yaml.load(r, Loader=SafeLoader)\n",
+        "import yaml\ndef p(r):\n    return yaml.load(r, yaml.SafeLoader)\n",
+        "import yaml\ndef p(r):\n    return yaml.load(r, Loader=yaml.CSafeLoader)\n",
+        "import yaml\ndef p(r):\n    return yaml.safe_load(r)\n",
+    ):
+        assert "insecure_deserialization" not in _cats(src), src
+
+
+def test_deserialization_reported_once_per_line(tmp_path):
+    # One rule_id per class, one category. Adding a parallel rule with a different
+    # category name would defeat the (file, line, category) dedup and double every
+    # finding — the reason #91 could not be merged as written.
+    _write(tmp_path, {"app.py": (
+        "import pickle, yaml, flask\n"
+        "def load_session():\n"
+        "    raw = flask.request.data\n"
+        "    return pickle.loads(raw)\n"
+        "def load_config(text):\n"
+        "    return yaml.load(text)\n"
+    )})
+    report = scan_repository(tmp_path)
+    deser = [f for f in report.findings if "deserial" in f.category]
+    assert len(deser) == 2, [(f.rule_id, f.category, f.line) for f in deser]
+    assert {f.category for f in deser} == {"insecure_deserialization"}
+
+
 def test_detects_ssti():
     src = (
         "import flask\n"
