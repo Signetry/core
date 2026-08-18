@@ -648,6 +648,25 @@ def test_lang_taint_go_ssrf():
     assert "ssrf" in _cats(via_client, "proxy.go")
 
 
+def test_lang_taint_go_ssrf_constant_host_is_not_ssrf():
+    # A literal covering scheme AND host pins the destination, so a user-supplied
+    # query string or path suffix is not SSRF — the same distinction the Python rule
+    # is held to. Regression: this was a false positive against the eval corpus'
+    # LANG-60 safe decoy.
+    for src in (
+        'q := r.URL.Query().Get("q")\n'
+        'resp, _ := http.Get("https://api.example.com/search?q=" + url.QueryEscape(q))\n',
+        'id := r.URL.Query().Get("id")\n'
+        'resp, _ := http.Get("https://api.example.com/items/" + id)\n',
+    ):
+        assert "ssrf" not in _cats(src, "client.go"), src
+
+    # A literal that stops at the scheme does NOT pin the host — still SSRF.
+    attacker_host = ('h := r.URL.Query().Get("h")\n'
+                     'resp, _ := http.Get("https://" + h)\n')
+    assert "ssrf" in _cats(attacker_host, "client.go")
+
+
 def test_lang_taint_go_path_traversal():
     src = ('name := r.URL.Query().Get("f")\n'
            'data, _ := os.ReadFile("/var/data/" + name)\n')
