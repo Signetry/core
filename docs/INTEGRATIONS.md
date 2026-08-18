@@ -14,7 +14,7 @@ Codex, Cursor, Copilot, Devin, or a human, identically.
 
 ```bash
 # source-available (All Rights Reserved); not on PyPI — install from source
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
 ```python
@@ -75,7 +75,7 @@ status check* in branch protection and nothing merges without a receipt.
 ## 4. MCP server (agents call governance themselves)
 
 ```bash
-pip install "signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.6.0"
+pip install "signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.7.0"
 python -m signetry_core.mcp_server            # stdio transport
 ```
 

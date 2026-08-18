@@ -62,12 +62,12 @@ One core (`run_admission`), five checkpoints an agent's change must pass through
 
 ```bash
 # Source-available (not on PyPI). Install from the source repo:
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
 | Surface | Governs | Command |
 |---|---|---|
-| **Source install** | anything you script | `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"` |
+| **Source install** | anything you script | `pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"` |
 | **CLI + git hook** | the agent on your machine | `signetry admit . --mission "..." --agent claude-code` |
 | **Detection scan** | find vulns in any repo (7 languages) + govern the fix | `signetry scan . --sarif` · `signetry scan . --fix` |
 | **GitHub Action** | **every** agent's PR (Claude Code, Codex, Cursor, Copilot, Devin) | [Marketplace: Signetry Admission](https://github.com/marketplace/actions/signetry-admission) · [`@v1`](https://github.com/Signetry/action) |

@@ -5,6 +5,66 @@ All notable changes to **signetry-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
+## [0.7.0] — 2026-08-18
+
+### Added — detection breadth
+
+- **Kotlin** (`.kt`/`.kts`) is now scanned at all. It was absent from the extension
+  map, so a Kotlin service or Android app scanned clean regardless of contents.
+  `kotlin.sql_injection` (CWE-89) and `kotlin.command_injection` (CWE-78) match
+  both the `$var`/`${var}` interpolation idiom — which the Java concat-only
+  patterns miss entirely — and `+` concatenation. (#52, #93)
+- **Go SSRF** — `go.taint.ssrf` (CWE-918): `http.Get/Head/Post/PostForm`,
+  `*Client.Do`, `http.NewRequest`. (#95)
+- **Go and Java path traversal** — `go.taint.path_traversal` /
+  `java.taint.path_traversal` (CWE-22). The Java pattern accepts a qualified
+  prefix, so `new java.io.FileInputStream(...)` matches, not only the imported
+  short form. (#95)
+- **PHP XXE** — `php.xxe` (CWE-611), keyed on `LIBXML_NOENT`/`LIBXML_DTDLOAD` or
+  `libxml_disable_entity_loader(false)`. Since PHP 8 / libxml 2.9 external
+  entities are off by default, parsing untrusted XML is not itself the bug —
+  explicitly re-enabling entities is. (#95)
+- `SinkSpec.skip_if` — an optional negative guard for taint sinks where a tainted
+  identifier *on the line* does not imply taint *in the dangerous position*. (#97)
+
+### Added — executors
+
+- **`AiderExecutor`**, registered as `aider`. Fail-closed on both
+  `SIGNETRY_ENABLE_AIDER=true` and the CLI responding. Commit authority stays with
+  the pipeline (`--no-auto-commits`, `--no-dirty-commits`), shell suggestion is
+  disabled, read-only runs use `--dry-run`, and the prompt is redacted from the
+  replay command. Ported from @adity982's #55, which predated the
+  `umbra_core` → `signetry_core` rename and could no longer be rebased. (#53, #96)
+
+### Fixed — SSRF precision
+
+- The Python SSRF rule now resolves the URL argument independently for keyword and
+  positional forms. `requests.request` was previously checked at `args[0]` — the
+  HTTP *method* — making that target effectively dead for positional calls. Adds
+  `httpx` put/patch/delete/head/options/request and `urllib.request` coverage.
+  Thanks @AdvaitVarhade. (#86, #89)
+- `urllib.request.Request` removed from the SSRF sink list: taint already
+  propagates to the `urlopen` sink, so listing the constructor reported one
+  vulnerability twice on adjacent lines, where the `(file, line, category)` dedup
+  cannot collapse it. (#94)
+- A constant host with a tainted query string is no longer reported as Go SSRF.
+  `http.Get("https://api.example.com/search?q=" + q)` pins the destination, so it
+  is not SSRF — while `http.Get("https://" + userHost)` still is, because the
+  attacker controls the host. (#97)
+
+### Fixed — CI
+
+- The advisory reviewer **could never comment on a fork PR**. Fork PRs get a
+  read-only `GITHUB_TOKEN` regardless of the `permissions:` block, so
+  `pull-requests: write` was silently dropped and the comment call returned 403 —
+  every outside contribution showed a red `review` check. Split into an untrusted
+  job (no write permission, uploads an artifact) and a trusted `workflow_run` job
+  that posts it and never executes PR code. Deliberately not `pull_request_target`.
+  (#92)
+- The advisory review step's `exit 0   # never fail the PR` had never run: GitHub
+  invokes `run:` steps as `bash -e`, so a non-zero exit from the reviewer aborted
+  the step first and any Block verdict turned the check red. (#92)
+
 ## [0.6.0] — 2026-08-12
 
 ### Naming

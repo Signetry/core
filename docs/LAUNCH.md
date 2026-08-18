@@ -34,7 +34,7 @@ provenance. Make it a required status check and nothing merges without a receipt
 `auto_merge` is always false — a human merges.
 
 Agent-agnostic; **source-available** (All Rights Reserved — not open source),
-installed from source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`).
+installed from source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`).
 On the GitHub Marketplace:
 https://github.com/marketplace/actions/signetry-admission
 
@@ -96,7 +96,7 @@ jobs:
 Live demo — a permitted change passes, a forbidden `deploy.yml` edit is blocked:
 https://github.com/Signetry/autofix-demo/pulls
 
-Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.6.0"`
+Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`
 → `signetry admit`), a git pre-push hook, an MCP server, or a Python library.
 Source-available (All Rights Reserved — not open source).
 
