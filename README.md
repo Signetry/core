@@ -82,7 +82,8 @@ check and nothing merges without a signed receipt. `auto_merge` is always false.
 
 `signetry-core` also ships a **layered SAST detection engine**: a deterministic,
 offline floor (Python AST taint + cross-file/interprocedural taint, plus rules and
-line-based taint for Go, Java, PHP, Ruby, C#) covering the OWASP set — SQL/command/
+line-based taint for Go, Java, PHP, Ruby, C#, and rules for Kotlin) covering the
+OWASP set — SQL/command/
 code injection, unsafe deserialization, path traversal, XSS, weak crypto, insecure
 randomness, SSRF, SSTI, JWT-none, NoSQL, XXE, hardcoded secrets, TLS-off, debug
 mode. Optional, non-fatal layers add Semgrep, tree-sitter AST, and advisory LLM
