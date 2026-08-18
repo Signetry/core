@@ -412,3 +412,30 @@ def test_aider_not_auto_selected_over_configured_preference(monkeypatch):
     monkeypatch.delenv("SIGNETRY_ENABLE_CODEX_CLI", raising=False)
     monkeypatch.delenv("SIGNETRY_ENABLE_CLAUDE_CODE", raising=False)
     assert resolve_available(runner=FakeRunner({})) is None
+
+
+def test_aider_model_rejects_unsafe_name(monkeypatch):
+    # A caller-supplied model must never be able to smuggle shell metacharacters
+    # or extra arguments into the command we build (same guard as the Codex -m
+    # value). Unsafe values are dropped, not passed through.
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    assert AiderExecutor(model="bad;rm -rf /").model is None
+    assert AiderExecutor(model="a b c").model is None
+    assert AiderExecutor(model="--dangerously-do-x").model is None
+    # Realistic provider/model spellings still work.
+    assert AiderExecutor(model="gpt-5.6-terra").model == "gpt-5.6-terra"
+    assert AiderExecutor(model="openrouter/anthropic/claude-opus-5").model == "openrouter/anthropic/claude-opus-5"
+
+
+def test_aider_never_passes_commit_authority(monkeypatch, git_repo):
+    # The withheld-authority flag set is a security contract; assert it as a set so
+    # dropping one is a test failure rather than a silent regression.
+    monkeypatch.setenv("SIGNETRY_ENABLE_AIDER", "true")
+    runner = FakeRunner({
+        "aider:--version": FakeCompleted(stdout="aider 0.86.1"),
+        "aider:--message": FakeCompleted(returncode=0, stdout="ok"),
+    })
+    AiderExecutor(runner=runner).propose("do a thing", git_repo)
+    invocation = next(c for c in runner.calls if c[1] == "--message")
+    assert {"--no-auto-commits", "--no-dirty-commits",
+            "--no-suggest-shell-commands", "--no-gitignore"} <= set(invocation)

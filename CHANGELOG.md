@@ -32,9 +32,9 @@ change between minor versions.
 - **`AiderExecutor`**, registered as `aider`. Fail-closed on both
   `SIGNETRY_ENABLE_AIDER=true` and the CLI responding. Commit authority stays with
   the pipeline (`--no-auto-commits`, `--no-dirty-commits`), shell suggestion is
-  disabled, read-only runs use `--dry-run`, and the prompt is redacted from the
-  replay command. Ported from @adity982's #55, which predated the
-  `umbra_core` → `signetry_core` rename and could no longer be rebased. (#53, #96)
+  disabled, read-only runs use `--dry-run`, the `--model` value is rejected unless it
+  cannot alter the built command, and the prompt is redacted from the replay
+  command. (#53, #96)
 
 ### Fixed — SSRF precision
 
