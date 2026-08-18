@@ -1,3 +1,4 @@
+from .aider import AiderExecutor
 from .base import ExecutionResult, Executor
 from .claude_code import ClaudeCodeExecutor
 from .codex import CodexExecutor
@@ -8,6 +9,7 @@ __all__ = [
     "Executor",
     "ExecutionResult",
     "CodexExecutor",
+    "AiderExecutor",
     "ClaudeCodeExecutor",
     "NullExecutor",
     "available_executors",
