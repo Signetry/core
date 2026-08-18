@@ -255,6 +255,34 @@ class _PyVisitor(ast.NodeVisitor):
                       "Use bcrypt/scrypt/Argon2 for passwords; SHA-256+ for integrity.",
                       0.8, "CWE-327")
 
+        # --- Insecure deserialization (pickle, yaml.load, marshal, shelve) ---
+        if target in ("pickle.loads", "pickle.load", "_pickle.loads", "_pickle.load",
+                      "marshal.loads", "marshal.load", "shelve.open") and args:
+            if not isinstance(args[0], ast.Constant):
+                self._add(node, "py.insecure_deserialization", "deserialization", Severity.HIGH,
+                          f"Insecure deserialization via {target}()",
+                          f"{target}() on untrusted input allows arbitrary code execution (RCE) via object instantiation.",
+                          "Avoid deserializing untrusted data with pickle/marshal/shelve; use safe data formats like JSON.",
+                          0.85, "CWE-502")
+
+        if target == "yaml.load" and args:
+            is_safe_loader = False
+            for kw in node.keywords:
+                if kw.arg == "Loader":
+                    loader_name = _attr_chain(kw.value)
+                    if loader_name in ("yaml.SafeLoader", "SafeLoader", "yaml.CSafeLoader", "CSafeLoader"):
+                        is_safe_loader = True
+            if len(args) >= 2:
+                loader_name = _attr_chain(args[1])
+                if loader_name in ("yaml.SafeLoader", "SafeLoader", "yaml.CSafeLoader", "CSafeLoader"):
+                    is_safe_loader = True
+            if not is_safe_loader:
+                self._add(node, "py.insecure_deserialization", "deserialization", Severity.HIGH,
+                          "Unsafe YAML deserialization via yaml.load()",
+                          "yaml.load() without SafeLoader allows arbitrary Python object instantiation and code execution.",
+                          "Use yaml.safe_load() or pass Loader=yaml.SafeLoader.",
+                          0.85, "CWE-502")
+
         # --- Path traversal: open(<tainted path>) ---
         if target in ("open",) and args:
             a0 = args[0]

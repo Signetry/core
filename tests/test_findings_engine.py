@@ -263,6 +263,62 @@ def test_detects_ssrf():
     assert "ssrf" in _cats(src)
 
 
+def test_detects_insecure_deserialization_pickle_and_marshal():
+    src_pickle = (
+        "import pickle, flask\n"
+        "def handler():\n"
+        "    raw = flask.request.data\n"
+        "    return pickle.loads(raw)\n"
+    )
+    assert "deserialization" in _cats(src_pickle)
+
+    src_marshal = (
+        "import marshal\n"
+        "def run_code(user_bytes):\n"
+        "    return marshal.loads(user_bytes)\n"
+    )
+    assert "deserialization" in _cats(src_marshal)
+
+    src_shelve = (
+        "import shelve\n"
+        "def open_db(user_file):\n"
+        "    return shelve.open(user_file)\n"
+    )
+    assert "deserialization" in _cats(src_shelve)
+
+
+def test_detects_unsafe_yaml_load():
+    src_no_loader = (
+        "import yaml\n"
+        "def parse(raw_yaml):\n"
+        "    return yaml.load(raw_yaml)\n"
+    )
+    assert "deserialization" in _cats(src_no_loader)
+
+    src_unsafe_loader = (
+        "import yaml\n"
+        "def parse(raw_yaml):\n"
+        "    return yaml.load(raw_yaml, Loader=yaml.Loader)\n"
+    )
+    assert "deserialization" in _cats(src_unsafe_loader)
+
+
+def test_no_false_positive_on_safe_deserialization():
+    src_safe = (
+        "import json, yaml, pickle\n"
+        "from yaml import SafeLoader\n"
+        "def safe_parsers(user_input):\n"
+        "    d1 = json.loads(user_input)\n"
+        "    d2 = yaml.safe_load(user_input)\n"
+        "    d3 = yaml.load(user_input, Loader=yaml.SafeLoader)\n"
+        "    d4 = yaml.load(user_input, Loader=SafeLoader)\n"
+        "    d5 = yaml.load(user_input, yaml.SafeLoader)\n"
+        "    d6 = pickle.loads(b'hardcoded_constant_bytes')\n"
+        "    return d1, d2, d3, d4, d5, d6\n"
+    )
+    assert "deserialization" not in _cats(src_safe)
+
+
 def test_detects_ssti():
     src = (
         "import flask\n"
