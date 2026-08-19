@@ -7,7 +7,7 @@ tools run the deterministic pipeline and return the earned authority + a signed
 receipt; the verdict is produced outside the model.
 
 Run it:
-    pip install "signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.6.0"
+    pip install "signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.7.0"
     python -m signetry_core.mcp_server        # stdio transport
 
 Register it with an MCP client (e.g. Claude Code) pointing at this command.
@@ -106,7 +106,7 @@ def build_server():  # pragma: no cover - exercised only when mcp is installed
     except ImportError as exc:  # noqa: F841
         raise SystemExit(
             "The MCP server needs the optional dependency: pip install "
-            "'signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.6.0'"
+            "'signetry-core[mcp] @ git+https://github.com/Signetry/core@v0.7.0'"
         ) from None
 
     mcp = FastMCP("signetry-core")
