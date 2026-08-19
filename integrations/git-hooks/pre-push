@@ -20,7 +20,7 @@ if [[ "${SIGNETRY_SKIP:-0}" == "1" ]]; then
 fi
 
 if ! command -v signetry >/dev/null 2>&1; then
-  echo "signetry: CLI not found — install from source with 'pip install \"signetry-core @ git+https://github.com/Signetry/core@v0.6.0\"'." >&2
+  echo "signetry: CLI not found — install from source with 'pip install \"signetry-core @ git+https://github.com/Signetry/core@v0.7.0\"'." >&2
   echo "signetry: skipping the governance gate (not installed)." >&2
   exit 0
 fi
