@@ -66,9 +66,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install Signetry
-        # signetry-core is source-available (All Rights Reserved) and not on PyPI —
-        # install it from the source repo by tag.
-        run: pip install "signetry-core @ git+https://github.com/Signetry/core@v0.5.4"
+        # This IS the signetry-core repo, so install the checkout rather than a
+        # published tag: the weekly self-scan must exercise the code on main, and a
+        # hard-coded tag silently drifts behind it (the v0.5.4 pin here outlived the
+        # umbra -> signetry rename and broke the run, because that tag's metadata
+        # still declared name = "umbra-core"). Downstream repos install by tag —
+        # see .github/workflows in Signetry/autofix-demo for that shape.
+        run: pip install .
 
       - name: Install the executor CLI
         env:
@@ -252,5 +256,7 @@ jobs:
         if: always()
         with:
           name: signetry-autofix
-          path: ${{ env.OUT }}/scan-and-fixes.json
+          # Deterministic path, not ${{ env.OUT }}: env.OUT is only set once the scan
+          # step runs, so an earlier failure made this resolve to "/scan-and-fixes.json".
+          path: ${{ runner.temp }}/signetry/scan-and-fixes.json
           if-no-files-found: ignore
