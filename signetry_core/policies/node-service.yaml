@@ -1,0 +1,46 @@
+# @policy id: node-service
+# @policy title: Node/TypeScript service (src + tests)
+# @policy summary: A deployed Node or TypeScript service. Application code and tests are in
+#   scope; the build/release path, container definitions and runtime config are not — those
+#   are how a change to a service becomes a change to production.
+# @policy stack: node, typescript, npm, pnpm, jest, vitest
+# @policy author: signetry-registry
+# @policy blocks: .github/workflows/deploy.yml, Dockerfile, docker-compose.yml, k8s/deployment.yaml, .env.production, next.config.js
+# @policy allows: src/routes/users.ts, src/lib/db.ts, test/users.test.ts, src/index.ts, package.json
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "src/**"
+  - "lib/**"
+  - "test/**"
+  - "tests/**"
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/*.spec.ts"
+  - "package.json"
+  - "README.md"
+
+# Editing the service is not the same as editing how the service is built, shipped or
+# configured at runtime. Build config (next.config.js, webpack, vite) also executes on
+# every build machine, which makes it a supply-chain surface rather than app code.
+forbidden_paths:
+  - ".github/**"
+  - "Dockerfile*"
+  - "docker-compose*"
+  - "k8s/**"
+  - "helm/**"
+  - "infra/**"
+  - "terraform/**"
+  - "next.config.*"
+  - "webpack.config.*"
+  - "vite.config.*"
+  - "**/*secret*"
+  - "**/.env*"
+
+max_files_changed: 15
+required_checks:
+  - "npm test"
+
+policy_owner: your-team
+policy_version: "1.0"

@@ -11,6 +11,8 @@ developer's machine, in a git hook, and in CI:
     signetry comment <report.json>                                # render the canonical PR comment
     signetry admit-extension <skill-or-mcp-dir>                    # govern a skill / MCP extension
     signetry init                                                 # scaffold .signetry/admission.yaml
+    signetry init --policy python-library                          # scaffold from the policy registry
+    signetry policies                                             # list the policy registry
     signetry completion zsh                                        # shell completion script
 
 ``admit`` exits non-zero unless the run earns branch-PR authority (L2), so it
@@ -37,6 +39,7 @@ from . import (
     to_slsa_provenance,
     verify_receipt,
 )
+from .policy_registry import available_policies, load_policy, policy_ids
 
 
 def _print(obj: Any, as_json: bool) -> None:
@@ -413,8 +416,22 @@ policy_version: "1.0"
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    """Scaffold a starter ``.signetry/admission.yaml`` in a repo so a new user is one
-    command away from a governed change. Never overwrites without ``--force``."""
+    """Scaffold a ``.signetry/admission.yaml`` in a repo so a new user is one command
+    away from a governed change — the built-in starter, or a named registry policy via
+    ``--policy``. Never overwrites without ``--force``."""
+    if getattr(args, "list_policies", False):
+        return cmd_policies(args)
+
+    entry = None
+    if getattr(args, "policy", None):
+        # Resolve the policy BEFORE touching the filesystem, so a typo leaves the repo
+        # exactly as it was rather than half-initialised.
+        try:
+            entry = load_policy(args.policy)
+        except KeyError as exc:
+            print(f"error: {exc.args[0]}", file=sys.stderr)
+            return 2
+
     root = Path(args.repo).resolve()
     if not root.is_dir():
         print(f"error: {root} is not a directory", file=sys.stderr)
@@ -424,15 +441,80 @@ def cmd_init(args: argparse.Namespace) -> int:
         print(f"error: {dest} already exists (use --force to overwrite)", file=sys.stderr)
         return 1
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(_STARTER_CONTRACT)
-    print(f"wrote {dest}")
+
+    if entry is None:
+        dest.write_text(_STARTER_CONTRACT)
+        print(f"wrote {dest}")
+        print("Next: edit the scope, then run  signetry admit .  (or add the GitHub Action).")
+        return 0
+
+    # Byte-for-byte. An adopter can diff their file against the published policy.
+    dest.write_text(entry.text, encoding="utf-8")
+    print(f"wrote {dest}  ({entry.id} — {entry.title})")
+    if entry.caution:
+        print()
+        print("  CAUTION  " + _wrap(entry.caution, indent="           "))
+        print()
+    contract = entry.contract
+    print(f"  scope    {len(contract.allowed_paths)} allowed pattern(s), "
+          f"{len(contract.forbidden_paths)} forbidden, max {contract.max_files_changed} file(s)")
+    if not contract.required_checks:
+        print("  checks   none declared — set required_checks to your test command, or the "
+              "pipeline verifies nothing")
+    else:
+        print(f"  checks   {', '.join(contract.required_checks)}")
+    # Say this every time. A borrowed policy is not an owned policy, and the receipt
+    # will keep reporting it as unowned until a human puts their name on it.
+    print("  owner    unowned — set policy_owner and policy_version to adopt this policy "
+          "as your own")
+    print()
     print("Next: edit the scope, then run  signetry admit .  (or add the GitHub Action).")
+    return 0
+
+
+def _wrap(text: str, *, width: int = 78, indent: str = "") -> str:
+    """Collapse whitespace and wrap, so a multi-line YAML comment reads as a paragraph."""
+    words = " ".join(text.split())
+    lines, current = [], ""
+    for word in words.split(" "):
+        candidate = f"{current} {word}".strip()
+        if len(candidate) > width and current:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return ("\n" + indent).join(lines)
+
+
+def cmd_policies(args: argparse.Namespace) -> int:
+    """List the policy registry: named, validated admission policies for common stacks."""
+    entries = available_policies()
+    if getattr(args, "json", False):
+        _print({"policies": [e.to_public() for e in entries]}, True)
+        return 0
+    if not entries:
+        print("No policies found. This is a packaging bug — please report it.", file=sys.stderr)
+        return 1
+    print("Policy registry — signetry init --policy <id>\n")
+    for entry in entries:
+        print(f"  {entry.id}")
+        print(f"      {entry.title}")
+        print(f"      {_wrap(entry.summary, indent='      ')}")
+        if entry.stack:
+            print(f"      stack: {', '.join(entry.stack)}")
+        if entry.caution:
+            print(f"      CAUTION: {_wrap(entry.caution, indent='               ')}")
+        print()
+    print("Every policy above is validated in CI against the paths it claims to block and")
+    print("allow. Contribute one: https://github.com/Signetry/core (docs/site/policy-registry.md)")
     return 0
 
 
 # Static shell-completion scripts. Kept simple + dependency-free (no argcomplete):
 # they complete the subcommand names, which is the high-value case.
-_COMMANDS = "admit verify brake provenance gates comment admit-extension guard init completion"
+_COMMANDS = "admit verify brake provenance gates comment admit-extension guard init policies completion"
 _COMPLETIONS = {
     "bash": f"""# signetry bash completion — add to ~/.bashrc:  eval "$(signetry completion bash)"
 _signetry_complete() {{
@@ -544,10 +626,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_guard.add_argument("--hook-output", action="store_true", help="Emit Claude Code PreToolUse decision JSON (deny blocks; exit 0).")
     p_guard.set_defaults(func=cmd_guard)
 
-    p_init = sub.add_parser("init", help="Scaffold a starter .signetry/admission.yaml in a repo.")
+    p_init = sub.add_parser("init", help="Scaffold a .signetry/admission.yaml — the starter, or a registry policy.")
     p_init.add_argument("repo", nargs="?", default=".", help="Repo directory to write into (default: current dir).")
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing .signetry/admission.yaml.")
+    p_init.add_argument("--policy", metavar="ID",
+                        help=f"Install a registry policy instead of the starter ({', '.join(policy_ids())}).")
+    p_init.add_argument("--list-policies", action="store_true", help="List the policy registry and exit.")
     p_init.set_defaults(func=cmd_init)
+
+    p_pol = sub.add_parser("policies", help="List the policy registry: named, CI-validated admission policies.")
+    p_pol.add_argument("--json", action="store_true", help="Emit the registry as JSON (id, metadata, parsed contract).")
+    p_pol.set_defaults(func=cmd_policies)
 
     p_comp = sub.add_parser("completion", help="Print a shell completion script (bash | zsh | fish).")
     p_comp.add_argument("shell", choices=["bash", "zsh", "fish"], help="Shell to emit completion for.")

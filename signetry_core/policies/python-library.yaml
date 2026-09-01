@@ -1,0 +1,41 @@
+# @policy id: python-library
+# @policy title: Python library (src layout, pytest)
+# @policy summary: A src-layout Python package. The agent may change library code, tests and
+#   the project manifest, and must keep pytest green. Anything that executes at install or
+#   collection time stays off-limits, as does CI.
+# @policy stack: python, pytest, hatchling, setuptools, poetry, uv
+# @policy author: signetry-registry
+# @policy blocks: .github/workflows/release.yml, setup.py, tox.ini, tests/conftest.py, .env.production, deploy/helm/values.yaml
+# @policy allows: src/mylib/core.py, src/mylib/__init__.py, tests/test_core.py, pyproject.toml, README.md
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "src/**"
+  - "tests/**"
+  - "pyproject.toml"
+  - "README.md"
+  - "CHANGELOG.md"
+
+# setup.py, tox/nox config and conftest.py execute during install or test collection,
+# so a patch there runs code on every developer machine and every CI job that touches
+# the package — a far larger blast radius than the library code itself. conftest.py is
+# blocked at ANY depth, including inside tests/, which the allowlist otherwise permits.
+forbidden_paths:
+  - ".github/**"
+  - "setup.py"
+  - "setup.cfg"
+  - "tox.ini"
+  - "noxfile.py"
+  - "conftest.py"
+  - "infra/**"
+  - "deploy/**"
+  - "**/*secret*"
+  - "**/.env*"
+
+max_files_changed: 12
+required_checks:
+  - "pytest -q"
+
+policy_owner: your-team
+policy_version: "1.0"

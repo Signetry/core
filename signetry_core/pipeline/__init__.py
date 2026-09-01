@@ -14,6 +14,7 @@ from .contract import (
     contract_from_dict,
     default_contract,
     evaluate_contract,
+    is_policy_placeholder,
     load_contract,
 )
 from .gates import Gate, GateSummary, evaluate_gates
@@ -92,6 +93,7 @@ __all__ = [
     "contract_from_dict",
     "default_contract",
     "evaluate_contract",
+    "is_policy_placeholder",
     "load_contract",
     "guard",
     "guard_path",
