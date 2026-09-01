@@ -20,7 +20,7 @@
 set -eu
 
 # optional: SIGNETRY_VERSION=0.5.3 sh install.sh  (defaults to the latest hardened tag)
-VERSION="${SIGNETRY_VERSION:-0.6.0}"
+VERSION="${SIGNETRY_VERSION:-0.8.0}"
 SPEC="signetry-core @ git+https://github.com/Signetry/core@v${VERSION}"
 
 say() { printf '  %s\n' "$1"; }

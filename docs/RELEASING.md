@@ -5,7 +5,7 @@ Apache-2.0 on 2030-08-31) and is **not published to PyPI** — it is distributed
 installed **from source by tag**:
 
 ```bash
-pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
+pip install "signetry-core @ git+https://github.com/Signetry/core@v0.8.0"
 ```
 
 Pushing a version tag runs [`.github/workflows/release.yml`](../.github/workflows/release.yml),
@@ -15,14 +15,24 @@ as all prior PyPI releases were yanked).
 
 ## Cutting a release
 
-1. Bump the version in [`pyproject.toml`](../pyproject.toml) (`[project].version`).
-2. Commit: `git commit -am "release: v0.5.3"`.
-3. Tag and push:
+1. Move `## [Unreleased]` in [`CHANGELOG.md`](../CHANGELOG.md) to `## [X.Y.Z] — <date>`.
+   The release notes are extracted from that heading, so a release cut without it
+   ships the fallback text instead of its own changelog.
+2. Bump the version in [`pyproject.toml`](../pyproject.toml) (`[project].version`) to
+   match. The workflow fails the release if the two disagree.
+3. Update every `core@vX.Y.Z` pin that names the current release — the README, the
+   docs, `install.sh`, and the bundled integrations all print an install command a
+   user copies. `grep -rn 'core@v'` finds them; leave the `@v0.5.3 or later`-style
+   floors alone.
+4. Open a PR with those changes and merge it. `main` is protected and requires its
+   status checks, so a release cannot be pushed straight to it.
+5. Tag the merged commit and push the tag alone:
    ```bash
-   git tag v0.5.3
-   git push origin main --tags
+   git checkout main && git pull
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
    ```
-4. The `Release` workflow will:
+6. The `Release` workflow will:
    - verify the tag matches `pyproject.toml`,
    - run `ruff` + `pytest`,
    - build sdist + wheel and run `twine check`,
