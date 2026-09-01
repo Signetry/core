@@ -218,6 +218,9 @@ def cmd_verify(args: argparse.Namespace) -> int:
         print(f"error: cannot read receipt: {exc}", file=sys.stderr)
         return 2
     result = verify_receipt(envelope, expected_public_key=args.public_key)
+    # Two independent checks: is the signature genuine, and does the payload obey
+    # the format's invariants (RECEIPT_SPEC §4.3)? A receipt needs both.
+    conforming = result.get("conforming", True)
     if args.json:
         _print(result, True)
     else:
@@ -226,7 +229,13 @@ def cmd_verify(args: argparse.Namespace) -> int:
             print("NOT VERIFIED  — " + result["reason"])
         else:
             print(("VERIFIED" if ok else "NOT VERIFIED") + f"  (issued_by_signetry={result['issued_by_signetry']}, hash_matches={result['hash_matches']})")
-    return 0 if result["verified"] else 1
+        for violation in result.get("invariant_violations") or []:
+            print(f"NON-CONFORMING  — {violation}")
+        if ok and not conforming:
+            # Don't let a reader stop at "VERIFIED": the signature is genuine and
+            # the receipt is still not usable as proof of anything.
+            print("REJECTED  — signature is genuine, but this is not a conforming receipt.")
+    return 0 if (result["verified"] and conforming) else 1
 
 
 def cmd_brake(args: argparse.Namespace) -> int:

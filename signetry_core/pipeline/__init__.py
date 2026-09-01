@@ -58,6 +58,7 @@ from .provenance import (
 )
 from .receipt import (
     build_receipt,
+    check_invariants,
     public_key_b64,
     sign,
     signing_key_is_ephemeral,
@@ -136,6 +137,7 @@ __all__ = [
     "verify_change",
     "masked_recheck",
     "build_receipt",
+    "check_invariants",
     "verify_receipt",
     "verify_signature",
     "sign",

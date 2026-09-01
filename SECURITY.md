@@ -6,8 +6,8 @@ signetry-core is a security tool, so we hold its own security to a high bar.
 
 Fixes land on the latest tagged release of the
 [source repo](https://github.com/Signetry/core/releases) (signetry-core is
-source-available and installed from source — not published to PyPI). Always run the
-latest.
+source-available under BUSL-1.1 and installed from source — not published to PyPI).
+Always run the latest.
 
 | Version | Supported |
 |---|---|
