@@ -6,8 +6,9 @@
 #
 # Installs the `signetry` CLI (signetry-core) from its **source repo** using the best
 # tool available, preferring an isolated install so it never clobbers your project
-# environments. signetry-core is source-available (All Rights Reserved) and is NOT
-# published to PyPI, so all installs pull from git by tag:
+# environments. signetry-core is source-available under BUSL-1.1 (it becomes
+# Apache-2.0 on 2030-08-31) and is not published to PyPI, so all installs pull from
+# git by tag:
 #
 #   1. uv    (uv tool install ...)      — fastest, isolated
 #   2. pipx  (pipx install ...)         — isolated

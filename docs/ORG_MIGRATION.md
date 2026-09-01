@@ -14,9 +14,9 @@ re-linking** on transfer. They were done in this order to avoid downtime:
 |---|---|---|
 | **GitHub Marketplace** (`signetry-action`) | Listing may unpublish/relink | Re-verified the Marketplace listing points at `Signetry/action` after transfer |
 
-> Note: signetry-core is **source-available and not published to PyPI** (installed from
-> source by tag). There is **no PyPI Trusted Publisher** to re-link — the
-> `release.yml` workflow only cuts a GitHub Release.
+> Note: signetry-core is **not published to PyPI** (installed from source by tag).
+> There is **no PyPI Trusted Publisher** to re-link — the `release.yml` workflow only
+> cuts a GitHub Release.
 
 GitHub **auto-redirects** old repo URLs (clones, links, `uses:` refs) after a
 transfer, so external consumers keep working — but the item above is not covered
@@ -53,7 +53,7 @@ done
 5. **Docs site** — GitHub Pages / custom domain on `Signetry/core`.
 6. **Marketplace** — confirmed the `signetry-action` listing shows the new owner.
 7. **Re-run a release** — tagged a patch (e.g. `v0.5.4`) to confirm the GitHub Release
-   automation works under the org (no PyPI publish — source-available/git-install).
+   automation works under the org (no PyPI publish — install from git by tag).
 
 ## Teams in the org
 

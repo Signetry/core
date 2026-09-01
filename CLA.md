@@ -1,6 +1,11 @@
 # Signetry Contributor License Agreement (CLA)
 
-**Copyright (c) 2026 Binay Dalai. All rights reserved.**
+**Copyright (c) 2026 Binay Dalai.** This repository is the Signetry **engine**, licensed
+under **[BUSL-1.1](LICENSE)** — source-available today, converting to
+[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) on **2030-08-31** — as part of
+Signetry's [open-core model](https://github.com/Signetry/signetry/blob/main/LICENSING.md).
+This Agreement governs what You grant the Owner when You contribute; it does not reduce
+the rights the LICENSE already gives You (and everyone else) in this code.
 
 Thank you for your interest in contributing to Signetry ("the Project"), owned by
 Binay Dalai ("the Owner"). This Contributor License Agreement ("Agreement")
@@ -26,21 +31,38 @@ Your Contribution. You agree that the Owner is the sole and exclusive owner of t
 Contribution once merged into the Project.
 
 To the extent any rights cannot be assigned by law, You grant the Owner a
-**perpetual, worldwide, exclusive, irrevocable, royalty-free, sublicensable, and
+**perpetual, worldwide, non-exclusive, irrevocable, royalty-free, sublicensable, and
 transferable license** to use, reproduce, modify, prepare derivative works of,
 publicly display, publicly perform, distribute, **sell, and commercialize** Your
 Contribution, in whole or in part, in any form and for any purpose.
 
-## 3. The Owner's exclusive rights
+Nothing in this section removes Your own ability to use Your Contribution: once it is
+released as part of this repository it is available to You, as to anyone, under
+[BUSL-1.1](LICENSE) — and under Apache-2.0 from the Change Date — and You retain any
+rights You independently hold in the underlying ideas and techniques.
+
+## 3. Why the Owner needs this (open core)
 
 You acknowledge and agree that:
 
-- The Owner alone retains the right to **use, license, sell, and monetize** the
-  Project, including Your Contribution.
-- You obtain **no right** to use, copy, modify, distribute, sell, or commercialize
-  the Project or Your Contribution for Your own personal or commercial purposes,
-  except as expressly permitted in writing by the Owner.
-- The Project is **not open source** and is licensed "All Rights Reserved."
+- **You keep the licence's rights.** This repository is released under
+  [BUSL-1.1](LICENSE), so You may read it, run it in your own CI, use it in production
+  to govern repositories You or Your organization control, fork it, patch it, and
+  publish those patches — including Your own Contribution — on exactly the same terms
+  as any other user, with no separate written permission. The single carve-out applies
+  to everyone equally: You may not offer this engine to third parties as a paid,
+  competing hosted service. On **2030-08-31** the licence becomes Apache-2.0 and even
+  that carve-out lapses.
+- **The Owner may relicense.** The assignment above lets the Owner use, license, sell,
+  and monetize the Project, including Your Contribution, and release it under other
+  terms.
+- **Code may move across the open-core line.** This repository is the BUSL-1.1 engine;
+  Signetry's integration surface (the GitHub Action, the editor and agent plugins, the
+  pre-commit guard, the eval suite, and the receipt specification) is Apache-2.0. A
+  Contribution accepted here may later be moved out to an Apache-2.0 repository — the
+  receipt spec and its conformance suite are deliberately Apache-2.0 for exactly that
+  reason — or an Apache-2.0 adapter may be promoted into this engine. The CLA is what
+  makes that possible without asking every past contributor again.
 
 ## 4. Recognition of Contributors (credit, not rights)
 
@@ -50,8 +72,8 @@ of Your work.
 
 This recognition is **attribution only**. It does **not**:
 
-- grant You any ownership, license, or right to use, copy, sell, sublicense, or
-  commercialize the Project or Your Contribution;
+- grant You ownership of the Project, or any rights beyond those the Project's
+  licence already grants everyone;
 - entitle You to represent the Project, or any part of it, as Your own work, product,
   or property, or to market or sell it under Your own name or brand; or
 - create any partnership, employment, or revenue-sharing relationship with the Owner.

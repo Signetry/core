@@ -7,6 +7,68 @@ change between minor versions.
 
 ## [Unreleased]
 
+### Added — the receipt format is now a published, independently testable spec
+
+- **[`docs/RECEIPT_SPEC.md`](docs/RECEIPT_SPEC.md)** documents the
+  `signetry.remediation-receipt` v1 format in full: envelope, payload,
+  canonicalization, signing, the verification algorithm, the §4.3 invariants, and a
+  change contract. RFC 2119 language throughout. A receipt is meant to be verifiable
+  by someone who does not have this tool and is reading it years later, so the format
+  is an interface and is now written down as one.
+- **[`tests/conformance/`](tests/conformance/)** — 17 assertions over 7 committed JSON
+  vectors, with published test-key seed strings so an implementation in any language
+  can be checked against exactly the same files. Regenerate with
+  `python tests/conformance/generate_vectors.py`; the vectors are committed rather
+  than computed at test time so a change to canonicalization or signing shows up as a
+  diff.
+- **The spec and the suite are [Apache-2.0](LICENSE-Apache-2.0.txt), named as explicit
+  exclusions from the BUSL `Licensed Work`** in [`LICENSE`](LICENSE). They carry no
+  restriction and no Change Date. Writing a competing issuer or an independent
+  verifier against the spec is a supported use.
+- **`check_invariants(receipt)`** (exported from `signetry_core.pipeline`) enforces
+  RECEIPT_SPEC §4.3: `auto_merge` must be `false`, `human_review_required` must be
+  `true`, plus `kind`/`version`/`authority_level` well-formedness. `verify_receipt`
+  now returns `conforming` and `invariant_violations` alongside its cryptographic
+  result, because those are different questions — a receipt can be correctly signed
+  and still claim something the format forbids.
+- **`signetry verify` now fails on a non-conforming receipt**, not just an unverifiable
+  one, and says which of the two failed. A validly signed receipt with
+  `auto_merge: true` prints `NON-CONFORMING` and `REJECTED` and exits `1`; it never
+  prints a bare `VERIFIED`. This is what makes "Signetry never merges on its own
+  judgement" a checkable property of every receipt instead of a promise in a README.
+
+### Fixed
+
+- Two repo-root-relative links in `docs/RELEASING.md` resolved from `docs/` and were
+  therefore broken.
+
+### Changed — licence: open core (BUSL-1.1, converting to Apache-2.0)
+
+- `signetry-core` is now licensed **[BUSL-1.1](LICENSE)** and converts to
+  **Apache-2.0 on 2030-08-31**, replacing the previous "All Rights Reserved"
+  proprietary terms. You may read, run in your own CI, use in production to govern
+  repositories you or your organization control, fork, modify, and redistribute it;
+  the one carve-out is offering it to third parties as a paid, competing hosted
+  service. `pyproject.toml`'s `license` field is now `BUSL-1.1`.
+- The **integration surface is Apache-2.0**: the
+  [Action](https://github.com/Signetry/action),
+  [plugins](https://github.com/Signetry/plugins),
+  [pre-commit guard](https://github.com/Signetry/precommit), and
+  [eval suite](https://github.com/Signetry/eval).
+- The **CLA still applies** — open core means code moves across the BUSL/Apache line,
+  and the assignment is what allows that relicensing without re-asking every past
+  contributor. `CLA.md`, `CONTRIBUTING.md`, and `CONTRIBUTORS.md` were rewritten for
+  the open-source posture; README/docs/workflow comments no longer claim the project
+  is "not open source" or "All Rights Reserved".
+- No functional or API change. Distribution is unchanged: still installed from source
+  by tag, not published to PyPI.
+- **The CLA's fallback licence grant is now non-exclusive.** It previously granted the
+  Owner an *exclusive* licence where copyright assignment is not permitted by law, which
+  would have stripped contributors of the right to use their own contribution — directly
+  contradicting the rights the LICENSE grants everyone. The CLA text is now identical
+  across all Signetry repositories (bar the engine/integration licence wording) so the
+  legal terms cannot drift per-repo again. See [CLA.md](CLA.md) §2–3.
+
 ### Added — Python insecure-deserialisation coverage
 
 - `marshal.load(s)` and `shelve.open` now flagged (CWE-502) — both execute arbitrary

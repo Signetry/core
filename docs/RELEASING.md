@@ -1,20 +1,21 @@
 # Releasing signetry-core
 
-signetry-core is **source-available** (All Rights Reserved) and is **not published to
-PyPI** — it is distributed and installed **from source by tag**:
+signetry-core is source-available under **[BUSL-1.1](../LICENSE)** (it becomes
+Apache-2.0 on 2030-08-31) and is **not published to PyPI** — it is distributed and
+installed **from source by tag**:
 
 ```bash
 pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
-Pushing a version tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml),
+Pushing a version tag runs [`.github/workflows/release.yml`](../.github/workflows/release.yml),
 which verifies + tests + builds the artifacts and cuts a **GitHub Release** (the
-former PyPI Trusted-Publishing job was removed on the source-available lockdown, as
-all prior PyPI releases were yanked).
+former PyPI Trusted-Publishing job was removed when distribution moved to git-by-tag,
+as all prior PyPI releases were yanked).
 
 ## Cutting a release
 
-1. Bump the version in [`pyproject.toml`](pyproject.toml) (`[project].version`).
+1. Bump the version in [`pyproject.toml`](../pyproject.toml) (`[project].version`).
 2. Commit: `git commit -am "release: v0.5.3"`.
 3. Tag and push:
    ```bash

@@ -1,14 +1,19 @@
 # Contributors
 
-Signetry is **owned by Binay Dalai** and is **All Rights Reserved** (not open source).
+This repository is the Signetry **engine**, licensed under **[BUSL-1.1](LICENSE)**
+(source-available; it becomes Apache-2.0 on 2030-08-31) and maintained by Binay Dalai as
+part of Signetry's
+[open-core model](https://github.com/Signetry/signetry/blob/main/LICENSING.md).
 The people below are gratefully acknowledged for contributions accepted under the
 [Contributor License Agreement](CLA.md).
 
-**Credit, not ownership.** Being listed here recognizes a person's contribution. It
-does **not** grant any right to use, copy, sell, sublicense, or commercialize the
-project, and does **not** entitle anyone to present the project (in whole or in part)
-as their own work, product, or brand. All such rights remain exclusively with the
-owner.
+**Credit, not ownership.** Being listed here recognizes a person's contribution.
+Everyone — contributors included — already has the right to read, run, fork, and patch
+this code under BUSL-1.1, and to use it in production to govern their own repositories.
+Listing here does **not** additionally grant
+ownership of the project, and does **not** entitle anyone to present the project (in
+whole or in part) as their own work, product, or brand, or to use the Signetry name to
+endorse their own products.
 
 ## Owner / maintainer
 
@@ -19,4 +24,4 @@ owner.
 <!-- Contributors who have signed the CLA are added here (alphabetical by GitHub
      handle). To be credited, contribute a PR and sign the CLA. -->
 
-- **Advait Varhade** ([@AdvaitVarhade](https://github.com/AdvaitVarhade)) — SSRF (CWE-918) detection rule for JavaScript/Node ([#73](https://github.com/Signetry/core/pull/73)); SSRF URL-argument resolution for keyword + positional calls, plus httpx/aiohttp coverage ([#89](https://github.com/Signetry/core/pull/89)); identified the Python insecure-deserialisation gaps — `marshal`, `shelve`, and an explicitly unsafe `yaml` Loader ([#87](https://github.com/Signetry/core/issues/87))
+_Be the first — open a PR, sign the CLA, and your name goes here._
