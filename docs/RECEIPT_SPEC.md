@@ -237,6 +237,14 @@ class" and MUST NOT be interpreted as a widening. Provenance fields
 (`policy_owner`, `policy_version`, `policy_approved_at`) are OPTIONAL; when absent
 the policy MUST be treated as unsigned and surfaced as such, never silently trusted.
 
+A provenance value that is **scaffold placeholder text** — `your-team`, `TODO`,
+`changeme`, a starter-template or registry default — MUST be treated exactly as if the
+field were absent. Presence is not a declaration. A verifier that tests only for a
+non-empty string will report a policy nobody has read as change-controlled, which is
+strictly worse than reporting it as unowned, because it converts an unanswered question
+into a false answer. Consumers MAY distinguish placeholder from absent when surfacing
+*why* a policy is unowned, but MUST NOT let either one confer provenance.
+
 ## 10. Authority ladder
 
 | Level | Meaning |
