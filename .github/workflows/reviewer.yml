@@ -38,7 +38,7 @@ jobs:
 
       - name: Install signetry-reviewer
         # not published to PyPI — install from its source repo by tag.
-        run: pip install "signetry-reviewer @ git+https://github.com/Signetry/reviewer@v0.2.0"
+        run: pip install "signetry-reviewer @ git+https://github.com/Signetry/reviewer@v0.3.0"
 
       - name: Compute the PR diff
         env:
