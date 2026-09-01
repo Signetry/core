@@ -42,6 +42,14 @@ CI should be green.
 and [Discussions](https://github.com/Signetry/signetry/discussions).
 Well-scoped areas in this repo:
 
+- **A policy for the registry** — the most approachable change here: one YAML file in
+  `signetry_core/policies/` describing a stack's safe blast radius. No Python required,
+  and no test to write — `tests/test_policy_registry.py` is parametrized over every
+  entry, so your file is checked the moment it lands (metadata complete, declared blocks
+  actually blocked, declared allows actually allowed, no overlap between them).
+  `signetry policies` lists what exists and
+  [docs/site/policy-registry.md](docs/site/policy-registry.md) explains the fields; a
+  policy installs byte-for-byte, so what you write is exactly what an adopter gets.
 - **A new detection rule** — add a vuln class or language to
   `signetry_core/pipeline/findings/` with a test in `tests/test_findings_engine.py`.
 - **An executor adapter** — wire a new coding agent behind the `Executor` protocol

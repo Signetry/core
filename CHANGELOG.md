@@ -5,7 +5,7 @@ All notable changes to **signetry-core** are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Until `1.0.0` the public API may
 change between minor versions.
 
-## [Unreleased]
+## [0.8.0] — 2026-09-01
 
 ### Added — the receipt format is now a published, independently testable spec
 

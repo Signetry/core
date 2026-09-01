@@ -35,7 +35,7 @@ provenance. Make it a required status check and nothing merges without a receipt
 
 Agent-agnostic; **open core** — the engine is source-available under BUSL-1.1
 (Apache-2.0 on 2030-08-31) and every integration is Apache-2.0 — installed from
-source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`).
+source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.8.0"`).
 On the GitHub Marketplace:
 https://github.com/marketplace/actions/signetry-admission
 
@@ -97,7 +97,7 @@ jobs:
 Live demo — a permitted change passes, a forbidden `deploy.yml` edit is blocked:
 https://github.com/Signetry/autofix-demo/pulls
 
-Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`
+Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.8.0"`
 → `signetry admit`), a git pre-push hook, an MCP server, or a Python library.
 Open core: the engine is source-available under BUSL-1.1 (Apache-2.0 on 2030-08-31)
 and every integration around it is Apache-2.0.
