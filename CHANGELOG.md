@@ -7,6 +7,41 @@ change between minor versions.
 
 ## [Unreleased]
 
+### Added — policy registry
+
+- **`signetry policies`** and **`signetry init --policy <id>`**. Six starter admission
+  contracts for common repository shapes: `docs-only`, `dependency-bump`,
+  `python-library`, `node-service`, `monorepo-service`, `ci-workflow-fix`. Writing the
+  first contract is where adoption stalls, and "which globs should an agent be allowed to
+  touch in this stack" is a real security decision most teams defer.
+- The published file **is** the installed file. `init --policy` copies the registry bytes
+  verbatim — no templating, no merge — so an adopter can diff their
+  `.signetry/admission.yaml` against the registry and get nothing back. Verified in CI.
+- Every entry carries its own evidence. A policy declares example paths it must block and
+  must allow in `# @policy` header comments, and `tests/test_policy_registry.py` runs each
+  claim through the real `evaluate_contract`. A policy whose documentation does not match
+  its behaviour fails CI. The `allows` direction is the one that catches an over-broad
+  forbidden glob quietly making a policy useless.
+- `ci-workflow-fix` carries a `caution` that `init` prints at adoption time, because write
+  access to `.github/workflows` is a privilege-escalation path and a registry that shipped
+  it silently would be worse than one that omitted it.
+- New public helper `is_policy_placeholder`, and `signetry_core/policies/` ships in the
+  wheel (confirmed against a built artifact, not assumed).
+
+### Fixed — a scaffold placeholder was reported as declared provenance
+
+- `signetry init` writes `policy_owner: your-team`, and `policy_status()` reported
+  `declared` — *"Policy declares a human owner and version (change-controlled
+  metadata)"* — for a file no human had read. Every receipt from a freshly initialised
+  repo asserted change-control that did not exist.
+- Placeholder provenance is now treated as **absent**, with its own status value:
+  `declared` / `placeholder` / `incomplete`, each carrying a `note` explaining which.
+  Consumers must treat anything other than `declared` as not change-controlled; the extra
+  values exist to say *why*, which is actionable, and never mean "good enough".
+- Note for consumers matching on this field: a repo that ran `signetry init` and never
+  edited the provenance keys now reports `placeholder` where it previously reported
+  `declared`. That is the bug being fixed, not a regression.
+
 ### Added — Python insecure-deserialisation coverage
 
 - `marshal.load(s)` and `shelve.open` now flagged (CWE-502) — both execute arbitrary

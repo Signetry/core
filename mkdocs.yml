@@ -42,6 +42,7 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Scan a repo in 60s: scan-quickstart.md
+  - Policy registry: policy-registry.md
   - Concepts: concepts.md
   - Capabilities & Proof: capabilities.md
   - GitHub Action: github-action.md

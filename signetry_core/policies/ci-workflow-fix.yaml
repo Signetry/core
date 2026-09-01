@@ -1,0 +1,42 @@
+# @policy id: ci-workflow-fix
+# @policy title: Fix one CI workflow (deliberately narrow, read the caution)
+# @policy summary: The inverse of every other policy here: CI workflow files are the ONLY
+#   thing in scope, for the specific task of repairing a broken build. One file per change,
+#   and the workflows that hold your release credentials stay forbidden.
+# @policy caution: Write access to .github/workflows is the classic privilege-escalation
+#   path — a workflow can read repository secrets and run arbitrary code with them on the
+#   next push. Adopt this only for the CI-repair task, never as a repo's standing policy,
+#   and review the diff yourself. Signetry never merges, so a human still sees every change;
+#   this policy narrows what an agent may propose, it does not make the proposal safe.
+# @policy stack: github-actions
+# @policy author: signetry-registry
+# @policy blocks: .github/workflows/release.yml, .github/workflows/publish-to-npm.yml, .github/workflows/deploy-prod.yml, src/index.ts, .github/actions/setup/action.yml
+# @policy allows: .github/workflows/ci.yml, .github/workflows/test.yml, .github/workflows/lint.yml
+version: 2
+task_type: ci-repair
+
+# Workflow files only. Custom actions under .github/actions/** are excluded on purpose:
+# they execute inside every job that calls them, so they are a wider surface than the
+# workflow that invokes them.
+allowed_paths:
+  - ".github/workflows/**"
+
+# The workflows that hold credentials are exactly the ones worth attacking, so they are
+# carved out of the scope above. Rename these patterns to match your own repository —
+# a release workflow called something else is not covered by this list.
+forbidden_paths:
+  - ".github/workflows/*release*"
+  - ".github/workflows/*publish*"
+  - ".github/workflows/*deploy*"
+  - ".github/workflows/*sign*"
+  - "**/*secret*"
+  - "**/.env*"
+
+# One workflow per change. A CI repair that rewrites the whole pipeline is not a repair,
+# and reviewing one file properly beats skimming six.
+max_files_changed: 1
+required_checks:
+  - "actionlint"
+
+policy_owner: your-team
+policy_version: "1.0"

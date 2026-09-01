@@ -1,0 +1,40 @@
+# @policy id: monorepo-service
+# @policy title: One service in a monorepo (rename the directory)
+# @policy summary: Scopes an agent to a single service inside a monorepo and keeps it out of
+#   its siblings and out of the shared packages every service depends on. Replace
+#   "services/checkout" throughout with your own service directory — this is the one policy
+#   here that does nothing useful until you edit it.
+# @policy stack: monorepo, turborepo, nx, pnpm-workspaces, bazel
+# @policy author: signetry-registry
+# @policy blocks: services/payments/src/charge.ts, packages/shared/src/auth.ts, .github/workflows/ci.yml, turbo.json, services/checkout/Dockerfile
+# @policy allows: services/checkout/src/handler.ts, services/checkout/package.json, services/checkout/test/handler.test.ts
+version: 2
+task_type: feature-work
+
+# Rename this. Everything outside it is a violation, which is the entire point: a
+# monorepo makes "one service" a convention, and this turns it into an enforced boundary.
+allowed_paths:
+  - "services/checkout/**"
+
+# packages/** is the trap. Shared libraries look local to the agent, but a change there
+# ships to every service in the repo at once — the blast radius is the whole monorepo,
+# not the service being worked on. Dockerfile is forbidden even INSIDE the owned service:
+# forbidden_paths always beats allowed_paths, which is how you carve an exception out of
+# a directory you otherwise own.
+forbidden_paths:
+  - "packages/**"
+  - "libs/**"
+  - ".github/**"
+  - "turbo.json"
+  - "nx.json"
+  - "pnpm-workspace.yaml"
+  - "Dockerfile*"
+  - "**/*secret*"
+  - "**/.env*"
+
+max_files_changed: 15
+required_checks:
+  - "pnpm --filter checkout test"
+
+policy_owner: your-team
+policy_version: "1.0"

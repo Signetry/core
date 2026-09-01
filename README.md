@@ -79,6 +79,34 @@ The GitHub Action is the highest-reach checkpoint: it sits at the repo, so it
 governs *any* agent that opens a PR. Make **"Signetry Admission"** a required status
 check and nothing merges without a signed receipt. `auto_merge` is always false.
 
+## Start from a policy instead of a blank file (`signetry policies`)
+
+Writing the first admission contract is where adoption stalls — "which paths should an
+agent be allowed to touch in this stack" is a real security decision, and most teams
+defer it. Six starter policies ship in the box:
+
+```bash
+signetry policies                          # docs-only, dependency-bump, python-library,
+signetry init --policy python-library      # node-service, monorepo-service, ci-workflow-fix
+```
+
+Two things make these worth trusting rather than just copying:
+
+- **What ships is what lands.** `init --policy` writes the registry file byte-for-byte —
+  no templating, no merge. Diff your `.signetry/admission.yaml` against the published
+  policy and you get nothing back.
+- **Every policy carries its own evidence.** Each one declares example paths it must
+  block and must allow, and CI runs those claims through the same `evaluate_contract` the
+  pipeline uses. A policy whose documentation doesn't match its behaviour fails the
+  build — including the `allows` direction, which is what catches an over-broad forbidden
+  glob quietly making a policy useless.
+
+A registry policy ships `policy_owner: your-team`, and Signetry reports that as
+`placeholder`, not `declared`: a borrowed policy nobody at your org has read is not
+change-controlled, and the receipt says so until a human adopts it. See
+[docs/site/policy-registry.md](docs/site/policy-registry.md) — contributing a policy is
+the most useful change you can make here without touching the kernel.
+
 ## Find vulnerabilities — then govern the fix (`signetry scan`)
 
 `signetry-core` also ships a **layered SAST detection engine**: a deterministic,
