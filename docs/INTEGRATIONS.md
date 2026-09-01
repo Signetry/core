@@ -13,7 +13,7 @@ Codex, Cursor, Copilot, Devin, or a human, identically.
 ## 1. Python package from source (the foundation)
 
 ```bash
-# source-available (All Rights Reserved); not on PyPI — install from source
+# BUSL-1.1 (Apache-2.0 on 2030-08-31); not on PyPI — install from source
 pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 

@@ -34,7 +34,7 @@ false — a human merges.
 ## Install
 
 ```bash
-# source-available (All Rights Reserved); not on PyPI — install from source
+# BUSL-1.1 (Apache-2.0 on 2030-08-31); not on PyPI — install from source
 pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
@@ -43,14 +43,29 @@ pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 
 ## License & contributing
 
-signetry-core is **source-available** — the code is public to read, evaluate, and
-contribute to, but it is **not open source**. It is **All Rights Reserved
-(© 2026 Binay Dalai)** and installed from source (not PyPI).
+[BUSL-1.1](https://github.com/Signetry/core/blob/main/LICENSE) — source-available, and
+it becomes [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) on
+**2030-08-31**.
 
-Contributions are welcome under a **Contributor License Agreement**: you can
-contribute and you'll be **credited** (in `CONTRIBUTORS.md`, the Git history, and
-release notes), but you gain no right to use, sell, or rebrand the project — the
-owner retains all rights. See
-[CONTRIBUTING.md](https://github.com/Signetry/core/blob/main/CONTRIBUTING.md),
-the [CLA](https://github.com/Signetry/core/blob/main/CLA.md), and the
+**You may**, at no cost and without asking: read the source, run it in your own CI,
+use it in production to govern changes to repositories you or your organization
+control, fork it, patch it, and publish those patches.
+
+**You may not** offer `signetry-core` to third parties as a paid, competing hosted
+service — change admission, agent governance, or receipt issuance and verification
+as a service. That one carve-out is what funds the work.
+
+Everything you actually plug into — the [GitHub Action](https://github.com/Signetry/action),
+the [editor and agent plugins](https://github.com/Signetry/plugins), the
+[pre-commit guard](https://github.com/Signetry/precommit), and the
+[adversarial eval suite](https://github.com/Signetry/eval) — is **Apache-2.0**, so an
+integration you build is yours with no strings. See
+[LICENSING.md](https://github.com/Signetry/signetry/blob/main/LICENSING.md).
+
+Contributions are accepted under the
+[CLA](https://github.com/Signetry/core/blob/main/CLA.md), which is still required: it
+lets a contribution move across the open-core line later without re-asking every
+contributor for permission. Contributors are **credited** in `CONTRIBUTORS.md`, the Git
+history, and release notes. See
+[CONTRIBUTING.md](https://github.com/Signetry/core/blob/main/CONTRIBUTING.md) and the
 [good-first-issues board](https://github.com/Signetry/signetry/issues/10).

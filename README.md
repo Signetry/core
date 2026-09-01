@@ -10,15 +10,11 @@
 
 ---
 
-> **Copyright (c) 2026 Binay Dalai. All rights reserved.**
-> This repository is strictly for viewing and contributing to the original project. You may not use, copy, modify, distribute, or commercialize this code for your own personal or commercial projects without explicit written permission. Only the original author retains the right to use and monetize this project.
-
-
 [![CI](https://github.com/Signetry/core/actions/workflows/ci.yml/badge.svg)](https://github.com/Signetry/core/actions/workflows/ci.yml)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Signetry%20Admission-purple?logo=github)](https://github.com/marketplace/actions/signetry-admission)
 [![Docs](https://img.shields.io/badge/docs-signetry--core-blue)](https://binaydalai.me/signetry-core/)
-[![Source-available](https://img.shields.io/badge/source-available-informational.svg)](CLA.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](https://github.com/Signetry/signetry/issues/10)
+[![License](https://img.shields.io/badge/license-BUSL--1.1%20%E2%86%92%20Apache--2.0-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome%20(CLA)-brightgreen.svg)](CONTRIBUTING.md)
 
 **An agent-agnostic change-control plane for coding agents.**
 
@@ -61,7 +57,7 @@ One core (`run_admission`), five checkpoints an agent's change must pass through
 — see [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md):
 
 ```bash
-# Source-available (not on PyPI). Install from the source repo:
+# Not on PyPI — install from the source repo:
 pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"
 ```
 
@@ -239,6 +235,42 @@ Set `SIGNETRY_SIGNING_KEY` (base64 of >=32 raw bytes) for a stable production
 signing key; without it a deterministic dev key is used and every receipt is
 honestly flagged `key_ephemeral`.
 
+## The receipt format is a specification, not an implementation detail
+
+A receipt has to be verifiable by someone who does not have this tool, does not trust
+it, and is reading it years later. That makes the format an interface, so it is
+written down and tested as one:
+
+- **[`docs/RECEIPT_SPEC.md`](docs/RECEIPT_SPEC.md)** — the v1 format: envelope,
+  payload, canonicalization, signing, the verification algorithm, and a change
+  contract. RFC 2119 language throughout.
+- **[`tests/conformance/`](tests/conformance/)** — language-agnostic JSON vectors with
+  published test-key seeds. Any implementation, in any language, can be checked
+  against exactly these files.
+
+Both are **Apache-2.0** and excluded from this repository's BUSL licence. Writing a
+competing issuer or an independent verifier is a supported use.
+
+Two of the vectors carry most of the weight, because they are the ones a
+signature-only implementation gets wrong:
+
+| Vector | The mistake it catches |
+|---|---|
+| `resigned-other-key.json` | Verifying a signature against the public key carried **inside the same envelope**. The forger supplies both halves, so it always passes. Real verification is against a key you obtained some other way — [§8.1](docs/RECEIPT_SPEC.md#81-the-pinned-key-rule). |
+| `auto-merge-true.json` | Treating a valid signature as a valid receipt. `auto_merge: false` and `human_review_required: true` are invariants **inside the signed payload**, so they cannot be flipped or dropped without breaking the signature — but only a verifier that checks them turns that into a guarantee. |
+
+The second one is why "Signetry never merges on its own judgement" is a checkable
+property of every receipt rather than a sentence in a README:
+
+```bash
+$ signetry verify receipt.json --public-key "$SIGNETRY_PUBLIC_KEY"
+VERIFIED  (issued_by_signetry=True, hash_matches=True)
+NON-CONFORMING  — auto_merge must be false (RECEIPT_SPEC §4.3)
+REJECTED  — signature is genuine, but this is not a conforming receipt.
+$ echo $?
+1
+```
+
 ## Prompt-injection defense (OWASP LLM01)
 
 Coding agents read repository text — `README.md`, `CLAUDE.md`, `.cursorrules`,
@@ -357,13 +389,16 @@ by any `Executor`. As of **0.5.0** it also ships a layered SAST detection engine
 
 ## Contributing
 
-**Source-available, PRs welcome.** The code is public to read, evaluate, and
-contribute to — but it is **not open source**; it is All Rights Reserved and
-contributions are accepted **only under the [Contribution Agreement](CONTRIBUTING.md)
-/ [CLA](CLA.md)**: by submitting a PR you assign copyright and ownership of your
-contribution to the owner, who alone may use and monetize the codebase. You are
-**credited** in [CONTRIBUTORS.md](CONTRIBUTORS.md) and release notes, but gain no
-right to use, sell, or rebrand it. If you don't agree, don't submit a PR.
+**Open core, PRs welcome.** The engine is source-available under
+[BUSL-1.1](LICENSE) (Apache-2.0 on 2030-08-31) and everything you plug into it —
+the Action, the plugins, the pre-commit guard, the eval suite — is Apache-2.0.
+Read it, run it, fork it, patch it, and send the patch back.
+
+Contributions are accepted under the [CLA](CLA.md), which is still required: it lets
+a well-built contribution move across the open-core line later (engine → Apache-2.0
+integration surface, or the reverse) without re-asking every contributor for
+permission. Contributors are credited in [CONTRIBUTORS.md](CONTRIBUTORS.md), the Git
+history, and release notes. See [CONTRIBUTING.md](CONTRIBUTING.md) for the details.
 
 🌱 **Where to start:** the
 [good-first-issues board](https://github.com/Signetry/signetry/issues/10)
@@ -383,8 +418,25 @@ self-check. Read [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 ## License
 
-**Copyright (c) 2026 Binay Dalai. All rights reserved.** This code is not open
-source. You may not use, copy, modify, distribute, or commercialize it for your own
-personal or commercial purposes without explicit written permission from the author,
-who alone retains the right to use and monetize this project. See the notice at the
-top of this file and [CONTRIBUTING.md](CONTRIBUTING.md).
+[BUSL-1.1](LICENSE) — source-available, and it becomes [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) on **2030-08-31**.
+
+**You may**, at no cost and without asking: read the source, run it in your own CI,
+use it in production to govern changes to repositories you or your organization
+control, fork it, patch it, and publish those patches.
+
+**You may not** offer `signetry-core` to third parties as a paid, competing hosted
+service — change admission, agent governance, or receipt issuance and verification
+as a service. That one carve-out is what funds the work.
+
+Everything you actually plug into — the [GitHub Action](https://github.com/Signetry/action),
+the [editor and agent plugins](https://github.com/Signetry/plugins), the
+[pre-commit guard](https://github.com/Signetry/precommit), the
+[adversarial eval suite](https://github.com/Signetry/eval), and the
+[receipt specification](docs/RECEIPT_SPEC.md) and its
+[conformance suite](tests/conformance/) — is **Apache-2.0**, so an integration you
+build is yours with no strings. The spec and the suite are named as explicit
+exclusions from the BUSL `Licensed Work` in [`LICENSE`](LICENSE): a receipt has to
+stay verifiable without licensing anything from us, so they carry no restriction and
+no Change Date. See [LICENSING.md](https://github.com/Signetry/signetry/blob/main/LICENSING.md).
+
+Contributions are accepted under the [CLA](CLA.md).

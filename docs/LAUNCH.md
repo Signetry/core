@@ -33,8 +33,9 @@ branch-PR) is granted — sealed in an Ed25519-signed receipt that maps to SLSA
 provenance. Make it a required status check and nothing merges without a receipt.
 `auto_merge` is always false — a human merges.
 
-Agent-agnostic; **source-available** (All Rights Reserved — not open source),
-installed from source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`).
+Agent-agnostic; **open core** — the engine is source-available under BUSL-1.1
+(Apache-2.0 on 2030-08-31) and every integration is Apache-2.0 — installed from
+source (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`).
 On the GitHub Marketplace:
 https://github.com/marketplace/actions/signetry-admission
 
@@ -98,7 +99,8 @@ https://github.com/Signetry/autofix-demo/pulls
 
 Also usable as a CLI (`pip install "signetry-core @ git+https://github.com/Signetry/core@v0.7.0"`
 → `signetry admit`), a git pre-push hook, an MCP server, or a Python library.
-Source-available (All Rights Reserved — not open source).
+Open core: the engine is source-available under BUSL-1.1 (Apache-2.0 on 2030-08-31)
+and every integration around it is Apache-2.0.
 
 Core: https://github.com/Signetry/core
 

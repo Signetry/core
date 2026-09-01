@@ -37,7 +37,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install signetry-reviewer
-        # source-available (All Rights Reserved); install from source, not PyPI.
+        # not published to PyPI — install from its source repo by tag.
         run: pip install "signetry-reviewer @ git+https://github.com/Signetry/reviewer@v0.2.0"
 
       - name: Compute the PR diff
