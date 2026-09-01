@@ -85,6 +85,47 @@ _DEFAULT_CONTRACT: dict[str, Any] = {
 # Invariant preserved: capabilities can only RESTRICT. An empty list ("not
 # declared") means "no additional restriction from this class" — never a widening.
 
+# Scaffold placeholders. `signetry init` and every registry policy ship provenance
+# fields pre-filled with a stand-in so the shape is obvious, which means a team that
+# never edits the file would otherwise get a receipt asserting a declared human owner
+# it does not have. A placeholder is treated as ABSENT: unowned, never change-
+# controlled. Matched case-insensitively, after stripping <>/[]{} wrappers.
+_POLICY_PLACEHOLDERS = frozenset({
+    "your-team", "your-org", "your-company", "yourteam", "yourorg", "your team",
+    "team", "org", "owner", "example", "example-team", "acme", "acme-corp",
+    "todo", "tbd", "fixme", "changeme", "change-me", "unset", "unknown", "none",
+    "n/a", "na", "null", "placeholder", "signetry-registry",
+})
+
+
+_POLICY_STATUS_NOTES = {
+    "declared": (
+        "Policy declares a human owner and version (change-controlled metadata). "
+        "This is declared provenance, not a cryptographic signature."
+    ),
+    "placeholder": (
+        "Policy provenance is still scaffold text (e.g. 'your-team'), so no human has "
+        "adopted this policy. Treat it as unowned: set policy_owner to a real team and "
+        "policy_version to a version you control. Authority is unaffected — it still "
+        "requires the deterministic contract, independent verifier, and required checks."
+    ),
+    "incomplete": (
+        "Policy metadata is incomplete (no declared owner/version). Authority still "
+        "requires the deterministic contract, independent verifier, and required "
+        "checks; production teams should own and version the policy."
+    ),
+}
+
+
+def is_policy_placeholder(value: str) -> bool:
+    """True when a provenance value is scaffold text rather than a real declaration.
+
+    Public because the registry-validation harness asserts that every shipped policy
+    template is recognised here — a template that slipped past this set would hand
+    every adopter a false ``declared`` status."""
+    s = (value or "").strip().strip("<>[](){}").strip()
+    return s.lower() in _POLICY_PLACEHOLDERS
+
 
 @dataclass(frozen=True)
 class Contract:
@@ -148,29 +189,34 @@ class Contract:
         ``incomplete``. Values:
           - ``declared``               — a human owner AND version are declared (change-
                                          controlled metadata, but not cryptographically proven).
+          - ``placeholder``            — the owner is still scaffold text (``your-team``, ``TODO``,
+                                         a registry template) — nobody has adopted this policy.
           - ``incomplete``             — owner or version missing (default posture).
           - ``cryptographically-signed`` — reserved for a policy carrying a verifiable
                                          signature; not asserted here (no policy-signature
                                          scheme is verified yet), stated so the field is honest.
+        Consumers MUST treat any value other than ``declared`` as NOT change-controlled.
+        The extra values exist to say *why* it is not, which is actionable; they never
+        mean "good enough".
+
         Expiry/approval timestamps are advisory metadata surfaced for review; they do
         not by themselves widen authority (authority is still gated by the deterministic
         contract + verifier + checks).
         """
-        declared = bool(self.policy_owner and self.policy_version)
-        status = "declared" if declared else "incomplete"
+        placeholder = is_policy_placeholder(self.policy_owner)
+        declared = bool(self.policy_owner and self.policy_version) and not placeholder
+        if declared:
+            status = "declared"
+        elif placeholder:
+            status = "placeholder"
+        else:
+            status = "incomplete"
         return {
             "status": status,
             "owner": self.policy_owner or None,
             "version": self.policy_version or None,
             "approved_at": self.policy_approved_at or None,
-            "note": (
-                "Policy declares a human owner and version (change-controlled metadata). "
-                "This is declared provenance, not a cryptographic signature."
-                if declared else
-                "Policy metadata is incomplete (no declared owner/version). Authority still "
-                "requires the deterministic contract, independent verifier, and required "
-                "checks; production teams should own and version the policy."
-            ),
+            "note": _POLICY_STATUS_NOTES[status],
         }
 
     def hash(self) -> str:
