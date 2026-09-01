@@ -260,3 +260,53 @@ jobs:
           # step runs, so an earlier failure made this resolve to "/scan-and-fixes.json".
           path: ${{ runner.temp }}/signetry/scan-and-fixes.json
           if-no-files-found: ignore
+
+  # A scheduled job that fails silently is indistinguishable from one that never ran.
+  # This one failed three Mondays running and nobody noticed until a human went looking
+  # — which is the same mistake the engine exists to catch: an absent signal being read
+  # as a passing one. So a red weekly run now has to be seen.
+  #
+  # Only for `schedule`. A failed workflow_dispatch is already in front of the person
+  # who clicked it; filing an issue at them would be noise, and noise is precisely how
+  # the first three failures got ignored.
+  notify:
+    needs: autofix
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write        # job-level: this job files the report and needs nothing else
+    steps:
+      - name: Report the failed self-scan on an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          LABEL="autofix-failure"
+
+          # `gh issue create --label` fails outright on a label that does not exist, so
+          # ensure it. Already-exists is the normal case and is not an error.
+          gh label create "$LABEL" \
+            --description "The weekly governed self-scan failed" \
+            --color B60205 >/dev/null 2>&1 || true
+
+          BODY="$(printf '%s\n' \
+            "The weekly governed self-scan failed." \
+            "" \
+            "- commit: \`$GITHUB_SHA\`" \
+            "- run: $RUN_URL" \
+            "" \
+            "No fix PRs were opened by this run. Nothing was merged — the pipeline never merges." \
+            "Close this issue once a run goes green; the next failure will reopen the report.")"
+
+          # One issue, reused. A fresh issue every Monday would bury the signal it exists
+          # to raise, so an already-open report gets a comment instead.
+          EXISTING="$(gh issue list --label "$LABEL" --state open --limit 1 \
+                        --json number --jq '.[0].number // empty')"
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+            echo "commented on existing report #$EXISTING"
+          else
+            gh issue create --title "Weekly self-scan is failing" \
+              --label "$LABEL" --body "$BODY"
+          fi
