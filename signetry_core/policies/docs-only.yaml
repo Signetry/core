@@ -1,0 +1,40 @@
+# @policy id: docs-only
+# @policy title: Documentation only (prose and images)
+# @policy summary: Markdown, text and images. No code, no config, no CI, no lockfiles. The
+#   safest policy in the registry, and a good first governed task for a team that wants to
+#   watch the pipeline work end to end before pointing an agent at source.
+# @policy stack: any
+# @policy author: signetry-registry
+# @policy blocks: src/app.py, package.json, .github/workflows/ci.yml, mkdocs.yml, scripts/publish-docs.sh
+# @policy allows: README.md, docs/guide.md, docs/img/diagram.png, CHANGELOG.md, docs/adr/0001-record.md
+version: 2
+task_type: documentation
+
+allowed_paths:
+  - "*.md"
+  - "docs/**"
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.png"
+  - "**/*.jpg"
+  - "**/*.svg"
+
+# A docs tree is not inert. mkdocs.yml, a Sphinx conf.py and a publish script all
+# execute — and they usually sit right next to the prose, inside docs/**. Prose-only
+# has to mean prose only, so these are forbidden even where the allowlist covers them.
+forbidden_paths:
+  - ".github/**"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/conf.py"
+  - "**/*.sh"
+  - "**/.env*"
+
+max_files_changed: 20
+
+# Prose has no test suite, and pretending otherwise would be theatre. The value here
+# comes from scope enforcement and the signed receipt, not from a check gate.
+required_checks: []
+
+policy_owner: your-team
+policy_version: "1.0"

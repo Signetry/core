@@ -4,7 +4,9 @@ name: CLA
 # before their pull request can be merged. Runs entirely in this repo's Actions —
 # no third-party OAuth app. Signatures are recorded in signatures/cla.json on this
 # repo, so there is a durable, auditable record that each contributor assigned
-# copyright/ownership of their contribution to the Owner.
+# copyright in their contribution to the Owner — which is what lets code be
+# relicensed across the open-core line (BUSL-1.1 engine <-> Apache-2.0 integrations)
+# without re-asking every past contributor.
 #
 # A contributor signs by commenting the exact statement below on their PR:
 #   I have read the CLA Document and I hereby sign the CLA
@@ -48,7 +50,7 @@ jobs:
           path-to-document: "https://github.com/Signetry/core/blob/main/CLA.md"
           branch: "cla-signatures"
           allowlist: "dependabot[bot],bkd-dotcom"
-          custom-notsigned-prcomment: "Thanks for your contribution! Before it can be merged, please read the **[Contributor License Agreement](https://github.com/Signetry/core/blob/main/CLA.md)** — Signetry is **All Rights Reserved**, and by signing you assign copyright/ownership of your contribution to the Owner (you may not use, sell, or commercialize it yourself). To agree, reply with exactly:"
+          custom-notsigned-prcomment: "Thanks for your contribution! Before it can be merged, please read the **[Contributor License Agreement](https://github.com/Signetry/core/blob/main/CLA.md)** — Signetry is **open core** (this engine is BUSL-1.1, converting to Apache-2.0 on 2030-08-31; the integrations are Apache-2.0). Signing assigns copyright in your contribution to the Owner so code can be relicensed across that open-core line later without re-asking every contributor. It does not take away the rights the LICENSE already grants you. To agree, reply with exactly:"
           custom-pr-sign-comment: "I have read the CLA Document and I hereby sign the CLA"
           custom-allsigned-prcomment: "All contributors have signed the CLA. ✅"
           lock-pullrequest-aftermerge: false

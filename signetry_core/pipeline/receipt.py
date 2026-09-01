@@ -185,6 +185,29 @@ def build_receipt(
     return envelope
 
 
+def check_invariants(receipt: dict[str, Any]) -> list[str]:
+    """Return the RECEIPT_SPEC §4.3 invariant violations in ``receipt`` (empty == conforming).
+
+    These are separate from signature validity on purpose. A receipt can be
+    perfectly signed and still non-conforming: an issuer that sets
+    ``auto_merge: true`` has signed a claim the format does not permit. Both
+    checks must pass before a receipt means anything.
+    """
+    violations: list[str] = []
+    if receipt.get("kind") != "signetry.remediation-receipt":
+        violations.append(f"kind must be 'signetry.remediation-receipt' (got {receipt.get('kind')!r})")
+    if receipt.get("version") != 1:
+        violations.append(f"version must be 1 (got {receipt.get('version')!r})")
+    if receipt.get("auto_merge") is not False:
+        violations.append("auto_merge must be false (RECEIPT_SPEC §4.3)")
+    if receipt.get("human_review_required") is not True:
+        violations.append("human_review_required must be true (RECEIPT_SPEC §4.3)")
+    level = receipt.get("authority_level")
+    if not isinstance(level, int) or isinstance(level, bool) or not 0 <= level <= 3:
+        violations.append(f"authority_level must be an integer 0-3 (got {level!r})")
+    return violations
+
+
 def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None = None) -> dict[str, Any]:
     """Independently verify a signed receipt envelope.
 
@@ -206,13 +229,17 @@ def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None 
     embedded_key = envelope.get("public_key")
     if not isinstance(receipt, dict) or not signature:
         return {"verified": False, "hash_matches": False, "signature_valid": False,
-                "issued_by_signetry": False, "reason": "Receipt or signature missing."}
+                "issued_by_signetry": False, "conforming": False,
+                "invariant_violations": ["receipt or signature missing"],
+                "reason": "Receipt or signature missing."}
 
     # Fail closed when the pinned key would be the public dev-fallback key.
     if expected_public_key is None and signing_key_is_ephemeral():
         return {
             "verified": False, "hash_matches": False, "signature_valid": False,
             "issued_by_signetry": False, "key_ephemeral": True,
+            "conforming": not check_invariants(receipt),
+            "invariant_violations": check_invariants(receipt),
             "reason": (
                 "Refusing to verify against the dev-fallback key (its seed is public). "
                 "Set a production SIGNETRY_SIGNING_KEY, or pass expected_public_key/--public-key "
@@ -221,6 +248,7 @@ def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None 
         }
 
     pinned_key = expected_public_key or public_key_b64()
+    violations = check_invariants(receipt)
     canonical = _canonical(receipt)
     computed_hash = _sha256(canonical)
     hash_matches = bool(claimed_hash) and claimed_hash == computed_hash
@@ -241,4 +269,8 @@ def verify_receipt(envelope: dict[str, Any], *, expected_public_key: str | None 
         "expected_public_key": pinned_key,
         "algorithm": envelope.get("algorithm", "Ed25519"),
         "key_ephemeral": envelope.get("key_ephemeral"),
+        # Conformance is reported separately from cryptography: a validly signed
+        # receipt that breaks a §4.3 invariant is still non-conforming.
+        "conforming": not violations,
+        "invariant_violations": violations,
     }

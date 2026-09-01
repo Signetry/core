@@ -1,0 +1,19 @@
+{
+  "payload": {
+    "zeta": 1,
+    "alpha": {
+      "nested_z": true,
+      "nested_a": [
+        3,
+        2,
+        1
+      ]
+    },
+    "unicode": "receipt — Ünïcödé ✓ 日本語",
+    "empty": {},
+    "null": null
+  },
+  "expected_canonical": "{\"alpha\":{\"nested_a\":[3,2,1],\"nested_z\":true},\"empty\":{},\"null\":null,\"unicode\":\"receipt — Ünïcödé ✓ 日本語\",\"zeta\":1}",
+  "expected_canonical_hash": "sha256:a96172215b2239b0362293654fa95020598663e58fd665172dcb251654ce6366",
+  "_note": "Keys MUST sort recursively; no whitespace; Unicode emitted raw, NOT \\uXXXX-escaped. A serializer that escapes non-ASCII produces a different hash and fails here."
+}

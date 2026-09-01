@@ -1,0 +1,31 @@
+{
+  "envelope": {
+    "receipt": {
+      "kind": "signetry.remediation-receipt",
+      "version": 1,
+      "generated_at": "2026-08-31T12:00:00+00:00",
+      "repo": "Signetry/conformance",
+      "base_commit": "0000000000000000000000000000000000000000",
+      "executor": "none",
+      "policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "diff_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "authority_level": 2,
+      "authority": "branch_pr_only",
+      "outcome": "Conformance fixture — not a real remediation.",
+      "auto_merge": false,
+      "human_review_required": true
+    },
+    "canonical_hash": "sha256:a550860f9e5e302bb03d6190cf532a17b95b5ee6c5e100a773fcf8d7afa7032e",
+    "signature": "Pgym7PtVvvIk+mgjuvpl0i6PuIkfgtScMSTBwKo3wsNUOMRxP1n4heBAIjW45oLcMD26FchuX7h9czHc6PUQBQ==",
+    "public_key": "vuNB+DEcLlLA1czWNk+va8wOv15poeq5NVsvXcVMKfw=",
+    "algorithm": "Ed25519",
+    "key_ephemeral": false
+  },
+  "pinned_public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE=",
+  "expect": {
+    "verified": false,
+    "signature_valid": false,
+    "key_matches_pinned": false
+  },
+  "_note": "Attacker minted their own keypair and signed a plausible receipt. Every hash matches and the signature verifies against the EMBEDDED key. It MUST still fail against the pinned key. An implementation that verifies against envelope.public_key passes the other vectors and fails here."
+}

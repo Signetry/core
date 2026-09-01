@@ -1,0 +1,49 @@
+# @policy id: dependency-bump
+# @policy title: Dependency bump (manifest + lockfile only)
+# @policy summary: The narrowest useful scope. An agent may edit dependency manifests and
+#   lockfiles and nothing else — no source, no config, no CI. Start here if you are unsure
+#   which policy to adopt; it is very hard to do damage inside it.
+# @policy stack: any, npm, pip, cargo, go, bundler
+# @policy author: signetry-registry
+# @policy blocks: src/index.js, .github/workflows/ci.yml, Dockerfile, .env, tests/test_api.py
+# @policy allows: package.json, package-lock.json, requirements.txt, poetry.lock, Cargo.toml, Cargo.lock, go.mod, go.sum, Gemfile.lock
+version: 2
+task_type: dependency-remediation
+
+allowed_paths:
+  - "package.json"
+  - "package-lock.json"
+  - "yarn.lock"
+  - "pnpm-lock.yaml"
+  - "requirements.txt"
+  - "requirements/*.txt"
+  - "poetry.lock"
+  - "pyproject.toml"
+  - "uv.lock"
+  - "Cargo.toml"
+  - "Cargo.lock"
+  - "go.mod"
+  - "go.sum"
+  - "Gemfile"
+  - "Gemfile.lock"
+
+forbidden_paths:
+  - ".github/**"
+  - "infra/**"
+  - "deploy/**"
+  - "Dockerfile*"
+  - "**/*secret*"
+  - "**/.env*"
+
+# A dependency bump that touches many files is not a dependency bump.
+max_files_changed: 4
+
+# SET THIS BEFORE YOU RELY ON IT. This policy spans npm/pip/cargo/go, so the registry
+# cannot know your test command — and inventing one would be worse than leaving it out.
+# An empty list means nothing is verified, and the pipeline reports exactly that rather
+# than implying a suite passed. Put your real command here: "npm test", "pytest -q",
+# "cargo test", "go test ./...".
+required_checks: []
+
+policy_owner: your-team
+policy_version: "1.0"
