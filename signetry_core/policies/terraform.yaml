@@ -1,0 +1,59 @@
+# @policy id: terraform
+# @policy title: Terraform (module tree, validate + fmt, plan-only)
+# @policy summary: A Terraform repository. The agent may change module source, variables,
+#   staging environments and docs, and must keep `terraform validate` and `fmt -check`
+#   green. State, auto-loaded variable files, the backend and production environments
+#   stay off-limits.
+# @policy caution: `terraform validate` and `terraform fmt -check` only prove the HCL
+#   parses and is well-formed. They prove nothing about what an apply would do. A green
+#   required check here is a weaker claim than a green pytest — do not treat a green
+#   receipt as apply-safe.
+# @policy stack: terraform, opentofu, hcl
+# @policy author: kuangwojia-netizen
+# @policy blocks: terraform.tfstate, prod.auto.tfvars, backend.tf, environments/prod/main.tf
+# @policy allows: modules/vpc/main.tf, modules/vpc/variables.tf, environments/staging/main.tf, README.md
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "modules/**"
+  - "environments/**"
+  - "*.tf"
+  - "*.tfvars.example"
+  - "README.md"
+  - "CHANGELOG.md"
+
+forbidden_paths:
+  # State is the record of what actually exists. Editing it doesn't change
+  # infrastructure — it changes Terraform's belief about infrastructure, so the next
+  # apply destroys or duplicates real resources while the plan looks clean.
+  - "**/*.tfstate"
+  - "**/*.tfstate.*"
+  - "**/.terraform/**"
+  # A *.auto.tfvars / *.tfvars file is loaded with NO CLI flag (or as a common apply
+  # input). Changing an instance count or a CIDR there takes effect on the next apply
+  # with nothing obvious at the call site. Example files stay allowed above.
+  - "**/*.auto.tfvars"
+  - "**/*.tfvars"
+  # backend.tf / backend.hcl decide WHERE state lives. Repointing them silently forks
+  # state from the real backend.
+  - "backend.tf"
+  - "**/backend.tf"
+  - "**/backend.hcl"
+  # Inside environments/** which is otherwise allowed, so staging stays in scope.
+  # Production is the same file shape with a blast radius that isn't.
+  - "environments/prod/**"
+  - "environments/production/**"
+  # CI apply workflows and credentials must not be rewritten by a module-tree task.
+  - ".github/**"
+  - "**/.env*"
+  - "**/*secret*"
+
+max_files_changed: 10
+required_checks:
+  - "terraform fmt -check -recursive"
+  - "terraform init -backend=false"
+  - "terraform validate"
+
+policy_owner: your-team
+policy_version: "1.0"
