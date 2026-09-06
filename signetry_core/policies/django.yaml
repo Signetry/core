@@ -1,0 +1,55 @@
+# @policy id: django
+# @policy title: Django app (apps/ layout, pytest-django)
+# @policy summary: A Django project. The agent may change app code, templates and tests,
+#   and must keep pytest green. Migrations, production settings and anything that runs
+#   at manage.py startup stay off-limits.
+# @policy caution: Edits to INSTALLED_APPS or MIDDLEWARE in an allowed settings path load
+#   new code at boot — the risk is the import, not the line. Under requirements/**, a
+#   pinned bump is routine; an unpinned add is a new dependency at deploy time.
+# @policy stack: python, django, pytest-django, drf
+# @policy author: kuangwojia-netizen
+# @policy blocks: apps/billing/migrations/0012_add_plan.py, config/settings/production.py, manage.py, .github/workflows/deploy.yml
+# @policy allows: apps/billing/models.py, apps/billing/views.py, tests/test_billing.py, requirements/base.txt
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "apps/**"
+  - "templates/**"
+  - "tests/**"
+  - "requirements/**"
+  - "README.md"
+  - "CHANGELOG.md"
+
+forbidden_paths:
+  # Inside apps/** which is otherwise allowed. A Django migration is applied once
+  # against a real database and reversed by hand; `makemigrations` output also
+  # encodes state the diff doesn't show, so review of the file is not review of the
+  # schema change.
+  - "**/migrations/**"
+  # Production settings configure the deployed system: ALLOWED_HOSTS, DEBUG, the
+  # datasource, middleware order. None of it is exercised by the test suite that
+  # gates this change.
+  - "**/settings/production.py"
+  - "**/settings/prod.py"
+  # manage.py and wsgi/asgi entrypoints execute before any test collection.
+  - "manage.py"
+  - "**/wsgi.py"
+  - "**/asgi.py"
+  # conftest.py executes at collection time on every developer machine and every
+  # CI job that touches the package — a far larger blast radius than app code.
+  - "**/conftest.py"
+  - "conftest.py"
+  - ".github/**"
+  - "infra/**"
+  - "deploy/**"
+  - "**/.env*"
+  - "**/*secret*"
+
+max_files_changed: 12
+required_checks:
+  - "pytest -q"
+  - "python -m django check --deploy --fail-level WARNING"
+
+policy_owner: your-team
+policy_version: "1.0"
