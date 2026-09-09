@@ -8,7 +8,7 @@
 #   pinned bump is routine; an unpinned add is a new dependency at deploy time.
 # @policy stack: python, django, pytest-django, drf
 # @policy author: kuangwojia-netizen
-# @policy blocks: apps/billing/migrations/0012_add_plan.py, config/settings/production.py, manage.py, .github/workflows/deploy.yml
+# @policy blocks: apps/billing/migrations/0012_add_plan.py, config/settings/production.py, manage.py, apps/billing/apps.py, .github/workflows/deploy.yml
 # @policy allows: apps/billing/models.py, apps/billing/views.py, tests/test_billing.py, requirements/base.txt
 version: 2
 task_type: feature-work
@@ -40,6 +40,12 @@ forbidden_paths:
   # CI job that touches the package — a far larger blast radius than app code.
   - "**/conftest.py"
   - "conftest.py"
+  # AppConfig.ready() and the signal handlers it imports run on every boot — each
+  # `manage.py` invocation, each worker, each test session. Same blast radius as
+  # conftest.py, and inside apps/** which is otherwise allowed, so it needs the
+  # same explicit deny for the summary's "nothing that runs at startup" to hold.
+  - "**/apps.py"
+  - "**/signals.py"
   - ".github/**"
   - "infra/**"
   - "deploy/**"
