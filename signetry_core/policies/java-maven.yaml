@@ -1,0 +1,43 @@
+# @policy id: java-maven
+# @policy title: Java service (Maven, JUnit, src/main + src/test)
+# @policy summary: A Maven-built Java service. The agent may change main and test
+#   sources, resources and the POM, and must keep `mvn -q verify` green. Build
+#   extensions, repository settings, production profiles and Flyway migrations
+#   stay off-limits.
+# @policy stack: java, maven, junit, spring-boot, flyway
+# @policy author: Zoymusk
+# @policy blocks: src/main/resources/db/migration/**, src/main/resources/application-prod.yml, .mvn/extensions.xml, settings.xml
+# @policy allows: src/main/java/**, src/test/java/**, src/main/resources/**, pom.xml
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "src/main/java/**"
+  - "src/test/java/**"
+  - "src/main/resources/**"
+  - "src/test/resources/**"
+  - "pom.xml"
+  - "README.md"
+  - "CHANGELOG.md"
+
+# Flyway migrations and production config execute on real environments and
+# against real data, and build/repo config (.mvn extensions, settings.xml)
+# changes what code gets pulled in and run on every build. These carry a far
+# larger blast radius than the service code itself, so they're blocked at ANY
+# depth, including inside otherwise-allowed directories.
+forbidden_paths:
+  - ".mvn/**"
+  - "settings.xml"
+  - "src/main/resources/application-prod.yml"
+  - "src/main/resources/application-prod.yaml"
+  - "src/main/resources/db/migration/**"
+  - "infra/**"
+  - "deploy/**"
+  - "**/*secret*"
+  - "**/.env*"
+
+max_files_changed: 12
+required_checks:
+  - "mvn -q verify"
+policy_owner: your-team
+policy_version: "1.0"
