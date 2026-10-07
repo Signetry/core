@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload the review comment artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: signetry-reviewer-comment
           path: ${{ runner.temp }}/rev-out
