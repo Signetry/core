@@ -20,6 +20,7 @@ That writes `.signetry/admission.yaml` and prints the scope you just adopted.
 | `docs-only` | any repo | Markdown, text and images. No code, no config, no CI. |
 | `dependency-bump` | any repo | Manifests and lockfiles only. The narrowest useful policy. |
 | `python-library` | src-layout Python | Library code, tests, `pyproject.toml`. Keeps pytest green. |
+| `dotnet-service` | .NET service | `src/` and `tests/`; keeps `dotnet build` and `dotnet test` green. |
 | `node-service` | Node / TypeScript | App code and tests. Not the build or release path. |
 | `monorepo-service` | monorepos | One service directory; siblings and shared packages excluded. |
 | `ci-workflow-fix` | GitHub Actions | Workflow files only, one at a time. **Read its caution.** |

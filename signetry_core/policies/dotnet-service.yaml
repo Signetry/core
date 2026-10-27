@@ -1,0 +1,54 @@
+# @policy id: dotnet-service
+# @policy title: .NET service (src/tests layout, dotnet test)
+# @policy summary: A .NET service using the conventional src/ and tests/ layout. The agent may
+#   change project sources and tests, and must keep `dotnet build` and `dotnet test` green.
+#   Tree-wide build props, NuGet source configuration, production appsettings and publish
+#   profiles stay off-limits.
+# @policy caution: Project files and NuGet packages can add MSBuild targets that execute during
+#   restore or build. Review project-file and package-reference changes carefully, and run the
+#   required checks only in a trusted, isolated environment.
+# @policy stack: dotnet, csharp, nuget, xunit
+# @policy author: signetry-registry
+# @policy blocks: Directory.Build.props, NuGet.config, src/Api/appsettings.Production.json, src/Api/Properties/PublishProfiles/Production.pubxml
+# @policy allows: src/Api/Controllers/CheckoutController.cs, src/Domain/Subscription.cs, tests/Api.Tests/CheckoutTests.cs, src/Api/Api.csproj
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "src/**"
+  - "tests/**"
+  - "*.sln"
+  - "README.md"
+  - "CHANGELOG.md"
+
+forbidden_paths:
+  # Directory.Build files are imported by directory position and can change compilation
+  # or run targets for every project beneath them, including projects outside the diff.
+  - "**/Directory.Build.*"
+  # Central package management changes dependency versions across projects at once.
+  - "**/Directory.Packages.props"
+  # NuGet configuration controls package sources, so changing it can redirect dependency
+  # downloads to an untrusted source.
+  - "nuget.config"
+  - "NuGet.config"
+  - "**/nuget.config"
+  - "**/NuGet.config"
+  # These production-only settings are within src/** but are not exercised by dotnet test.
+  - "**/appsettings.Production.json"
+  - "**/appsettings.Prod*.json"
+  # Publish profiles control deployment settings not covered by the required build and test.
+  - "**/PublishProfiles/**"
+  # CI workflows and container definitions control how changes are built and deployed.
+  - ".github/**"
+  - "Dockerfile*"
+  # Environment files and secret-named files may contain credentials or other sensitive values.
+  - "**/.env*"
+  - "**/*secret*"
+
+max_files_changed: 15
+required_checks:
+  - "dotnet build --warnaserror"
+  - "dotnet test --no-build"
+
+policy_owner: your-team
+policy_version: "1.0"
