@@ -1,0 +1,29 @@
+{
+  "envelope": {
+    "receipt": {
+      "kind": "signetry.remediation-receipt",
+      "version": 1,
+      "generated_at": "2026-08-31T12:00:00+00:00",
+      "repo": "Signetry/conformance",
+      "base_commit": "0000000000000000000000000000000000000000",
+      "executor": "none",
+      "policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "diff_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "authority_level": 2,
+      "authority": "branch_pr_only",
+      "outcome": "Conformance fixture — not a real remediation.",
+      "auto_merge": false,
+      "human_review_required": true
+    },
+    "signature": "91lq9d2ya2R91DrBN/XPb7WCJM3xXSRQ/gU3GFbUfJWSItZtw4zCNXq88vMrEJJpMNsibCbk+5Ykpf335LrFBw==",
+    "public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE=",
+    "algorithm": "Ed25519",
+    "key_ephemeral": false
+  },
+  "pinned_public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE=",
+  "expect": {
+    "verified": false,
+    "hash_matches": false
+  },
+  "_note": "Signature is genuine but canonical_hash was stripped. An absent hash is NOT a pass."
+}

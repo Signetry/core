@@ -1,0 +1,30 @@
+{
+  "envelope": {
+    "receipt": {
+      "kind": "signetry.remediation-receipt",
+      "version": 1,
+      "generated_at": "2026-08-31T12:00:00+00:00",
+      "repo": "Signetry/conformance",
+      "base_commit": "0000000000000000000000000000000000000000",
+      "executor": "none",
+      "policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "diff_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "authority_level": 2,
+      "authority": "branch_pr_only",
+      "outcome": "Conformance fixture — not a real remediation.",
+      "auto_merge": true,
+      "human_review_required": true
+    },
+    "canonical_hash": "sha256:3ee3cd29dd53ad9af6075312b75f7e90a547702783ca39f946895ed080dbfadb",
+    "signature": "6bf0DeSUy2bPgaIjERsppmXDYmJYDEnrjToNRY337mBRj+l7Uukq5yk6DLERAcP1tba/hFW/M9hh5FHWwgAwDQ==",
+    "public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE=",
+    "algorithm": "Ed25519",
+    "key_ephemeral": false
+  },
+  "pinned_public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE=",
+  "expect": {
+    "signature_valid": true,
+    "conforming": false
+  },
+  "_note": "Correctly signed, but auto_merge violates a signed invariant. The signature is valid AND the receipt MUST be rejected as non-conforming. These are separate checks."
+}
