@@ -1,0 +1,11 @@
+{
+  "_note": "TEST keys only. Seeds are published so vectors are reproducible. Never use these to sign anything real.",
+  "key_A": {
+    "seed": "sha256('signetry-conformance-vector-key-A')",
+    "public_key": "6bJlbnL62YP77IuopgrIJp0ChlrElf9zpLpI05mh4IE="
+  },
+  "key_B": {
+    "seed": "sha256('signetry-conformance-vector-key-B')",
+    "public_key": "vuNB+DEcLlLA1czWNk+va8wOv15poeq5NVsvXcVMKfw="
+  }
+}

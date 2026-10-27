@@ -72,3 +72,13 @@ format's guarantees actually live:
   cannot be flipped or dropped without breaking the signature. That makes "Signetry
   never merges on its own judgement" a checkable property of every receipt rather
   than a promise in a README — but only if the verifier actually checks it.
+
+## Independent implementations
+
+Verifiers that are standalone (no dependency on `signetry-core`), checked against
+all 8 committed vectors above, and live in their own repository under their own
+licence. See [issue #119](https://github.com/Signetry/core/issues/119).
+
+| Language | Link | Vectors passing |
+|---|---|---|
+| Go | [`independent-verifiers/go-receipt-verifier`](../../independent-verifiers/go-receipt-verifier) | 8/8 (`canonicalization`, `valid`, `tampered-payload`, `resigned-other-key`, `no-canonical-hash`, `ephemeral-no-pinned-key`, `auto-merge-true`, plus the order-independence check) |
