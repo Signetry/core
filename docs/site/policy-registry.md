@@ -19,6 +19,7 @@ That writes `.signetry/admission.yaml` and prints the scope you just adopted.
 |---|---|---|
 | `docs-only` | any repo | Markdown, text and images. No code, no config, no CI. |
 | `dependency-bump` | any repo | Manifests and lockfiles only. The narrowest useful policy. |
+| `go-service` | Go service | `cmd/`, `internal/` and `pkg/`; keeps `go build`, `go vet` and `go test` green. |
 | `python-library` | src-layout Python | Library code, tests, `pyproject.toml`. Keeps pytest green. |
 | `node-service` | Node / TypeScript | App code and tests. Not the build or release path. |
 | `monorepo-service` | monorepos | One service directory; siblings and shared packages excluded. |

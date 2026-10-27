@@ -1,0 +1,51 @@
+# @policy id: go-service
+# @policy title: Go service (cmd/internal layout, go test)
+# @policy summary: A Go service laid out as cmd/ and internal/. The agent may change handlers,
+#   business logic and tests, and must keep `go test ./...` and `go vet ./...` green. Generated
+#   code, migrations, the container image and CI stay off-limits.
+# @policy caution: go.mod changes can add or upgrade dependencies whose code is built and tested;
+#   go.sum records their integrity checksums but does not choose dependency versions. Review
+#   dependency changes carefully and run the required checks only in a trusted, isolated environment.
+# @policy stack: go, go-modules, gotest
+# @policy author: signetry-registry
+# @policy blocks: internal/db/migrations/0007_add_index.sql, internal/api/api.gen.go, Dockerfile, .github/workflows/release.yml
+# @policy allows: cmd/server/main.go, internal/handler/checkout.go, internal/handler/checkout_test.go, go.mod
+version: 2
+task_type: feature-work
+
+allowed_paths:
+  - "cmd/**"
+  - "internal/**"
+  - "pkg/**"
+  - "go.mod"
+  # go.sum contains integrity hashes, not version selection; go.mod controls the module graph.
+  - "go.sum"
+  - "README.md"
+  - "CHANGELOG.md"
+
+forbidden_paths:
+  # Generated outputs are overwritten by their generators and should be changed at source.
+  - "**/*.gen.go"
+  - "**/*.pb.go"
+  - "**/zz_generated*.go"
+  # Migrations alter persistent schemas and can require coordinated rollout or rollback.
+  - "internal/db/migrations/**"
+  - "**/migrations/**"
+  # Workflow changes can alter CI permissions, access to secrets, and release behavior.
+  - ".github/**"
+  # Container definitions determine the image and commands deployed to production.
+  - "Dockerfile*"
+  # Deployment manifests configure live services and infrastructure.
+  - "deploy/**"
+  # Environment files and secret-named files can contain credentials or sensitive values.
+  - "**/.env*"
+  - "**/*secret*"
+
+max_files_changed: 15
+required_checks:
+  - "go build ./..."
+  - "go vet ./..."
+  - "go test ./..."
+
+policy_owner: your-team
+policy_version: "1.0"
